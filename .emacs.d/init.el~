@@ -1,0 +1,268 @@
+(package-initialize)
+
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/"))
+
+
+;; Other files
+(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
+(setq abbrev-file-name
+      "~/.abbrev_defs")
+(if (file-exists-p abbrev-file-name)
+    (quietly-read-abbrev-file))
+
+
+;; GUI-specific settings
+(when (display-graphic-p)
+  (load-theme 'abell-dark t)
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (global-linum-mode t)
+  (helm-mode 1)
+  )
+
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+
+;; ------------------------------------------------------------------- ;;
+
+;; ---------f90 stuff------------------
+(autoload 'f90-mode "f90" "Fortran 90 mode" t)
+;; (autoload 'f90-mode "f08" "Fortran 90 mode" t)
+(add-hook 'f90-mode-hook 'my-f90-mode-hook)
+(defun my-f90-mode-hook ()
+  (setq f90-font-lock-keywords f90-font-lock-keywords-3)
+  '(f90-comment-region "!!!$")
+  '(f90-indented-comment-re "!")
+  (abbrev-mode 1)                       ; turn on abbreviation mode
+  (turn-on-font-lock)                   ; syntax highlighting
+  (auto-fill-mode 0)                   ; turn off auto-filling
+  )
+;; ------------------------------------
+
+
+;; ------------Fixed format Fortran stuff-----------------
+;; (autoload 'fortran-mode "f" "Fortran mode" t)
+;; remove the ^M at the end of lines
+(defun remove-dos-eol ()
+  "Do not show ^M in files containing mixed UNIX and DOS line endings."
+  (interactive)
+  (setq buffer-display-table (make-display-table))
+  (aset buffer-display-table ?\^M []))
+(add-hook 'fortran-mode-hook 'remove-dos-eol)
+
+(add-hook 'fortran-mode-hook 'my-fortran-mode-hook)
+(defun my-fortran-mode-hook ()
+  '(remove-dos-eol)
+  )
+;; ----------------------------------------------
+
+
+;; Org-mode stuff
+(autoload 'org-mode "org" "Org Mode" t)
+(add-hook 'org-mode-hook 'my-org-mode-hook)
+(defun my-org-mode-hook ()
+  (setq org-log-done t)
+  (define-key global-map "\C-cl" 'org-store-link)
+  (define-key global-map "\C-ca" 'org-agenda)
+  (visual-line-mode 1)
+  (org-indent-mode 1)
+  (abbrev-mode 1)
+  (set-language-environment "UTF-8")
+  (set-default-coding-systems 'utf-8)
+  )
+
+
+;; TeX
+(autoload 'LaTeX-mode "tex" "LaTeX mode" t)
+(defun TeX-inline-math-abell()
+  (interactive)
+  (insert "\\(\\:  \\:\\)")
+  (backward-char 5))
+(defun TeX-fullline-math-abell()
+  (interactive)
+  (insert "\\[  \\]")
+  (backward-char 3))
+
+(add-hook 'LaTeX-mode 'my-LaTeX-mode-hook)
+(defun my-LaTeX-mode-hook ()
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+  (setq-default TeX-master nil)
+  ;; (setq TeX-PDF-mode t)
+  (visual-line-mode 1)
+  (flyspell-mode 1)
+  (LaTeX-math-mode 1)
+  (TeX-source-correlate-mode 1)
+  )
+;; (define-key LaTeX-mode-map (kbd "<C-tab>") 'TeX-complete-symbol)
+(define-key LaTeX-mode-map (kbd "C-c m") 'TeX-inline-math-abell)
+(define-key LaTeX-mode-map (kbd "C-c M-m") 'TeX-fullline-math-abell)
+(define-key LaTeX-mode-map (kbd "C-M-=") '(lambda () (interactive) (insert "&= ")))
+
+;; Emacs-Lisp
+(define-key emacs-lisp-mode-map (kbd "C-c C-a") 'eval-buffer)
+
+;; ------------------------------------------------------------------- ;;
+
+;; folding minor mode
+(load-file "~/.emacs.d/code/folding.el")
+(load "folding" 'nomessage 'noerror)
+(folding-mode-add-find-file-hook)
+(folding-add-to-marks-list 'ruby-mode "#{{{" "#}}}" nil t)
+(folding-add-to-marks-list 'f90-mode "!{" "!}" nil t)
+
+;; Use sensible-defaults.el for some basic settings.
+(load-file "~/.emacs.d/code/sensible-defaults.el")
+(sensible-defaults/use-all-settings)
+(sensible-defaults/use-all-keybindings)
+(sensible-defaults/backup-to-temp-directory)
+
+;;; Any customisations from here on that you don't want, just comment out, and
+;;; close & reopen emacs (or if you get sick of that, open up your init.el and
+;;; type M-x eval-buffer)
+
+
+;(transient-mark-mode 0) ; wtf, why does the region keep getting highlighted?
+
+;; Delete selection upon backspacing or typing.
+(delete-selection-mode 1)
+
+;; Don't show menu or scroll bar
+(tool-bar-mode 0)
+(menu-bar-mode 0)
+(when window-system
+  (scroll-bar-mode -1))
+
+
+;; Open GUI in full screen by default
+;; (set-frame-parameter nil 'fullscreen 'fullboth)
+
+;; Set vertical bar cursor
+;(setq-default cursor-type 'bar)
+
+
+;; Monokai colour theme
+;(load-theme 'monokai t)
+
+;; Emacs has a silly warning bell by default. This gets rid of it.
+(setq ring-bell-function 'ignore)
+
+
+;; Fix Emacs' mouse scrolling behaviour
+(setq scroll-conservatively 100) ;; When cursor moves outside window, don't jump erratically
+(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
+(setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
+(setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
+
+;; Font options
+;(set-frame-font "Menlo 14")
+
+;; Some handy functions to have
+(defun my/view-buffer-name ()
+  "Display the filename of the current buffer."
+  (interactive)
+  (message (buffer-file-name)))
+
+(defun my/rename-file (new-name)
+  (interactive "FNew name: ")
+  (let ((filename (buffer-file-name)))
+    (if filename
+        (progn
+          (when (buffer-modified-p)
+            (save-buffer))
+          (rename-file filename new-name t)
+          (kill-buffer (current-buffer))
+          (find-file new-name)
+          (message "Renamed '%s' -> '%s'" filename new-name))
+      (message "Buffer '%s' isn't backed by a file!" (buffer-name)))))
+
+
+;; Highlight the current line in GUI
+;(when window-system
+;  (global-hl-line-mode))
+
+
+;; Display time in mode line
+(setq display-time-string-forms
+      '((propertize (format-time-string " %b %d, %l:%M%P" now) 'face 'bold)))
+(setq display-time-and-date t)
+(display-time-mode 1)
+
+;; Abbreviate all 'Yes/No' prompts to 'y/n'
+(fset 'yes-or-no-p 'y-or-n-p)
+
+;; Linum is great, but it slows certain modes down. linum-off redefines
+;; global-linum-mode to exclude modes
+;(require 'linum-off)
+(require 'linum)
+(setq linum-disabled-modes-list '(eshell-mode wl-summary-mode
+     compilation-mode text-mode dired-mode
+     doc-view-mode shell-mode pdf-view-mode image-mode))
+
+;; Fix startup behaviour. Don't show startup screen, replace with dashboard.
+(setq inhibit-startup-screen t)
+
+;; Enable quick access to emacs init file with "C-c e"
+(defun my/visit-emacs-config ()
+  (interactive)
+  (find-file "~/.emacs.d/init.el"))
+(defun my/visit-emacs-config-other-window ()
+  (interactive)
+  (find-file-other-window "~/.emacs.d/init.el"))
+(global-set-key (kbd "C-c e") 'my/visit-emacs-config)
+(global-set-key (kbd "C-c M-e") 'my/visit-emacs-config-other-window)
+
+;; Settings changed through Emacs interface are stored in separate file
+(setq custom-file "~/.emacs.d/custom.el")
+(load custom-file :noerror)
+
+;; camelCase recognition
+(global-subword-mode)
+
+;; c global tab width
+(setq tab-width 5)
+
+;; Avoid truncation of emacs term (default 2048)
+;; (setq 'term-buffer-maximum-size 0)
+
+;; Move lines function
+(defun move-line-up ()
+  (interactive)
+  (transpose-lines 1)
+  (previous-line 2))
+  ;; (forward-line -2))
+
+(defun move-line-down ()
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (previous-line 1))
+  ;; (forward-line -1))
+
+(global-set-key (kbd "M-<up>") 'move-line-up)
+(global-set-key (kbd "M-<down>") 'move-line-down)
+
+;; Helm
+(require 'helm)
+(require 'helm-config)
+(global-set-key (kbd "M-x") 'helm-M-x)
+(global-set-key (kbd "C-x C-f") 'helm-find-files)
+(global-set-key (kbd "C-x C-b") 'helm-buffers-list)
+
+;; Enable disabled commands
+(put 'narrow-to-region 'disabled nil)
+
+(defun kill-buffer-and-frame ()
+  (interactive)
+  (kill-this-buffer)
+  (delete-frame))
+
+;; custom keybindings
+(global-set-key (kbd "M-n") 'forward-paragraph)
+(global-set-key (kbd "M-p") 'backward-paragraph)
+(global-set-key (kbd "M-]") 'other-frame)
+(global-set-key (kbd "M-[") 'other-window)
+(global-set-key (kbd "C-x 4 k") 'kill-buffer-and-window)
+(global-set-key (kbd "C-x 5 k") 'kill-buffer-and-frame)
+(global-set-key (kbd "C-M-z") (lambda () (interactive) (shell-command "./z")))
