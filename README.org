@@ -1,0 +1,5 @@
+#+AUTHOR: Anthony Kalaitzis
+#+TITLE: numFort
+
+* Description
+numFort is a numerical library for fortran that includes quadpack and lapack source code and integrates common matlab and plotting functionality through python code.
