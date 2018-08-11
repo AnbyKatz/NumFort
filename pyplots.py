@@ -18,14 +18,14 @@ for ii in range(0,int(A[1]/2)):
     x = data[:,ii*2]
     y = data[:,ii*2+1]
 
-    if int(A[1]/2) > 1:
+    if titles[3] != "nil\n":
         pypl.plot(x,y,label=titles[ii+2])
     else:
         pypl.plot(x,y)
         
     counter = counter + 1
 
-if int(A[1]/2) > 1:
+if titles[3] != "nil\n":
     pypl.legend()
     
 pypl.xlabel(titles[0],fontsize = 18)
