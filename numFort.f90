@@ -1,6 +1,5 @@
 !*****************************************************************************!
-!                                                                             !
-!                                    NUMFORT                                  !
+!                               NUMFORT                                       !
 !                                                                             !
 ! Numerical library for fortran. Use the following module titles              !
 ! to Move Around easily.                                                      !
@@ -10,14 +9,26 @@
 ! 3. NumFort                                                                  !
 ! 4. Pyplots                                                                  !
 !                                                                             !
+! Below contains a list of the function names inside numFort for easier       !
+! navigation purposes.                                                        !
+!                                                                             !
+! - Factorial                                                                 ! 
+! - Meshgrid                                                                  !
+! - Splinefit                                                                 !
+! - Polyfit                                                                   !
+! - rk4                                                                       !
+! - GuessZero                                                                 !
+! - Newton1D                                                                  !
+! - linspace                                                                  !
+! - deriv                                                                     !
+! - integral                                                                  !
+! - plot                                                                      !
 !                                                                             !
 !*****************************************************************************!
 
-!---------------------------------------------------------------------!
-!                                                                     !
-!                   Kinds, precision paramater file                   !
-!                                                                     !
-!---------------------------------------------------------------------!
+!==============================================================================
+!##############################################################################
+!==============================================================================
 
 module kinds
   implicit none
@@ -52,15 +63,9 @@ module kinds
 
 end module kinds
 
-
-
-
-
-
-
-
-
-
+!===============================================================================
+!###############################################################################
+!===============================================================================
 
 module Quadpack
   use kinds
@@ -7807,6 +7812,7 @@ end function qwgts
 !===============================================================================
 !###############################################################################
 !===============================================================================
+
 subroutine r_swap(x,y)
 !
 !*******************************************************************************
@@ -7838,6 +7844,10 @@ end subroutine r_swap
 
 end module Quadpack
 
+!===============================================================================
+!###############################################################################
+!===============================================================================
+
 !---------------------------------------------------------------------!
 !                                                                     !
 !                      NumFort numerical library                      !
@@ -7866,6 +7876,9 @@ module numFort
   interface splinefit
      module procedure splinefit,splinefit_coeff
   end interface splinefit
+  interface GuessZero
+     module procedure GuessZero,GuessZeroNew
+  end interface GuessZero
 
 contains
 
@@ -8562,6 +8575,9 @@ contains
 end module numFort
 
 
+!===============================================================================
+!###############################################################################
+!===============================================================================
 
 !---------------------------------------------------------------------!
 !                                                                     !
@@ -8569,17 +8585,13 @@ end module numFort
 !                                                                     !
 !---------------------------------------------------------------------!
 
-
-
-
-
-Module pyplots
+module pyplots
   use Kinds
   implicit none
 
-  INTERFACE plot  
-     MODULE PROCEDURE plot,plot_notitle,stan_plot,stan_plot_notitle,plot_legend,stan_plot_two,stan_plot_two_legend
-  END INTERFACE plot
+  interface plot  
+     module procedure plot,plot_notitle,stan_plot,stan_plot_notitle,plot_legend,stan_plot_two,stan_plot_two_legend
+  end interface plot
 
 contains
     
@@ -8799,4 +8811,4 @@ contains
 
   end subroutine stan_plot_two_legend
   
-end Module pyplots
+end module pyplots
