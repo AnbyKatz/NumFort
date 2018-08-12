@@ -840,7 +840,7 @@ contains
     name  = ""
 
     if(present(xlabel)) xaxis = xlabel
-    if(present(ylabel)) xaxis = ylabel
+    if(present(ylabel)) yaxis = ylabel
     if(present(title)) name = title
 
     ymin = minval(y)*1.2_DP
@@ -881,7 +881,7 @@ contains
     name  = ""
 
     if(present(xlabel)) xaxis = xlabel
-    if(present(ylabel)) xaxis = ylabel
+    if(present(ylabel)) yaxis = ylabel
     if(present(title)) name = title
 
     ymin = minval(y)*1.2_DP
@@ -923,7 +923,7 @@ contains
     name  = ""
 
     if(present(xlabel)) xaxis = xlabel
-    if(present(ylabel)) xaxis = ylabel
+    if(present(ylabel)) yaxis = ylabel
     if(present(title)) name = title
 
     N = size(data(1,:))
@@ -995,7 +995,7 @@ contains
     name  = ""
 
     if(present(xlabel)) xaxis = xlabel
-    if(present(ylabel)) xaxis = ylabel
+    if(present(ylabel)) yaxis = ylabel
     if(present(zlabel)) zaxis = zlabel
     if(present(title)) name = title    
 
@@ -1063,7 +1063,7 @@ contains
     name  = ""
 
     if(present(xlabel)) xaxis = xlabel
-    if(present(ylabel)) xaxis = ylabel
+    if(present(ylabel)) yaxis = ylabel
     if(present(zlabel)) zaxis = zlabel
     if(present(title)) name = title
 
