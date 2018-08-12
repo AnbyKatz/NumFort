@@ -1,0 +1,1107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2018-08-13 Mon 00:02 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>numFort</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Anthony Kalaitzis" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">numFort</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orga2c6e92">1. Description</a></li>
+<li><a href="#orgb18c79a">2. Installation - Linux/Unix</a>
+<ul>
+<li><a href="#org1a248a9">2.1. ifort</a></li>
+<li><a href="#orgd673d44">2.2. Cmake</a></li>
+<li><a href="#orgb8797b7">2.3. PLplot</a></li>
+<li><a href="#org6b42087">2.4. NumFort</a></li>
+</ul>
+</li>
+<li><a href="#org97c72eb">3. Documentation</a>
+<ul>
+<li><a href="#orgdb119c0">3.1. Kinds</a></li>
+<li><a href="#org55540e7">3.2. NumFort</a>
+<ul>
+<li><a href="#org4f359b2">3.2.1. Factorial</a></li>
+<li><a href="#orgb15ff21">3.2.2. Meshgrid</a></li>
+<li><a href="#org96b0d9f">3.2.3. Splinefit</a></li>
+<li><a href="#org3ef7f96">3.2.4. PolyFit</a></li>
+<li><a href="#orgb507e27">3.2.5. rk4</a></li>
+<li><a href="#org87aba27">3.2.6. GuessZero</a></li>
+<li><a href="#orgf025a38">3.2.7. Newton1D</a></li>
+<li><a href="#org6326a36">3.2.8. Linspace</a></li>
+<li><a href="#orgccf858f">3.2.9. Deriv</a></li>
+<li><a href="#org01ade21">3.2.10. integral</a></li>
+</ul>
+</li>
+<li><a href="#orgf4e99d2">3.3. PLplot</a>
+<ul>
+<li><a href="#orga66e583">3.3.1. plot</a></li>
+<li><a href="#org1d29dfb">3.3.2. scatterplot</a></li>
+<li><a href="#org947f68d">3.3.3. surf</a></li>
+<li><a href="#org43d4a2b">3.3.4. scatter3D</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orga2c6e92" class="outline-2">
+<h2 id="orga2c6e92"><span class="section-number-2">1</span> Description</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+numFort is a numerical library for FORTRAN that includes quadpack, lapack and PLplot source code. It enables the use of handy mathematical macros such as linspace. I have wasted so much of my life on this nonsense. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb18c79a" class="outline-2">
+<h2 id="orgb18c79a"><span class="section-number-2">2</span> Installation - Linux/Unix</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-org1a248a9" class="outline-3">
+<h3 id="org1a248a9"><span class="section-number-3">2.1</span> ifort</h3>
+<div class="outline-text-3" id="text-2-1">
+<ul class="org-ul">
+<li>Before using numFort, make sure to download the ifort compiler and the necessary math kernel libraries for the use of LAPACK. These may be downloaded from the following link (free for students) <a href="https://software.intel.com/en-us/qualify-for-free-software/student">Parallel studio XE</a>, click the C++ link unless on mac</li>
+<li>Simply download the custom install, extract to a location and run under sudo privileges like so</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-shell">sudo ./install.sh
+</pre>
+</div>
+<ul class="org-ul">
+<li>Make sure to check the math kernel for install</li>
+<li>After installation you may need to export the path to the <b>ifort</b> compiler. Add code similar to below in your ~/.bashrc. Your exact path for the above libraries might be different (probably just different numbers for 2018.3.222)</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #87ceeb;">source</span> /opt/intel/bin/compilervars.sh intel64
+<span style="color: #87ceeb;">export</span> <span style="color: #ffc125;">LD_LIBRARY_PATH</span>=$<span style="color: #ffc125;">LD_LIBRARY_PATH</span>:/opt/intel/compilers_and_libraries_2018.3.222/linux/mkl/lib/intel64_lin/
+<span style="color: #87ceeb;">export</span> <span style="color: #ffc125;">LD_LIBRARY_PATH</span>=$<span style="color: #ffc125;">LD_LIBRARY_PATH</span>:/opt/intel/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/
+</pre>
+</div>
+<ul class="org-ul">
+<li>Close and open the terminal to refresh</li>
+<li>Check that it&rsquo;s working by typing</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-shell">ifort --version
+</pre>
+</div>
+<ul class="org-ul">
+<li>Your ifort version should display</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgd673d44" class="outline-3">
+<h3 id="orgd673d44"><span class="section-number-3">2.2</span> Cmake</h3>
+<div class="outline-text-3" id="text-2-2">
+<ul class="org-ul">
+<li>Download Cmake source code for linux from the following link <a href="https://cmake.org/download/">CMAKE</a></li>
+<li>Extract the Cmake folder and then open a terminal and move inside</li>
+<li>Type the following commands to install Cmake</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-shell">./bootstrap
+sudo make
+sudo make install
+</pre>
+</div>
+<ul class="org-ul">
+<li>Check the installation was successful by opening and closing the terminal, and then typing</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-shell">cmake --version
+</pre>
+</div>
+<ul class="org-ul">
+<li>This should print a value for your working version of CMAKE. You may have to close and open the terminal to refresh</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgb8797b7" class="outline-3">
+<h3 id="orgb8797b7"><span class="section-number-3">2.3</span> PLplot</h3>
+<div class="outline-text-3" id="text-2-3">
+<ul class="org-ul">
+<li>Open up a terminal in your home directory. For this example we will install in a folder called ~/bin (/home/user/bin). The following commands downloads the necessary code</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-shell">mkdir bin
+<span style="color: #87ceeb;">cd</span> bin
+git clone git://git.code.sf.net/p/plplot/plplot plplot.git
+</pre>
+</div>
+<ul class="org-ul">
+<li>This will download the source code and put it into a folder. Ours will be called PLplotSrc, you may rename yours to this if you wish</li>
+<li>Before continuing we will need to add some path variables in our ~/.bashrc, open ~/.bashrc and write the following. This will tell PLplot to use the ifort compiler (This should be the path to the ifort compiler i.e. where ever you installed it)</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #87ceeb;">export</span> <span style="color: #ffc125;">FC</span>=/opt/intel/bin/ifort
+</pre>
+</div>
+<ul class="org-ul">
+<li>Back inside our ~/bin folder with our PLplotSrc sub directory, make the following directories</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-shell">mkdir buildDir
+mkdir installDir
+<span style="color: #87ceeb;">cd</span> buildDir
+</pre>
+</div>
+<ul class="org-ul">
+<li>Just in case, copy the file CMakeLists.txt into your buildDir directory which should be located in PLplotSrc</li>
+<li>We are now going to run the CMAKE command which has the following syntax</li>
+<li><b>MAKE SURE</b> you run this command whilst in the buildDir and <b>NOT</b> PLplotSrc or installDir</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-shell">cmake -DCMAKE_INSTALL_PREFIX=/path/to/installDir /path/to/PLplotSrc
+</pre>
+</div>
+<ul class="org-ul">
+<li>After the command finishes run the following</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-shell">make 
+sudo make install
+</pre>
+</div>
+<ul class="org-ul">
+<li>This should take a bit but whens its done you&rsquo;re almost finished!</li>
+<li>This should have filled your installDir with lovely source code. Now simply add the following to your ~/.bashrc (Double check the final files names as they may change with versions of PLplot</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #87ceeb;">export</span> <span style="color: #ffc125;">PKG_CONFIG_PATH</span>=$<span style="color: #ffc125;">PKG_CONFIG_PATH</span>:~/bin/installDir/lib/pkgconfig/
+<span style="color: #87ceeb;">export</span> <span style="color: #ffc125;">LD_LIBRARY_PATH</span>=$<span style="color: #ffc125;">LD_LIBRARY_PATH</span>:~/bin/installDir/lib/
+<span style="color: #87ceeb;">export</span> <span style="color: #ffc125;">LD_LIBRARY_PATH</span>=$<span style="color: #ffc125;">LD_LIBRARY_PATH</span>:~/bin/buildDir/bindings/fortran/
+</pre>
+</div>
+<ul class="org-ul">
+<li>Open and close the terminal, that should be everything</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org6b42087" class="outline-3">
+<h3 id="org6b42087"><span class="section-number-3">2.4</span> NumFort</h3>
+<div class="outline-text-3" id="text-2-4">
+<ul class="org-ul">
+<li>Download and move numFort repository files to specified location eg. /path/to/numFort</li>
+<li>Your final makefile should look something like this</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-shell">  <span style="color: #75715E;"># </span><span style="color: #999999; font-style: italic;">Fortran base MakeFile</span>
+<span style="color: #75715E;"># </span><span style="color: #999999; font-style: italic;">Directory to numFort</span>
+DIR = /path/to/numFort
+
+F90C = ifort
+F90FLAGS = -O2
+CFLAGS = -O2 -xHost -mkl
+
+PLPLOT = $<span style="color: #ffc125;">$</span><span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">pkg-config</span> --cflags --libs plplot-fortran<span style="color: #AE81FF;">)</span>
+LIBS = -lmkl_lapack95_lp64 -lplplotfortran -lplplot 
+MYLIBS = -I$<span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">DIR</span><span style="color: #AE81FF;">)</span>
+
+%.o: %.f90
+        $<span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">F90C</span><span style="color: #AE81FF;">)</span> $<span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">CFLAGS</span><span style="color: #AE81FF;">)</span> -c $&lt;
+
+<span style="color: #75715E;"># </span><span style="color: #999999; font-style: italic;">Library object files</span>
+LIBOBJS = $<span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">DIR</span><span style="color: #AE81FF;">)</span>lapack.o<span style="color: #E6DB74; font-weight: bold;">\</span>
+        $<span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">DIR</span><span style="color: #AE81FF;">)</span>numFort.o
+
+<span style="color: #75715E;"># </span><span style="color: #999999; font-style: italic;">Own personal object files</span>
+OBJS = 
+
+all: filename
+
+filename: filename.f90 
+        $<span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">F90C</span><span style="color: #AE81FF;">)</span> $<span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">CFLAGS</span><span style="color: #AE81FF;">)</span> -o $<span style="color: #ffc125;">@</span> $&lt; $<span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">OBJS</span><span style="color: #AE81FF;">)</span> $<span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">LIBOBJS</span><span style="color: #AE81FF;">)</span> $<span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">LIBS</span><span style="color: #AE81FF;">)</span> $<span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">PLPLOT</span><span style="color: #AE81FF;">)</span> $<span style="color: #AE81FF;">(</span><span style="color: #AE81FF; font-weight: bold;">MYLIBS</span><span style="color: #AE81FF;">)</span>
+
+clean:
+        rm *.o *.mod
+</pre>
+</div>
+<ul class="org-ul">
+<li><b>SOME IMPORTANT NOTES ON THE ABOVE MAKEFILE</b></li>
+
+<li>for the PLPLOT variable, plplot-fortran is the name of the pkg-config FORTRAN file located in installDir/lib/pkgconfig. It may have a different name for you (In this case for us it is called plplot-fortran.pc)</li>
+
+<li>DIR is the directory where you have put all the numFort source code</li>
+
+<li>The bash file <i>recompile.sh</i> in the repository can be used to recompile these libraries if you should choose to edit and add. Simply run with ./recompile.sh whilst in the directory. Alternatively one may run the following command in the terminal</li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #AE81FF;">(</span><span style="color: #87ceeb;">cd</span> /home/username/bin; ./recompile.sh<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>Include your own module files under the variable <b>OBJS</b>. Bonza, you should be ready to go</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org97c72eb" class="outline-2">
+<h2 id="org97c72eb"><span class="section-number-2">3</span> Documentation</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The two modules you may include are <i>kinds</i> and <i>numFort</i>. Simply include in any .f90 file via a simple use statement as per usual. 
+</p>
+<div class="org-src-container">
+<pre class="src src-fortran"><span style="color: #00ffff; font-weight: bold;">program</span> <span style="color: #00ff7f;">progName</span>
+      use kinds
+      use numFort
+
+      ...
+
+<span style="color: #00ffff; font-weight: bold;">end</span> progName
+</pre>
+</div>
+<p>
+Below we will give short descriptions of the module files and the subroutines and functions contained inside.
+</p>
+
+<p>
+Make sure to search for these functions inside numFort to see their parameters. A brief description of their parameters are listed below for <span class="underline">ALL</span> possible routine variants.
+</p>
+</div>
+
+<div id="outline-container-orgdb119c0" class="outline-3">
+<h3 id="orgdb119c0"><span class="section-number-3">3.1</span> Kinds</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+Precision parameter file. Main uses are for constants like pi and making variables double precision.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org55540e7" class="outline-3">
+<h3 id="org55540e7"><span class="section-number-3">3.2</span> NumFort</h3>
+<div class="outline-text-3" id="text-3-2">
+</div>
+<div id="outline-container-org4f359b2" class="outline-4">
+<h4 id="org4f359b2"><span class="section-number-4">3.2.1</span> Factorial</h4>
+<div class="outline-text-4" id="text-3-2-1">
+<p>
+Calculates the factorial of n
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">n</td>
+<td class="org-left">integer</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">factorial</td>
+<td class="org-left">outputted factorial</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-orgb15ff21" class="outline-4">
+<h4 id="orgb15ff21"><span class="section-number-4">3.2.2</span> Meshgrid</h4>
+<div class="outline-text-4" id="text-3-2-2">
+<p>
+Creates a unique lattice of points for two given vectors x and y. Usually used for making a 3D grid for 3 dimensional plots.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">x</td>
+<td class="org-left">double precision vector</td>
+</tr>
+
+<tr>
+<td class="org-left">y</td>
+<td class="org-left">double precision vector</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">XX</td>
+<td class="org-left">matrix of dimension (size(y),size(x))</td>
+</tr>
+
+<tr>
+<td class="org-left">YY</td>
+<td class="org-left">matrix of dimension (size(y),size(x))</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+<div id="outline-container-org96b0d9f" class="outline-4">
+<h4 id="org96b0d9f"><span class="section-number-4">3.2.3</span> Splinefit</h4>
+<div class="outline-text-4" id="text-3-2-3">
+<p>
+Fits a cubic spline to inputted data. This function can return the coefficients or just a list of desired points to be interpolated at.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">x</td>
+<td class="org-left">double precision vector</td>
+</tr>
+
+<tr>
+<td class="org-left">y</td>
+<td class="org-left">double precision vector</td>
+</tr>
+
+<tr>
+<td class="org-left">xj</td>
+<td class="org-left">this is the vector x for calculation use</td>
+</tr>
+
+<tr>
+<td class="org-left">intpts</td>
+<td class="org-left">points to interpolate at (vector)</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">intvals</td>
+<td class="org-left">outputted interpolant values</td>
+</tr>
+
+<tr>
+<td class="org-left">c</td>
+<td class="org-left">coefficients for spline fit</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-org3ef7f96" class="outline-4">
+<h4 id="org3ef7f96"><span class="section-number-4">3.2.4</span> PolyFit</h4>
+<div class="outline-text-4" id="text-3-2-4">
+<p>
+Exactly the same as SplineFit but for a Nth order polynomial.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">N</td>
+<td class="org-left">integer, order of polynomial</td>
+</tr>
+
+<tr>
+<td class="org-left">x</td>
+<td class="org-left">double precision vector</td>
+</tr>
+
+<tr>
+<td class="org-left">y</td>
+<td class="org-left">double precision vector</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">c</td>
+<td class="org-left">coefficient of fit</td>
+</tr>
+
+<tr>
+<td class="org-left">x</td>
+<td class="org-left">value to calculate polynomial at</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-orgb507e27" class="outline-4">
+<h4 id="orgb507e27"><span class="section-number-4">3.2.5</span> rk4</h4>
+<div class="outline-text-4" id="text-3-2-5">
+<p>
+Performs a 4th order Runge Kutta solving algorithm for a given DE. Algorithms giving for a single DE or 2 coupled DE. May have this method go over a range of points or just a single step.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">t0</td>
+<td class="org-left">initial value to start stepping at</td>
+</tr>
+
+<tr>
+<td class="org-left">tN</td>
+<td class="org-left">final value to step to</td>
+</tr>
+
+<tr>
+<td class="org-left">y0</td>
+<td class="org-left">initial y value</td>
+</tr>
+
+<tr>
+<td class="org-left">N</td>
+<td class="org-left">total number of points to step through</td>
+</tr>
+
+<tr>
+<td class="org-left">f</td>
+<td class="org-left">input function</td>
+</tr>
+
+<tr>
+<td class="org-left">h</td>
+<td class="org-left">step size</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">x</td>
+<td class="org-left">value to calculate polynomial at</td>
+</tr>
+
+<tr>
+<td class="org-left">t</td>
+<td class="org-left">outputted x values</td>
+</tr>
+
+<tr>
+<td class="org-left">y</td>
+<td class="org-left">outputted y values</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-org87aba27" class="outline-4">
+<h4 id="org87aba27"><span class="section-number-4">3.2.6</span> GuessZero</h4>
+<div class="outline-text-4" id="text-3-2-6">
+<p>
+Given a set of values or a function with boundaries, returns the approximate value of where the function changes sign. An index is returned for inputted values method and the x value exactly is returned for the function method.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">f</td>
+<td class="org-left">input function</td>
+</tr>
+
+<tr>
+<td class="org-left">fvals</td>
+<td class="org-left">list of y values for a function</td>
+</tr>
+
+<tr>
+<td class="org-left">a,b</td>
+<td class="org-left">range for zero guess</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">GuessZero</td>
+<td class="org-left">integer index of zero location</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-orgf025a38" class="outline-4">
+<h4 id="orgf025a38"><span class="section-number-4">3.2.7</span> Newton1D</h4>
+<div class="outline-text-4" id="text-3-2-7">
+<p>
+Performs a 1 dimensional newtons method to find the zero of a function.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">fn</td>
+<td class="org-left">Input function</td>
+</tr>
+
+<tr>
+<td class="org-left">guess</td>
+<td class="org-left">initial guess of zero of the function</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">newton1D</td>
+<td class="org-left">zero of function guess location</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-org6326a36" class="outline-4">
+<h4 id="org6326a36"><span class="section-number-4">3.2.8</span> Linspace</h4>
+<div class="outline-text-4" id="text-3-2-8">
+<p>
+Creates a linear space of points between a and b with N points.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">start</td>
+<td class="org-left">left bound</td>
+</tr>
+
+<tr>
+<td class="org-left">finish</td>
+<td class="org-left">right bound</td>
+</tr>
+
+<tr>
+<td class="org-left">N</td>
+<td class="org-left">number of points, integer</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">linspace</td>
+<td class="org-left">vector of points between a and b</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-orgccf858f" class="outline-4">
+<h4 id="orgccf858f"><span class="section-number-4">3.2.9</span> Deriv</h4>
+<div class="outline-text-4" id="text-3-2-9">
+<p>
+Numerically calculates the derivative via a centred finite difference method.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">f</td>
+<td class="org-left">Input function</td>
+</tr>
+
+<tr>
+<td class="org-left">x0</td>
+<td class="org-left">value to calculate</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">deriv</td>
+<td class="org-left">value of numerical derivative</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-org01ade21" class="outline-4">
+<h4 id="org01ade21"><span class="section-number-4">3.2.10</span> integral</h4>
+<div class="outline-text-4" id="text-3-2-10">
+<p>
+Numerically calculates an integral given a function and bounds. Using Gaussin quadrature.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">f</td>
+<td class="org-left">Input function</td>
+</tr>
+
+<tr>
+<td class="org-left">a</td>
+<td class="org-left">left bound</td>
+</tr>
+
+<tr>
+<td class="org-left">b</td>
+<td class="org-left">right bound</td>
+</tr>
+
+<tr>
+<td class="org-left">absErr</td>
+<td class="org-left">absolute error</td>
+</tr>
+
+<tr>
+<td class="org-left">relErr</td>
+<td class="org-left">relative error</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">integral</td>
+<td class="org-left">numerical value of integral</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf4e99d2" class="outline-3">
+<h3 id="orgf4e99d2"><span class="section-number-3">3.3</span> PLplot</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+Call PLplot by using the subroutine plot() for example, this will call various wrappers to plplot which can be found within numFort. Below is a list of said wrappers and their arguments. Axes labels and title may be omitted in all below routines if one wishes.
+</p>
+</div>
+
+<div id="outline-container-orga66e583" class="outline-4">
+<h4 id="orga66e583"><span class="section-number-4">3.3.1</span> plot</h4>
+<div class="outline-text-4" id="text-3-3-1">
+<p>
+Can be called in the two following ways
+</p>
+<div class="org-src-container">
+<pre class="src src-fortran"><span style="color: #00cd00;">real</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">DP</span><span style="color: #AE81FF;">)</span>,<span style="color: #00cd00;">dimension</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">N</span>,<span style="color: #ffc125;">M</span><span style="color: #AE81FF;">)</span> :: <span style="color: #00cd00;">data</span> <span style="color: #75715E;">! </span><span style="color: #999999; font-style: italic;">x values in columns 1,3,.. y values in 2,4,...</span>
+<span style="color: #00cd00;">real</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">DP</span><span style="color: #AE81FF;">)</span>,<span style="color: #00cd00;">dimension</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">N</span><span style="color: #AE81FF;">)</span>   :: x,y
+<span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">haracter(len=*)        :: xlabel,ylabel,title</span>
+
+<span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">all plot(x,y,xlabel,ylabel,title)</span>
+<span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">all plot(data,xlabel,ylabel,title)</span>
+</pre>
+</div>
+<p>
+produces a standard x vs y plot. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1d29dfb" class="outline-4">
+<h4 id="org1d29dfb"><span class="section-number-4">3.3.2</span> scatterplot</h4>
+<div class="outline-text-4" id="text-3-3-2">
+<p>
+Can be called in the two following ways
+</p>
+<div class="org-src-container">
+<pre class="src src-fortran"><span style="color: #00cd00;">real</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">DP</span><span style="color: #AE81FF;">)</span>,<span style="color: #00cd00;">dimension</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">N</span><span style="color: #AE81FF;">)</span>   :: x,y
+<span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">haracter(len=*)        :: xlabel,ylabel,title,style ! style = "+" for example</span>
+
+<span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">all scatterplot(x,y,style,xaxis,yaxis,title)</span>
+</pre>
+</div>
+<p>
+produces a standard scatter plot of x vs y.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org947f68d" class="outline-4">
+<h4 id="org947f68d"><span class="section-number-4">3.3.3</span> surf</h4>
+<div class="outline-text-4" id="text-3-3-3">
+<p>
+Can be called in the two following ways
+</p>
+<div class="org-src-container">
+<pre class="src src-fortran"><span style="color: #00cd00;">real</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">DP</span><span style="color: #AE81FF;">)</span>,<span style="color: #00cd00;">dimension</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">N</span><span style="color: #AE81FF;">)</span>   :: X
+<span style="color: #00cd00;">real</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">DP</span><span style="color: #AE81FF;">)</span>,<span style="color: #00cd00;">dimension</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">M</span><span style="color: #AE81FF;">)</span>   :: Y
+<span style="color: #00cd00;">real</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">DP</span><span style="color: #AE81FF;">)</span>,<span style="color: #00cd00;">dimension</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">M</span>,<span style="color: #ffc125;">N</span><span style="color: #AE81FF;">)</span> :: Z
+<span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">haracter(len=*)        :: xlabel,ylabel,zlabel,title</span>
+
+<span style="color: #75715E;">! </span><span style="color: #999999; font-style: italic;">usually create the grids for Z using "call meshgrid(x,y,XX,YY)"</span>
+<span style="color: #75715E;">! </span><span style="color: #999999; font-style: italic;">XX = MxN and YY = MxN</span>
+
+<span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">all surf(X,Y,Z,xlabel,ylabel,zlabel,title)</span>
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org43d4a2b" class="outline-4">
+<h4 id="org43d4a2b"><span class="section-number-4">3.3.4</span> scatter3D</h4>
+<div class="outline-text-4" id="text-3-3-4">
+<p>
+Can be called in the two following ways
+</p>
+<div class="org-src-container">
+<pre class="src src-fortran"> <span style="color: #00cd00;">real</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">DP</span><span style="color: #AE81FF;">)</span>,<span style="color: #00cd00;">dimension</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">N</span><span style="color: #AE81FF;">)</span>   :: x,y,z
+ <span style="color: #00cd00;">character</span><span style="color: #AE81FF;">(</span><span style="color: #ffc125;">len</span>=*<span style="color: #AE81FF;">)</span>        :: xlabel,ylabel,zlabel,title
+
+<span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">all scatter3D(X,Y,Z,xlabel,ylabel,zlabel,title)</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Anthony Kalaitzis</p>
+<p class="date">Created: 2018-08-13 Mon 00:02</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
