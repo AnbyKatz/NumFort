@@ -1,30 +1,142 @@
 #+AUTHOR: Anthony Kalaitzis
+#+EMAIL: anthony.kalaitzis@gmail.com
 #+TITLE: numFort
 
 * Description
-numFort is a numerical library for fortran that includes quadpack and lapack source code and integrates common matlab and plotting functionality through python code.
+numFort is a numerical library for FORTRAN that includes quadpack, lapack and PLplot source code. It enables the use of handy mathematical macros such as linspace.
 
-* Installation
-1. Before using numFort, make sure to download the ifort compiler and the necessary math kernel libraries for the use of LAPACK. These may be downloaded from the following link (free for students) [[https://software.intel.com/en-us/qualify-for-free-software/student][Parallel studio XE]], click the C++ link unless on mac.
-2. Move repository files to specified location eg. /home/username/bin
-3. edit the following variables in the example make files.
-
-#+BEGIN_SRC 
-# Path to pre-compiled object files
-MYLIBS = -I/home/username/bin
-DIR = /home/username/bin
+* Installation - Linux/Unix
+** ifort
+- Before using numFort, make sure to download the ifort compiler and the necessary math kernel libraries for the use of LAPACK. These may be downloaded from the following link (free for students) [[https://software.intel.com/en-us/qualify-for-free-software/student][Parallel studio XE]], click the C++ link unless on mac
+- Simply download the custom install, extract to a location and run under sudo privileges like so
+#+BEGIN_SRC shell
+  sudo ./install.sh
 #+END_SRC
+- Make sure to check the math kernel for install
+- After installation you may need to export the path to the *ifort* compiler. Add code similar to below in your ~/.bashrc. Your exact path for the above libraries might be different (probably just different numbers for 2018.3.222)
+#+BEGIN_SRC shell
+  source /opt/intel/bin/compilervars.sh intel64
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/intel/compilers_and_libraries_2018.3.222/linux/mkl/lib/intel64_lin/
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/intel/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/
+#+END_SRC
+- Close and open the terminal to refresh
+- Check that it's working by typing
+#+BEGIN_SRC shell
+  ifort --version
+#+END_SRC
+- Your ifort version should display
+** Cmake
+- Download Cmake source code for linux from the following link [[https://cmake.org/download/][CMAKE]]
+- Extract the Cmake folder and then open a terminal and move inside
+- Type the following commands to install Cmake
+#+BEGIN_SRC shell
+  ./bootstrap
+  sudo make
+  sudo make install
+#+END_SRC
+- Check the installation was successful by opening and closing the terminal, and then typing
+#+BEGIN_SRC shell
+  cmake --version
+#+END_SRC
+- This should print a value for your working version of CMAKE. You may have to close and open the terminal to refresh
+** PLplot
+- Open up a terminal in your home directory. For this example we will install in a folder called ~/bin (/home/user/bin). The following commands downloads the necessary code
+#+BEGIN_SRC shell
+  mkdir bin
+  cd bin
+  git clone git://git.code.sf.net/p/plplot/plplot plplot.git
+#+END_SRC
+- This will download the source code and put it into a folder. Ours will be called PLplotSrc, you may rename yours to this if you wish
+- Before continuing we will need to add some path variables in our ~/.bashrc, open ~/.bashrc and write the following. This will tell PLplot to use the ifort compiler (This should be the path to the ifort compiler i.e. where ever you installed it)
+#+BEGIN_SRC shell
+  export FC=/opt/intel/bin/ifort
+#+END_SRC
+- Back inside our ~/bin folder with our PLplotSrc sub directory, make the following directories 
+#+BEGIN_SRC shell
+  mkdir buildDir
+  mkdir installDir
+  cd buildDir
+#+END_SRC
+- Just in case, copy the file CMakeLists.txt into your buildDir directory which should be located in PLplotSrc
+- We are now going to run the CMAKE command which has the following syntax 
+- *MAKE SURE* you run this command whilst in the buildDir and *NOT* PLplotSrc or installDir
+#+BEGIN_SRC shell
+  cmake -DCMAKE_INSTALL_PREFIX=/path/to/installDir /path/to/PLplotSrc
+#+END_SRC
+- After the command finishes run the following
+#+BEGIN_SRC shell
+  make 
+  sudo make install
+#+END_SRC
+- This should take a bit but whens its done you're almost finished!
+- This should have filled your installDir with lovely source code. Now simply add the following to your ~/.bashrc (Double check the final files names as they may change with versions of PLplot
+#+BEGIN_SRC shell
+  export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:~/bin/installDir/lib/pkgconfig/
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/bin/installDir/lib/
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/bin/buildDir/bindings/fortran/
+#+END_SRC
+- Open and close the terminal, that should be everything
 
-4. The bash file /recompile.sh/ in the repository can be used to recompile these libraries. Simply run with ./recompile.sh whilst in the directory. Alternatively one may run the following command in the terminal.
+** NumFort
+- Download and move numFort repository files to specified location eg. /path/to/numFort
+- Your final makefile should look something like this
+#+BEGIN_SRC shell
+  # Fortran base MakeFile
+# Directory to numFort
+DIR = /path/to/numFort
+
+F90C = ifort
+F90FLAGS = -O2
+CFLAGS = -O2 -xHost -mkl
+
+PLPLOT = $$(pkg-config --cflags --libs plplot-fortran)
+LIBS = -lmkl_lapack95_lp64 -lplplotfortran -lplplot 
+MYLIBS = -I$(DIR)
+
+%.o: %.f90
+	$(F90C) $(CFLAGS) -c $<
+
+# Library object files
+LIBOBJS = $(DIR)lapack.o\
+	$(DIR)numFort.o
+
+# Own personal object files
+OBJS = 
+
+all: filename
+
+filename: filename.f90 
+	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBOBJS) $(LIBS) $(PLPLOT) $(MYLIBS)
+
+clean:
+	rm *.o *.mod
+#+END_SRC
+- *SOME IMPORTANT NOTES ON THE ABOVE MAKEFILE*
+
+- for the PLPLOT variable, plplot-fortran is the name of the pkg-config FORTRAN file located in installDir/lib/pkgconfig. It may have a different name for you (In this case for us it is called plplot-fortran.pc)
+
+- DIR is the directory where you have put all the numFort source code
+
+- The bash file /recompile.sh/ in the repository can be used to recompile these libraries if you should choose to edit and add. Simply run with ./recompile.sh whilst in the directory. Alternatively one may run the following command in the terminal
 
 #+BEGIN_SRC shell
   (cd /home/username/bin; ./recompile.sh)
 #+END_SRC
 
-5. Include your own module files under the variable *OBJS*. Bonza, you should be ready to go.
+- Include your own module files under the variable *OBJS*. Bonza, you should be ready to go
 
 * Documentation
-The three modules you may include are /kinds/, /numFort/ and /pyplots/. Simply include in any .f90 file via a simple use statement as per usual. Below we will give short descriptions of the module files and the subroutines and functions contained inside.
+The two modules you may include are /kinds/ and /numFort/. Simply include in any .f90 file via a simple use statement as per usual. 
+#+BEGIN_SRC fortran
+  program progName
+        use kinds
+        use numFort
+
+        ...
+
+  end progName
+#+END_SRC
+Below we will give short descriptions of the module files and the subroutines and functions contained inside.
 
 Make sure to search for these functions inside numFort to see their parameters. A brief description of their parameters are listed below for _ALL_ possible routine variants.
 
@@ -170,16 +282,16 @@ Numerically calculates an integral given a function and bounds. Using Gaussin qu
 | integral | numerical value of integral |
 |----------+-----------------------------|
 
-** Pyplots
-Using the python code /pyplots.py/ (make sure this file is copied into the directory you are running from), produces a plot given various inputs specified in the subroutine. Inputs may be multidimensional arrays with the x values in the 1,3,5,.. columns and the y values in 2,4,6,... Alternatively one may simply enter two vectors x,y and use these.
+** PLplot
+
+Call PLplot by using the subroutine plot(), It can be then called under a normal syntax like plot(x,y,xlabel,ylabel,title) or even plot(MATRIX). Make sure that you either include all axes labels and title or neither.
 
 |----------+---------------------------------------------|
 | Variable | Description                                 |
 |----------+---------------------------------------------|
 | x        | matrix of values or vector                  |
 | y        | vector of values                            |
-| xaxis    | x axis label                                |
-| yaxis    | y axis label                                |
-| legend   | legend of inputed data (for multiple plots) |
+| xlabel   | x axis label                                |
+| ylabel   | y axis label                                |
+| title    | Title for the plots                         |
 |----------+---------------------------------------------|
-

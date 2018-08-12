@@ -1,29 +1,29 @@
 # Fortran base MakeFile
-# add links to libaries if needed
+# Directory to numFort
+DIR = /home/anthony/Dropbox/Code/Fortran/f90-toolbox/
 
 F90C = ifort
 F90FLAGS = -O2
-CFLAGS = -O2 -mkl
-LIBS = -lmkl_lapack95_lp64
+CFLAGS = -O2 -xHost -mkl
 
-# Path to pre-compiled object files
-MYLIBS = -I/home/anthony/Dropbox/Code/Fortran/f90-toolbox/
-DIR = /home/anthony/Dropbox/Code/Fortran/f90-toolbox/
+PLPLOT = $$(pkg-config --cflags --libs plplot-fortran)
+LIBS = -lmkl_lapack95_lp64 -lplplotfortran -lplplot 
+MYLIBS = -I$(DIR)
 
 %.o: %.f90
 	$(F90C) $(CFLAGS) -c $<
 
-# Modules below
+# Library object files
 LIBOBJS = $(DIR)lapack.o\
 	$(DIR)numFort.o
 
-# Add specific object files
+# Own personal object files
 OBJS = 
 
-all: fileName
+all: filename
 
-fileName: fileName.f90 $(OBJ)
-	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBOBJS) $(LIBS) $(MYLIBS)
+filename: filename.f90 
+	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBOBJS) $(LIBS) $(PLPLOT) $(MYLIBS)
 
 clean:
 	rm *.o *.mod

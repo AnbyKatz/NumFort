@@ -4,68 +4,902 @@
 ! Numerical library for fortran. Use the following module titles              !
 ! to Move Around easily.                                                      !
 !                                                                             !
-! 1. kinds                                                                    !
-! 2. Quadpack                                                                 !
-! 3. NumFort                                                                  !
-! 4. Pyplots                                                                  !
+! 1. NumFort                                                                  !
+! 2. QuadPack                                                                 !
 !                                                                             !
 ! Below contains a list of the function names inside numFort for easier       !
 ! navigation purposes.                                                        !
 !                                                                             !
-! - Factorial                                                                 ! 
-! - Meshgrid                                                                  !
-! - Splinefit                                                                 !
-! - Polyfit                                                                   !
+! - factorial                                                                 ! 
+! - meshgrid                                                                  !
+! - splinefit                                                                 !
+!   - splinefitCoeff                                                          !
+!   - Spinevals                                                               !
+! - polyfit                                                                   !
+!   - polyCal                                                                 !
 ! - rk4                                                                       !
-! - GuessZero                                                                 !
+!   - rk4Step                                                                 !
+!   - rk42DE                                                                  !
+! - guessZero                                                                 !
+!   - guessZeroNew                                                            !
 ! - Newton1D                                                                  !
 ! - linspace                                                                  !
+!   - linspaceReal                                                            !
+!   - linspaceInt                                                             !
 ! - deriv                                                                     !
 ! - integral                                                                  !
 ! - plot                                                                      !
+!   - plotNolabels                                                            !
+!   - plotMany                                                                !
+!   - plotManyNolabels                                                        !
 !                                                                             !
 !*****************************************************************************!
+
+!---------------------------------------------------------------------!
+!                                                                     !
+!                      NumFort numerical library                      !
+!                                                                     !
+!---------------------------------------------------------------------!
+
+module numFort
+  use kinds
+  use quadpack
+  use LAPACK95
+  use plplot
+  implicit none
+
+  real(DP), parameter :: Infty = huge(1.0_DP)
+  integer  :: neval, ifail
+  real(DP) :: errEstimate
+
+  interface linspace
+     module procedure linspace,linspaceReal
+  end interface linspace
+  interface integral
+     module procedure integral, integralToInfty, integralOf, integralBreakPts
+  end interface integral
+  interface rk4
+     module procedure rk4,rk42DE,rk4Step
+  end interface rk4
+  interface splinefit
+     module procedure splinefit,splinefitCoeff
+  end interface splinefit
+  interface GuessZero
+     module procedure GuessZero,GuessZeroNew
+  end interface GuessZero
+  interface plot
+     module procedure plot,plotNoLabels,plotmany,plotmanyNoLabels
+  end interface plot
+
+contains
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                      Useful Mathamatical functions                  !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  function factorial(n)
+    implicit none
+
+    integer,intent(in) :: n
+    integer            :: factorial
+
+    integer            :: i
+
+    factorial = 1
+
+    do i = 1,n
+       factorial = factorial*i
+    end do
+
+  end function factorial
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                               MeshGrid                              !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! creates a unique lattice of points given 2 vectors x,y of length    !
+  ! N and M. Can be used for 3d plots. See Matlab meshgrid              !
+  ! documentation for more details                                      !
+  !---------------------------------------------------------------------!
+
+  subroutine meshgrid(x,y,XX,YY)
+    use kinds
+    implicit none
+
+    real(DP),dimension(:),intent(in)    :: x
+    real(DP),dimension(:),intent(in)    :: y
+    real(DP),dimension(:,:),intent(out) :: XX,YY
+
+    integer :: i,j,rows,cols
+
+    rows = size(x)
+    cols = size(y)    
+
+    do j = 1,cols
+       XX(j,1:rows) = x(1:rows)
+    end do
+    do j = 1,rows
+       YY(1:cols,j) = y(1:cols)
+    end do
+
+  end subroutine meshgrid
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                           Cubic Spline Fit                          !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Fits a cubic spline to input data. First version fits and outputs   !
+  ! values at specified interpolated points. Next version returns       !
+  ! the coefficients of the cubic spline fit which can then be passed   !
+  ! to the next function to evaluate the spline at a certain x.         !
+  !                                                                     !
+  ! Uses Lapack for necessary linear algebra                            !
+  !---------------------------------------------------------------------!
+
+  subroutine splinefit(x,y,intpts,intvals)
+    use kinds
+    use LAPACK95
+    implicit none 
+
+    real(DP),dimension(:),intent(in)    :: x,y
+    real(DP),dimension(:),intent(in)    :: intpts
+    real(DP),dimension(:),intent(out)   :: intvals
+
+    integer                             :: N
+    real(DP),dimension(:,:),allocatable :: A,B
+    integer ,dimension(:)  ,allocatable :: ipiv
+    integer                             :: i,j
+
+    N = size(x)
+    allocate(A(N,N),B(N,1),ipiv(N))
+
+    B(:,1) = y(:)
+    A(:,1) = 1.0_DP
+    A(:,2) = x(:)
+    do i = 1,N
+       do j = 3,N
+          A(i,j) = abs(x(i)-x(j-1))
+       end do
+    end do
+    call getrf(A,ipiv)
+    call getrs(A,ipiv,B)    
+    do i = 1,size(intpts)
+       intvals(i) = B(1,1) + B(2,1)*intpts(i)+&
+            & sum( B(3:N,1)*abs(intpts(i)-x(2:N-1)) )
+    end do
+
+    deallocate(A,B,ipiv)
+
+  end subroutine splinefit
+
+  subroutine splinefitCoeff(x,y,c)
+    use kinds
+    use LAPACK95
+    implicit none 
+
+    real(DP),dimension(:),intent(in)    :: x,y
+    real(DP),dimension(:),intent(out)   :: c
+
+    integer                             :: N
+    real(DP),dimension(:,:),allocatable :: A,B
+    integer ,dimension(:)  ,allocatable :: ipiv
+    integer                             :: i,j
+
+    N = size(x)
+    allocate(A(N,N),B(N,1),ipiv(N))
+
+    B(:,1) = y(:)
+    A(:,1) = 1.0_DP
+    A(:,2) = x(:)
+    do i = 1,N
+       do j = 3,N
+          A(i,j) = abs(x(i)-x(j-1))
+       end do
+    end do
+    call getrf(A,ipiv)
+    call getrs(A,ipiv,B)       
+    c(:) = B(:,1)
+
+    deallocate(A,B,ipiv)
+
+  end subroutine splinefitCoeff
+
+  function splineVals(c,xj,x)
+    use kinds
+    implicit none
+
+    real(DP),dimension(:),intent(in) :: c,xj
+    real(DP),intent(in) :: x
+    real(DP) :: splinevals
+
+    integer :: N
+
+    N = size(c)
+    splinevals = c(1)+c(2)*x+sum(c(3:N)*abs(x-xj(2:N-1)))
+
+  end function splineVals
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                               PolyFit                               !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! N dimensional polynomial fitting algorithim which outputs the       !
+  ! coefficitents of the fit. Can then be passed into polycal to        !
+  ! evaluate the fit at a certain point.                                !
+  !                                                                     !
+  ! Uses Lapack for necessary linear algebra                            !
+  !---------------------------------------------------------------------!
+
+  function polyCal(N,c,x)
+    implicit none 
+
+    integer ,intent(in)                :: N
+    real(DP),dimension(N+1),intent(in) :: c
+    real(DP)               ,intent(in) :: x
+
+    real(DP)                           :: polycal
+    real(DP),dimension(N+1)            :: xx
+    integer ,dimension(N+1)            :: indexx
+    integer                            :: i
+
+    do i = 0,N
+       indexx(i+1) = N-i
+    end do
+    xx = x**indexx
+    polycal = sum(c*xx)
+
+  end function polycal
+
+  subroutine polyfit(x,y,N,c)    
+    use kinds
+    use LAPACK95
+    implicit none
+
+    integer ,intent(in)              :: N
+    real(DP),dimension(:),intent(in) :: x,y    
+    real(DP),dimension(N+1),intent(out) :: c
+
+    real(DP),dimension(N+1,N+1) :: A
+    real(DP),dimension(N+1,1) :: B
+    integer ,dimension(N+1)   :: ipiv
+
+    integer :: i,j,L
+
+    if ( N > size(x) ) then
+       write(*,'(a)') "Error, order of polynomial must be less then the number of entered points"
+    else
+
+       L = N+1
+       do i = 1,L
+          do j = 1,L          
+             A(i,j) = x(i)**(L-j)
+          end do
+          B(i,1) = y(i)
+       end do
+
+       call getrf(A,ipiv)
+       call getrs(A,ipiv,B)
+
+       c(:) = B(:,1)
+
+    end if
+
+  end subroutine polyfit
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                       Runge Kutta 4th Order                         !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Runge Kutta calculation for input function(s). For a single step    !
+  ! or a range of specified values. Algorithims for a single DE or      !
+  ! two coupled DE's.                                                   !
+  !---------------------------------------------------------------------!
+
+  subroutine rk4(t0,tN,y0,N,f,t,y)
+    use kinds
+    implicit none
+
+    real(DP),intent(in) :: t0,tN,y0
+    integer ,intent(in) :: N
+    interface
+       function f(t,y)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: t,y
+       end function f
+    end interface
+    real(DP),dimension(N),intent(out) :: y,t
+
+    real(DP) :: h,k1,k2,k3,k4
+    integer  :: i
+
+    h = (tN-t0)/N
+    t(1) = t0
+    t(N) = tN
+    do i = 2,N-1
+       t(i) = t(0) + h*(i-1)
+    end do
+    y(:) = 0
+    y(1) = y0
+    do i = 1,N-1
+       k1 = f(t(i),y(i))
+       k2 = f(t(i)+0.5_dp*h,y(i)+0.5_dp*h*k1)
+       k3 = f(t(i)+0.5_dp*h,y(i)+0.5_dp*h*k2)
+       k4 = f(t(i)+h,y(i)+k3*h)       
+       y(i+1) = y(i) + (1/6.0_dp)*(k1+2*k2+2*k3+k4)*h
+    end do
+
+  end subroutine rk4
+
+  subroutine rk4Step(h,t0,y0,f,y)
+    use kinds
+    implicit none
+
+    real(DP),intent(in) :: h,t0,y0
+    interface
+       function f(t,y)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: t,y
+       end function f
+    end interface
+    real(DP),intent(out) :: y
+
+    real(DP) :: k1,k2,k3,k4
+
+    k1 = f(t0,y0)
+    k2 = f(t0+0.5_dp*h,y0+0.5_dp*h*k1)
+    k3 = f(t0+0.5_dp*h,y0+0.5_dp*h*k2)
+    k4 = f(t0+h,y0+k3*h)       
+    y = y0 + (1/6.0_dp)*(k1+2*k2+2*k3+k4)*h
+
+  end subroutine rk4Step
+
+  subroutine rk42DE(h,t0,y0,f,g,y1,y2)
+    use kinds
+    implicit none
+
+    real(DP),dimension(2) ,intent(in) :: y0
+    real(DP),intent(in)               :: h,t0
+    interface
+       function f(t,y1,y2)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: t,y1,y2
+       end function f
+    end interface
+    interface
+       function g(t,y1,y2)
+         use kinds
+         implicit none
+         real(DP)             :: g
+         real(DP) ,intent(in) :: t,y1,y2
+       end function g
+    end interface
+    real(DP),intent(out) :: y1,y2
+
+    real(DP) :: k1,k2,k3,k4,l1,l2,l3,l4
+
+    k1 = f(t0,y0(1),y0(2))
+    l1 = g(t0,y0(1),y0(2))
+    k2 = f(t0+0.5_dp*h,y0(1)+0.5_dp*h*k1,y0(2)+0.5_dp*h*l1)
+    l2 = g(t0+0.5_dp*h,y0(1)+0.5_dp*h*k1,y0(2)+0.5_dp*h*l1)
+    k3 = f(t0+0.5_dp*h,y0(1)+0.5_dp*h*k2,y0(2)+0.5_dp*h*l2)
+    l3 = g(t0+0.5_dp*h,y0(1)+0.5_dp*h*k2,y0(2)+0.5_dp*h*l2)
+    k4 = f(t0+h,y0(1)+k3*h,y0(2)+l3*h)
+    l4 = g(t0+h,y0(1)+k3*h,y0(2)+l3*h)       
+    y1 = y0(1) + (1/6.0_dp)*(k1+2*k2+2*k3+k4)*h
+    y2 = y0(2) + (1/6.0_dp)*(l1+2*l2+2*l3+l4)*h
+
+  end subroutine rk42DE
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                               Guess Zero                            !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Returns the points where a function changes sign. Can be an input   !
+  ! function of an input set of values.                                 !
+  !---------------------------------------------------------------------!
+
+  function guessZero(fvals)
+    use Kinds
+    implicit none
+    real(DP),dimension(:),intent(in) :: fvals
+    integer                          :: GuessZero
+
+    integer                          :: jj
+
+    do jj=3,size(fvals)
+       if ( sign( fvals(jj-1)/abs(fvals(jj-1)) , fvals(jj)/abs(fvals(jj)) ) .ne. &
+            sign( fvals(jj-2)/abs(fvals(jj-2)) , fvals(jj-1)/abs(fvals(jj-1)) ) ) exit
+    end do
+
+    GuessZero = jj
+
+  end function GuessZero
+
+  function guessZeroNew(f,a,b)
+    use kinds
+    implicit none
+
+    real(DP),intent(in) :: a,b
+    real(DP)            :: GuessZeroNew
+    interface
+       function f(x)
+         use kinds
+         implicit none
+         real(DP),intent(in) :: x
+         real(DP)            :: f
+       end function f
+    end interface
+
+    real(DP) :: h,fval
+    integer :: i,sign,newsign,N
+
+    h = a*1e-4
+    N = int((b-a)/h)
+    fval = f(a)
+    sign = int(fval/abs(fval))
+
+    do i = 1,N
+       fval = f(a+i*h)
+       newsign = int(fval/abs(fval))
+       if ( newsign .ne. sign ) exit
+    end do
+    if ( i .eq. N ) then
+       write(*,*) "Error Max itterations reached"
+    else       
+       GuessZeroNew = a+i*h
+    end if
+
+  end function GuessZeroNew
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                         Newtons Method                              !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Newtons method for an input function of 1 variable                  !
+  !                                                                     !
+  !                 CODE WRITTEN BY CURTIS ABELL                        !
+  !---------------------------------------------------------------------!
+
+  function newton1D(fn,guess)
+    use Kinds
+    implicit none
+    real(DP) :: newton1D
+    interface
+       function fn(x)
+         use kinds
+         implicit none
+         real(DP)             :: fn
+         real(DP), intent(in) :: x
+       end function fn
+    end interface
+    real(DP) :: guess
+    ! Local Variables
+    real(DP) :: newt_tol = 1e-6
+    real(DP) :: h ! = 1e-6_DP
+    real(DP) :: fx, fxfh,fxbh, dfdx 
+    integer :: attempt
+    integer :: attempt_limit = 20
+    logical :: verbose = .false.
+
+    if (verbose) write(*,*) 'Newton-Raphson Method'
+    h = guess * 1.0e-6_DP
+    newton1D = guess
+    attempt = 1
+
+    do
+       fx = fn(newton1D)
+       if (abs(fx) <= newt_tol) then
+          if (verbose) then
+             write(*,'(a,i3,a)') 'Success after', attempt, ' attempts.'
+             write(*,*) 'Zero  = ', newton1D
+          end if
+          exit
+       else if (attempt >= attempt_limit) then
+          write(*,*) 'Failed, change initial guess or increase attempt limit.'
+          exit
+       end if
+
+       fxfh = fn(newton1D + h/2)
+       fxbh = fn(newton1D - h/2)
+       dfdx = (fxfh-fxbh) / h
+       newton1D = newton1D - fx / dfdx
+
+       attempt = attempt + 1
+    end do
+  end function newton1D
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                               Linspace                              !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Creates a linear space of points. See matlab documentation for      !
+  ! further details.                                                    !
+  !---------------------------------------------------------------------!
+
+  function linspace(start,finish,N)
+    integer                :: N
+    real(DP), intent(in)   :: start, finish
+    real(DP), dimension(N) :: linspace
+
+    real(DP)               :: int
+    integer                :: i
+
+    linspace(1) = start
+    linspace(N) = finish
+    int  = (real(finish)-start)/(N-1)
+
+    do i=2,N-1
+       linspace(i)=linspace(i-1)+int
+    end do
+
+  end function linspace
+
+  function linspaceReal(start,finish,N)
+    integer                :: N
+    real, intent(in)       :: start, finish
+    real, dimension(N)     :: linspaceReal
+
+    real(DP)               :: int
+    integer                :: i
+
+    linspaceReal(1) = start
+    linspaceReal(N) = finish
+    int  = (real(finish)-start)/(N-1)
+
+    do i=2,N-1
+       linspaceReal(i)=linspaceReal(i-1)+int
+    end do
+
+  end function linspaceReal
+
+  function linspaceInt(start,finish,N)
+    integer                :: N
+    integer, intent(in)       :: start, finish
+    integer, dimension(N)     :: linspaceInt
+
+    real(DP)               :: int
+    integer                :: i
+
+    linspaceInt(1) = start
+    linspaceInt(N) = finish
+    int  = (real(finish)-start)/(N-1)
+
+    do i=2,N-1
+       linspaceInt(i)=linspaceInt(i-1)+int
+    end do
+
+  end function linspaceInt
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                          Finite difference                          !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Numerically calculates the derivative with finite difference        !
+  !---------------------------------------------------------------------!
+
+  function deriv(f,x0)
+    use Kinds
+    implicit none
+    real(DP)                 :: deriv
+    interface
+       function f(x)
+         use kinds
+         implicit none
+         real(DP)            :: f
+         real(DP),intent(in) :: x
+       end function f
+    end interface
+    real(DP),intent(in)      :: x0
+    real(DP)                 :: h,fxfh,fxbh
+
+    h     = x0*1e-6_DP
+    fxfh  = f(x0+h/2)
+    fxbh  = f(x0-h/2)    
+    deriv = (fxfh-fxbh)/h
+
+  end function deriv
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                      QuadPack Integral wrapper                      !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Wrappers for the Quadpack integral routine shown above.             !
+  !---------------------------------------------------------------------!
+
+
+  function integral(f, a, b, absErr, relErr)
+    implicit none
+    real(DP)                  :: integral
+    interface                                   ! Interfaces: Sections 5.11, 5.18
+       function f(x)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: x
+       end function f
+    end interface
+    real(DP), intent(in)      :: a, b, absErr, relErr
+
+    !  Local variables
+    !
+    real(DP)                  :: integResult, bound=0.0_DP
+    integer                   :: inf
+
+    !  Determine if the limits include infinity and call qagi if nessary
+    !
+    if (a == -Infty) then
+       if (b == Infty) then
+          inf=2
+          call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
+          if ( ifail /= 0 ) then
+             write(*,*) 'Warning from qagi: the error code is ', ifail
+          end if
+       else
+          inf = -1
+          bound = b
+          call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
+          if ( ifail /= 0 ) then
+             write(*,*) 'Warning from qagi: the error code is ', ifail
+          end if
+       end if
+    else 
+       if (b == Infty) then
+          inf = 1
+          bound = a
+          call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
+          if ( ifail /= 0 ) then
+             write(*,*) 'Warning from qagi: the error code is ', ifail
+          end if
+       else
+          call qags(f, a, b, absErr, relErr, integResult, errEstimate, neval, ifail)
+          if ( ifail /= 0 ) then
+             write(*,*) 'Warning from qags: the error code is ', ifail
+          end if
+       end if
+    end if
+    integral = integResult
+
+  end function integral
+
+
+  function integralToInfty(f, bound, absErr, relErr)
+    implicit none
+    real(DP)                  :: integralToInfty
+    interface
+       function f(x)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: x
+       end function f
+    end interface
+    real(DP), intent(in)      :: bound, absErr, relErr
+
+    !  Local variables
+    !
+    real(DP)                  :: integResult
+    integer, parameter        :: inf=1
+
+    call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
+    if ( ifail /= 0 ) then
+       write(*,*) 'Warning from qagi: the error code is ', ifail
+    end if
+    integralToInfty = integResult
+
+  end function integralToInfty
+
+
+  function integralOf(f, absErr, relErr)
+    implicit none
+    real(DP)                  :: integralOf
+    interface
+       function f(x)
+         implicit none
+         integer,  parameter  :: DP = kind(1.0d0)
+         real(DP)             :: f
+         real(DP), intent(in) :: x
+       end function f
+    end interface
+    real(DP), intent(in)      :: absErr, relErr
+
+    !  Local variables
+    !
+    real(DP)                  :: integResult, bound=0.0d0
+    integer, parameter        :: inf=2
+
+    call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
+    if ( ifail /= 0 ) then
+       write(*,*) 'Warning from qagi: the error code is ', ifail
+    end if
+    integralOf = integResult
+
+  end function integralOf
+
+
+  function integralBreakPts(f, a, b, absErr, relErr, nBreakPts, BreakPts)
+    implicit none
+    real(DP)                  :: integralBreakPts
+    interface
+       function f(x)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: x
+       end function f
+    end interface
+    real(DP), intent(in)      :: a, b, absErr, relErr
+    integer,  intent(in)      :: nBreakPts
+    real(DP), intent(in), dimension(nBreakPts) :: BreakPts
+
+    !  Local variables
+    !
+    real(DP)                         :: integResult
+    real(DP), dimension(nBreakPts+2) :: BreakPtsP2        ! Automatic array.  Similar to allocatable arrays.
+
+    BreakPtsP2(1:nBreakPts) = BreakPts(1:nBreakPts)       ! Array section limits are required here.
+
+    call qagp(f, a, b, nBreakPts+2, BreakPtsP2, absErr, relErr, integResult, errEstimate, neval, ifail)
+    if ( ifail /= 0 ) then
+       write(*,*) 'Warning from qagp: the error code is ', ifail
+    end if
+    integralBreakPts = integResult
+
+  end function integralBreakPts
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                             Ploting Code                            !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  subroutine plot(x,y,xlabel,ylabel,title)
+    use kinds
+    use plplot  
+    implicit none 
+
+    real(DP),dimension(:),intent(in) :: x,y
+    character(len=*),intent(in) :: xlabel,ylabel,title
+
+    real(DP) :: ymin,ymax,xmin,xmax
+
+    ymin = minval(y)
+    xmin = minval(x)
+    ymax = maxval(y)
+    xmax = maxval(x)
+
+    call plsdev("xwin")
+    call plinit
+    call plenv(xmin,xmax,ymin,ymax,0,0)
+    call pllab(xlabel,ylabel,title)
+    call plcol0(3)
+    call plline(x,y)
+    call plend
+
+  end subroutine plot
+
+  subroutine plotNoLabels(x,y)
+    use kinds
+    use plplot  
+    implicit none 
+
+    real(DP),dimension(:),intent(in) :: x,y
+
+    real(DP) :: ymin,ymax,xmin,xmax
+
+    ymin = minval(y)
+    xmin = minval(x)
+    ymax = maxval(y)
+    xmax = maxval(x)
+
+    call plsdev("xwin")
+    call plinit
+    call plenv(xmin,xmax,ymin,ymax,0,0)
+    call plcol0(3)
+    call plline(x,y)
+    call plend
+
+  end subroutine plotNoLabels
+
+  subroutine plotMany(data,xlabel,ylabel,title)
+    use kinds
+    use plplot  
+    implicit none 
+
+    real(DP),dimension(:,:),intent(in) :: data
+    character(len=*),intent(in) :: xlabel,ylabel,title
+
+    real(DP) :: ymin,ymax,xmin,xmax,newval
+    integer :: i,N
+
+    N = size(data(1,:))
+    xmin = data(1,1)
+    xmax = data(1,1)
+    ymin = data(1,2)
+    ymax = data(1,2)
+
+    do i = 1,N,2
+       newval = minval(data(:,i+1))
+       if ( newval < ymin ) ymin = newval
+       newval = maxval(data(:,i+1))
+       if ( newval > ymax ) ymax = newval
+       newval = minval(data(:,i))
+       if ( newval < xmin ) xmin = newval
+       newval = maxval(data(:,i))
+       if ( newval > xmax ) xmax = newval
+    end do
+
+    call plsdev("xwin")
+    call plinit
+    call plenv(xmin,xmax,ymin,ymax,0,0)
+    call pllab(xlabel,ylabel,title)
+    do i = 1,N/2
+       call plcol0(i+2)
+       call plline(data(:,2*i-1),data(:,2*i))
+    end do
+    call plend
+
+  end subroutine plotmany
+
+  subroutine plotmanyNoLabels(data)
+    use kinds
+    use plplot  
+    implicit none 
+
+    real(DP),dimension(:,:),intent(in) :: data
+
+    real(DP) :: ymin,ymax,xmin,xmax,newval
+    integer :: i,N
+
+    N = size(data(1,:))
+    xmin = data(1,1)
+    xmax = data(1,1)
+    ymin = data(1,2)
+    ymax = data(1,2)
+
+    do i = 1,N,2
+       newval = minval(data(:,i+1))
+       if ( newval < ymin ) ymin = newval
+       newval = maxval(data(:,i+1))
+       if ( newval > ymax ) ymax = newval
+       newval = minval(data(:,i))
+       if ( newval < xmin ) xmin = newval
+       newval = maxval(data(:,i))
+       if ( newval > xmax ) xmax = newval
+    end do
+
+    call plsdev("xwin")
+    call plinit
+    call plenv(xmin,xmax,ymin,ymax,0,0)
+    do i = 1,N/2
+       call plcol0(i+2)
+       call plline(data(:,2*i-1),data(:,2*i))
+    end do
+    call plend
+
+  end subroutine plotmanyNoLabels
+
+end module numFort
 
 !==============================================================================
 !##############################################################################
 !==============================================================================
-
-module kinds
-  implicit none
-
-  integer, parameter :: I4B = SELECTED_INT_kind(9)
-  integer, parameter :: I2B = SELECTED_INT_kind(4)
-  integer, parameter :: I1B = SELECTED_INT_kind(2)
-  integer, parameter :: SP = kind(1.0)
-  integer, parameter :: DP = kind(1.0D0)
-  integer, parameter :: SPC = kind((1.0,1.0))
-  integer, parameter :: DPC = kind((1.0D0,1.0D0))
-  integer, parameter :: LGT = kind(.true.)
-  real(DP), parameter :: PI=3.141592653589793238462643383279502884197_sp
-  real(DP), parameter :: PIO2=1.57079632679489661923132169163975144209858_sp
-  real(DP), parameter :: TWOPI=6.283185307179586476925286766559005768394_sp
-  real(DP), parameter :: SQRT2=1.41421356237309504880168872420969807856967_sp
-  real(DP), parameter :: EULER=0.5772156649015328606065120900824024310422_sp
-  real(DP), parameter :: PIO2_D=1.57079632679489661923132169163975144209858_dp
-  real(DP), parameter :: TWOPI_D=6.283185307179586476925286766559005768394_dp
-  type sprs2_sp
-     integer(I4B) :: n,len
-     real(DP), dimension(:), pointer :: val
-     integer(I4B), dimension(:), pointer :: irow
-     integer(I4B), dimension(:), pointer :: jcol
-  end type sprs2_sp
-  type sprs2_dp
-     integer(I4B) :: n,len
-     real(DP), dimension(:), pointer :: val
-     integer(I4B), dimension(:), pointer :: irow
-     integer(I4B), dimension(:), pointer :: jcol
-  end type sprs2_dp
-
-end module kinds
-
-!===============================================================================
-!###############################################################################
-!===============================================================================
 
 module Quadpack
   use kinds
@@ -7847,968 +8681,3 @@ end module Quadpack
 !===============================================================================
 !###############################################################################
 !===============================================================================
-
-!---------------------------------------------------------------------!
-!                                                                     !
-!                      NumFort numerical library                      !
-!                                                                     !
-!---------------------------------------------------------------------!
-
-module numFort
-  use kinds
-  use quadpack
-  use LAPACK95
-  implicit none
-
-  real(DP), parameter :: Infty = huge(1.0_DP)
-  integer  :: neval, ifail
-  real(DP) :: errEstimate
-
-  interface linspace
-     module procedure linspace,linspace_real
-  end interface linspace
-  interface integral
-     module procedure integral, integralToInfty, integralOf, integralBreakPts
-  end interface integral
-  interface rk4
-     module procedure rk4,rk4_2,rk4_step
-  end interface rk4
-  interface splinefit
-     module procedure splinefit,splinefit_coeff
-  end interface splinefit
-  interface GuessZero
-     module procedure GuessZero,GuessZeroNew
-  end interface GuessZero
-
-contains
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                      Useful Mathamatical functions                  !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-
-  function factorial(n)
-    implicit none
-
-    integer,intent(in) :: n
-    integer            :: factorial
-
-    integer            :: i
-
-    factorial = 1
-
-    do i = 1,n
-       factorial = factorial*i
-    end do
-
-  end function factorial
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                               MeshGrid                              !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! creates a unique lattice of points given 2 vectors x,y of length    !
-  ! N and M. Can be used for 3d plots. See Matlab meshgrid              !
-  ! documentation for more details                                      !
-  !---------------------------------------------------------------------!
-
-  subroutine meshgrid(x,y,XX,YY)
-    use kinds
-    implicit none
-
-    real(DP),dimension(:),intent(in)    :: x
-    real(DP),dimension(:),intent(in)    :: y
-    real(DP),dimension(:,:),intent(out) :: XX,YY
-
-    integer :: i,j,rows,cols
-
-    rows = size(x)
-    cols = size(y)    
-
-    do j = 1,cols
-       XX(j,1:rows) = x(1:rows)
-    end do
-    do j = 1,rows
-       YY(1:cols,j) = y(1:cols)
-    end do
-
-  end subroutine meshgrid
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                           Cubic Spline Fit                          !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Fits a cubic spline to input data. First version fits and outputs   !
-  ! values at specified interpolated points. Next version returns       !
-  ! the coefficients of the cubic spline fit which can then be passed   !
-  ! to the next function to evaluate the spline at a certain x.         !
-  !                                                                     !
-  ! Uses Lapack for necessary linear algebra                            !
-  !---------------------------------------------------------------------!
-
-  subroutine splinefit(x,y,intpts,intvals)
-    use kinds
-    use LAPACK95
-    implicit none 
-
-    real(DP),dimension(:),intent(in)    :: x,y
-    real(DP),dimension(:),intent(in)    :: intpts
-    real(DP),dimension(:),intent(out)   :: intvals
-
-    integer                             :: N
-    real(DP),dimension(:,:),allocatable :: A,B
-    integer ,dimension(:)  ,allocatable :: ipiv
-    integer                             :: i,j
-
-    N = size(x)
-    allocate(A(N,N),B(N,1),ipiv(N))
-
-    B(:,1) = y(:)
-    A(:,1) = 1.0_DP
-    A(:,2) = x(:)
-    do i = 1,N
-       do j = 3,N
-          A(i,j) = abs(x(i)-x(j-1))
-       end do
-    end do
-    call getrf(A,ipiv)
-    call getrs(A,ipiv,B)    
-    do i = 1,size(intpts)
-       intvals(i) = B(1,1) + B(2,1)*intpts(i)+&
-            & sum( B(3:N,1)*abs(intpts(i)-x(2:N-1)) )
-    end do
-
-    deallocate(A,B,ipiv)
-
-  end subroutine splinefit
-
-  subroutine splinefit_coeff(x,y,c)
-    use kinds
-    use LAPACK95
-    implicit none 
-
-    real(DP),dimension(:),intent(in)    :: x,y
-    real(DP),dimension(:),intent(out)   :: c
-
-    integer                             :: N
-    real(DP),dimension(:,:),allocatable :: A,B
-    integer ,dimension(:)  ,allocatable :: ipiv
-    integer                             :: i,j
-
-    N = size(x)
-    allocate(A(N,N),B(N,1),ipiv(N))
-
-    B(:,1) = y(:)
-    A(:,1) = 1.0_DP
-    A(:,2) = x(:)
-    do i = 1,N
-       do j = 3,N
-          A(i,j) = abs(x(i)-x(j-1))
-       end do
-    end do
-    call getrf(A,ipiv)
-    call getrs(A,ipiv,B)       
-    c(:) = B(:,1)
-
-    deallocate(A,B,ipiv)
-
-  end subroutine splinefit_coeff
-
-  function splinevals(c,xj,x)
-    use kinds
-    implicit none
-
-    real(DP),dimension(:),intent(in) :: c,xj
-    real(DP),intent(in) :: x
-    real(DP) :: splinevals
-
-    integer :: N
-
-    N = size(c)
-    splinevals = c(1)+c(2)*x+sum(c(3:N)*abs(x-xj(2:N-1)))
-
-  end function splinevals
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                               PolyFit                               !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! N dimensional polynomial fitting algorithim which outputs the       !
-  ! coefficitents of the fit. Can then be passed into polycal to        !
-  ! evaluate the fit at a certain point.                                !
-  !                                                                     !
-  ! Uses Lapack for necessary linear algebra                            !
-  !---------------------------------------------------------------------!
-
-  function polycal(N,c,x)
-    implicit none 
-
-    integer ,intent(in)                :: N
-    real(DP),dimension(N+1),intent(in) :: c
-    real(DP)               ,intent(in) :: x
-
-    real(DP)                           :: polycal
-    real(DP),dimension(N+1)            :: xx
-    integer ,dimension(N+1)            :: indexx
-    integer                            :: i
-
-    do i = 0,N
-       indexx(i+1) = N-i
-    end do
-    xx = x**indexx
-    polycal = sum(c*xx)
-
-  end function polycal
-
-  subroutine polyfit(x,y,N,c)    
-    use kinds
-    use LAPACK95
-    implicit none
-
-    integer ,intent(in)              :: N
-    real(DP),dimension(:),intent(in) :: x,y    
-    real(DP),dimension(N+1),intent(out) :: c
-
-    real(DP),dimension(N+1,N+1) :: A
-    real(DP),dimension(N+1,1) :: B
-    integer ,dimension(N+1)   :: ipiv
-
-    integer :: i,j,L
-
-    if ( N > size(x) ) then
-       write(*,'(a)') "Error, order of polynomial must be less then the number of entered points"
-    else
-
-       L = N+1
-       do i = 1,L
-          do j = 1,L          
-             A(i,j) = x(i)**(L-j)
-          end do
-          B(i,1) = y(i)
-       end do
-
-       call getrf(A,ipiv)
-       call getrs(A,ipiv,B)
-
-       c(:) = B(:,1)
-
-    end if
-
-  end subroutine polyfit
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                       Runge Kutta 4th Order                         !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Runge Kutta calculation for input function(s). For a single step    !
-  ! or a range of specified values. Algorithims for a single DE or      !
-  ! two coupled DE's.                                                   !
-  !---------------------------------------------------------------------!
-
-  subroutine rk4(t0,tN,y0,N,f,t,y)
-    use kinds
-    implicit none
-
-    real(DP),intent(in) :: t0,tN,y0
-    integer ,intent(in) :: N
-    interface
-       function f(t,y)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: t,y
-       end function f
-    end interface
-    real(DP),dimension(N),intent(out) :: y,t
-
-    real(DP) :: h,k1,k2,k3,k4
-    integer  :: i
-
-    h = (tN-t0)/N
-    t(1) = t0
-    t(N) = tN
-    do i = 2,N-1
-       t(i) = t(0) + h*(i-1)
-    end do
-    y(:) = 0
-    y(1) = y0
-    do i = 1,N-1
-       k1 = f(t(i),y(i))
-       k2 = f(t(i)+0.5_dp*h,y(i)+0.5_dp*h*k1)
-       k3 = f(t(i)+0.5_dp*h,y(i)+0.5_dp*h*k2)
-       k4 = f(t(i)+h,y(i)+k3*h)       
-       y(i+1) = y(i) + (1/6.0_dp)*(k1+2*k2+2*k3+k4)*h
-    end do
-
-  end subroutine rk4
-
-  subroutine rk4_step(h,t0,y0,f,y)
-    use kinds
-    implicit none
-
-    real(DP),intent(in) :: h,t0,y0
-    interface
-       function f(t,y)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: t,y
-       end function f
-    end interface
-    real(DP),intent(out) :: y
-
-    real(DP) :: k1,k2,k3,k4
-
-    k1 = f(t0,y0)
-    k2 = f(t0+0.5_dp*h,y0+0.5_dp*h*k1)
-    k3 = f(t0+0.5_dp*h,y0+0.5_dp*h*k2)
-    k4 = f(t0+h,y0+k3*h)       
-    y = y0 + (1/6.0_dp)*(k1+2*k2+2*k3+k4)*h
-
-  end subroutine rk4_step
-
-  subroutine rk4_2(h,t0,y0,f,g,y1,y2)
-    use kinds
-    implicit none
-
-    real(DP),dimension(2) ,intent(in) :: y0
-    real(DP),intent(in)               :: h,t0
-    interface
-       function f(t,y1,y2)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: t,y1,y2
-       end function f
-    end interface
-    interface
-       function g(t,y1,y2)
-         use kinds
-         implicit none
-         real(DP)             :: g
-         real(DP) ,intent(in) :: t,y1,y2
-       end function g
-    end interface
-    real(DP),intent(out) :: y1,y2
-
-    real(DP) :: k1,k2,k3,k4,l1,l2,l3,l4
-
-    k1 = f(t0,y0(1),y0(2))
-    l1 = g(t0,y0(1),y0(2))
-    k2 = f(t0+0.5_dp*h,y0(1)+0.5_dp*h*k1,y0(2)+0.5_dp*h*l1)
-    l2 = g(t0+0.5_dp*h,y0(1)+0.5_dp*h*k1,y0(2)+0.5_dp*h*l1)
-    k3 = f(t0+0.5_dp*h,y0(1)+0.5_dp*h*k2,y0(2)+0.5_dp*h*l2)
-    l3 = g(t0+0.5_dp*h,y0(1)+0.5_dp*h*k2,y0(2)+0.5_dp*h*l2)
-    k4 = f(t0+h,y0(1)+k3*h,y0(2)+l3*h)
-    l4 = g(t0+h,y0(1)+k3*h,y0(2)+l3*h)       
-    y1 = y0(1) + (1/6.0_dp)*(k1+2*k2+2*k3+k4)*h
-    y2 = y0(2) + (1/6.0_dp)*(l1+2*l2+2*l3+l4)*h
-
-  end subroutine rk4_2
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                               Guess Zero                            !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Returns the points where a function changes sign. Can be an input   !
-  ! function of an input set of values.                                 !
-  !---------------------------------------------------------------------!
-
-  function GuessZero(fvals)
-    use Kinds
-    implicit none
-    real(DP),dimension(:),intent(in) :: fvals
-    integer                          :: GuessZero
-
-    integer                          :: jj
-
-    do jj=3,size(fvals)
-       if ( sign( fvals(jj-1)/abs(fvals(jj-1)) , fvals(jj)/abs(fvals(jj)) ) .ne. &
-            sign( fvals(jj-2)/abs(fvals(jj-2)) , fvals(jj-1)/abs(fvals(jj-1)) ) ) exit
-    end do
-
-    GuessZero = jj
-
-  end function GuessZero
-
-  function GuessZeroNew(f,a,b)
-    use kinds
-    implicit none
-
-    real(DP),intent(in) :: a,b
-    real(DP)            :: GuessZeroNew
-    interface
-       function f(x)
-         use kinds
-         implicit none
-         real(DP),intent(in) :: x
-         real(DP)            :: f
-       end function f
-    end interface
-
-    real(DP) :: h,fval
-    integer :: i,sign,newsign,N
-
-    h = a*1e-4
-    N = int((b-a)/h)
-    fval = f(a)
-    sign = int(fval/abs(fval))
-
-    do i = 1,N
-       fval = f(a+i*h)
-       newsign = int(fval/abs(fval))
-       if ( newsign .ne. sign ) exit
-    end do
-    if ( i .eq. N ) then
-       write(*,*) "Error Max itterations reached"
-    else       
-       GuessZeroNew = a+i*h
-    end if
-
-  end function GuessZeroNew
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                         Newtons Method                              !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Newtons method for an input function of 1 variable                  !
-  !                                                                     !
-  !                 CODE WRITTEN BY CURTIS ABELL                        !
-  !---------------------------------------------------------------------!
-
-  function newton1D(fn,guess)
-    use Kinds
-    implicit none
-    real(DP) :: newton1D
-    interface
-       function fn(x)
-         use kinds
-         implicit none
-         real(DP)             :: fn
-         real(DP), intent(in) :: x
-       end function fn
-    end interface
-    real(DP) :: guess
-    ! Local Variables
-    real(DP) :: newt_tol = 1e-6
-    real(DP) :: h ! = 1e-6_DP
-    real(DP) :: fx, fxfh,fxbh, dfdx 
-    integer :: attempt
-    integer :: attempt_limit = 20
-    logical :: verbose = .false.
-
-    if (verbose) write(*,*) 'Newton-Raphson Method'
-    h = guess * 1.0e-6_DP
-    newton1D = guess
-    attempt = 1
-
-    do
-       fx = fn(newton1D)
-       if (abs(fx) <= newt_tol) then
-          if (verbose) then
-             write(*,'(a,i3,a)') 'Success after', attempt, ' attempts.'
-             write(*,*) 'Zero  = ', newton1D
-          end if
-          exit
-       else if (attempt >= attempt_limit) then
-          write(*,*) 'Failed, change initial guess or increase attempt limit.'
-          exit
-       end if
-
-       fxfh = fn(newton1D + h/2)
-       fxbh = fn(newton1D - h/2)
-       dfdx = (fxfh-fxbh) / h
-       newton1D = newton1D - fx / dfdx
-
-       attempt = attempt + 1
-    end do
-  end function newton1D
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                               Linspace                              !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Creates a linear space of points. See matlab documentation for      !
-  ! further details.                                                    !
-  !---------------------------------------------------------------------!
-
-  function linspace(start,finish,N)
-    integer                :: N
-    real(DP), intent(in)   :: start, finish
-    real(DP), dimension(N) :: linspace
-
-    real(DP)               :: int
-    integer                :: i
-
-    linspace(1) = start
-    linspace(N) = finish
-    int  = (real(finish)-start)/(N-1)
-
-    do i=2,N-1
-       linspace(i)=linspace(i-1)+int
-    end do
-
-  end function linspace
-
-  function linspace_real(start,finish,N)
-    integer                :: N
-    real, intent(in)       :: start, finish
-    real, dimension(N)     :: linspace_real
-
-    real(DP)               :: int
-    integer                :: i
-
-    linspace_real(1) = start
-    linspace_real(N) = finish
-    int  = (real(finish)-start)/(N-1)
-
-    do i=2,N-1
-       linspace_real(i)=linspace_real(i-1)+int
-    end do
-
-  end function linspace_real
-
-  function linspace_int(start,finish,N)
-    integer                :: N
-    integer, intent(in)       :: start, finish
-    integer, dimension(N)     :: linspace_int
-
-    real(DP)               :: int
-    integer                :: i
-
-    linspace_int(1) = start
-    linspace_int(N) = finish
-    int  = (real(finish)-start)/(N-1)
-
-    do i=2,N-1
-       linspace_int(i)=linspace_int(i-1)+int
-    end do
-
-  end function linspace_int
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                          Finite difference                          !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Numerically calculates the derivative with finite difference        !
-  !---------------------------------------------------------------------!
-
-  function deriv(f,x0)
-    use Kinds
-    implicit none
-    real(DP)                 :: deriv
-    interface
-       function f(x)
-         use kinds
-         implicit none
-         real(DP)            :: f
-         real(DP),intent(in) :: x
-       end function f
-    end interface
-    real(DP),intent(in)      :: x0
-    real(DP)                 :: h,fxfh,fxbh
-
-    h     = x0*1e-6_DP
-    fxfh  = f(x0+h/2)
-    fxbh  = f(x0-h/2)    
-    deriv = (fxfh-fxbh)/h
-
-  end function deriv
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                      QuadPack Integral wrapper                      !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Wrappers for the Quadpack integral routine shown above.             !
-  !---------------------------------------------------------------------!
-
-
-  function integral(f, a, b, absErr, relErr)
-    implicit none
-    real(DP)                  :: integral
-    interface                                   ! Interfaces: Sections 5.11, 5.18
-       function f(x)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: x
-       end function f
-    end interface
-    real(DP), intent(in)      :: a, b, absErr, relErr
-
-    !  Local variables
-    !
-    real(DP)                  :: integResult, bound=0.0_DP
-    integer                   :: inf
-
-    !  Determine if the limits include infinity and call qagi if nessary
-    !
-    if (a == -Infty) then
-       if (b == Infty) then
-          inf=2
-          call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
-          if ( ifail /= 0 ) then
-             write(*,*) 'Warning from qagi: the error code is ', ifail
-          end if
-       else
-          inf = -1
-          bound = b
-          call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
-          if ( ifail /= 0 ) then
-             write(*,*) 'Warning from qagi: the error code is ', ifail
-          end if
-       end if
-    else 
-       if (b == Infty) then
-          inf = 1
-          bound = a
-          call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
-          if ( ifail /= 0 ) then
-             write(*,*) 'Warning from qagi: the error code is ', ifail
-          end if
-       else
-          call qags(f, a, b, absErr, relErr, integResult, errEstimate, neval, ifail)
-          if ( ifail /= 0 ) then
-             write(*,*) 'Warning from qags: the error code is ', ifail
-          end if
-       end if
-    end if
-    integral = integResult
-
-  end function integral
-
-
-  function integralToInfty(f, bound, absErr, relErr)
-    implicit none
-    real(DP)                  :: integralToInfty
-    interface
-       function f(x)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: x
-       end function f
-    end interface
-    real(DP), intent(in)      :: bound, absErr, relErr
-
-    !  Local variables
-    !
-    real(DP)                  :: integResult
-    integer, parameter        :: inf=1
-
-    call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
-    if ( ifail /= 0 ) then
-       write(*,*) 'Warning from qagi: the error code is ', ifail
-    end if
-    integralToInfty = integResult
-
-  end function integralToInfty
-
-
-  function integralOf(f, absErr, relErr)
-    implicit none
-    real(DP)                  :: integralOf
-    interface
-       function f(x)
-         implicit none
-         integer,  parameter  :: DP = kind(1.0d0)
-         real(DP)             :: f
-         real(DP), intent(in) :: x
-       end function f
-    end interface
-    real(DP), intent(in)      :: absErr, relErr
-
-    !  Local variables
-    !
-    real(DP)                  :: integResult, bound=0.0d0
-    integer, parameter        :: inf=2
-
-    call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
-    if ( ifail /= 0 ) then
-       write(*,*) 'Warning from qagi: the error code is ', ifail
-    end if
-    integralOf = integResult
-
-  end function integralOf
-
-
-  function integralBreakPts(f, a, b, absErr, relErr, nBreakPts, BreakPts)
-    implicit none
-    real(DP)                  :: integralBreakPts
-    interface
-       function f(x)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: x
-       end function f
-    end interface
-    real(DP), intent(in)      :: a, b, absErr, relErr
-    integer,  intent(in)      :: nBreakPts
-    real(DP), intent(in), dimension(nBreakPts) :: BreakPts
-
-    !  Local variables
-    !
-    real(DP)                         :: integResult
-    real(DP), dimension(nBreakPts+2) :: BreakPtsP2        ! Automatic array.  Similar to allocatable arrays.
-
-    BreakPtsP2(1:nBreakPts) = BreakPts(1:nBreakPts)       ! Array section limits are required here.
-
-    call qagp(f, a, b, nBreakPts+2, BreakPtsP2, absErr, relErr, integResult, errEstimate, neval, ifail)
-    if ( ifail /= 0 ) then
-       write(*,*) 'Warning from qagp: the error code is ', ifail
-    end if
-    integralBreakPts = integResult
-
-  end function integralBreakPts
-
-end module numFort
-
-
-!===============================================================================
-!###############################################################################
-!===============================================================================
-
-!---------------------------------------------------------------------!
-!                                                                     !
-!                               Pyplots                               !
-!                                                                     !
-!---------------------------------------------------------------------!
-
-module pyplots
-  use Kinds
-  implicit none
-
-  interface plot  
-     module procedure plot,plot_notitle,stan_plot,stan_plot_notitle,plot_legend,stan_plot_two,stan_plot_two_legend
-  end interface plot
-
-contains
-    
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                       Multi-Dimensional Plots                       !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-
-  subroutine plot(x,xaxis,yaxis)
-    use Kinds
-    implicit none
-    real(DP),dimension(:,:),intent(in) :: x
-    character(len=*),intent(in)        :: xaxis,yaxis
-    character(len=9)                   :: fmt
-    integer                            :: ii,j,N
-
-    N = size(x,dim=2)
-    
-    open(100,file="titles.dat",action="write", &
-         & status="replace",form="formatted")        
-    open(101,file="output.dat",action="write", &
-         & status="replace",form="formatted")
-
-    write(100,'(a15)') xaxis
-    write(100,'(a15)') yaxis
-    write(100,'(a3)') "nil"
-    write(100,'(a3)') "nil"
-    write(fmt,'(a1,i1,a7)') '(', N, 'es20.9)'
-
-    do ii=1,size(x,dim=1)
-       write(101,fmt) x(ii,:)
-    end do
-
-    close(100)
-    close(101)
-
-    call system("./pyplots.py")
-
-  end subroutine plot
-
-  subroutine plot_legend(x,xaxis,yaxis,legend)
-    use Kinds
-    implicit none
-    character(len=*),intent(in)              :: xaxis,yaxis
-    character(len=*),dimension(:),intent(in) :: legend
-    real(DP),dimension(:,:),intent(in)       :: x
-    character(len=9)                         :: fmt
-    integer                                  :: ii,j,N
-
-    N = size(x,dim=2)
-    
-    open(100,file="titles.dat",action="write", &
-         & status="replace",form="formatted")        
-    open(101,file="output.dat",action="write", &
-         & status="replace",form="formatted")
-
-    write(100,'(a15)') xaxis
-    write(100,'(a15)') yaxis
-    write(fmt,'(a1,i1,a7)') '(', N, 'es20.9)'
-
-    do ii=1,size(legend)
-       write(100,'(a12)') legend(ii)
-    end do
-
-    do ii=1,size(x,dim=1)
-       write(101,fmt) x(ii,:)
-    end do
-
-    close(100)
-    close(101)
-
-    call system("./pyplots.py")
-
-  end subroutine plot_legend
-
-  subroutine plot_notitle(x)
-    use Kinds
-    implicit none
-    real(DP),dimension(:,:),intent(in) :: x
-    character(len=9)                   :: fmt
-    integer                            :: ii,j,N
-
-    N = size(x,dim=2)
-    
-    open(100,file="titles.dat",action="write", &
-         & status="replace",form="formatted")        
-    open(101,file="output.dat",action="write", &
-         & status="replace",form="formatted")
-
-    write(100,'(a15)') " "
-    write(100,'(a15)') " "
-    write(100,'(a3)') "nil"
-    write(100,'(a3)') "nil"
-    write(fmt,'(a1,i1,a7)') '(', N, 'es20.9)'
-
-    do ii=1,size(x,dim=1)
-       write(101,fmt) x(ii,:)
-    end do
-
-    close(100)
-    close(101)
-
-    call system("./pyplots.py")
-
-  end subroutine plot_notitle
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                            Standard Plots                           !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-
-  subroutine stan_plot(x,y,xaxis,yaxis)
-    use Kinds
-    implicit none
-    real(DP),dimension(:),intent(in)   :: x,y
-    character(len=*),intent(in)        :: xaxis,yaxis
-    integer                            :: ii
-    
-    open(100,file="titles.dat",action="write", &
-         & status="replace",form="formatted")        
-    open(101,file="output.dat",action="write", &
-         & status="replace",form="formatted")
-
-    write(100,'(a15)') xaxis
-    write(100,'(a15)') yaxis
-    write(100,'(a3)') "nil"
-    write(100,'(a3)') "nil"
-    do ii=1,size(x)
-       write(101,'(2es20.9)') x(ii), y(ii)
-    end do
-
-    close(100)
-    close(101)
-
-    call system("./pyplots.py")
-
-  end subroutine stan_plot
-
-  subroutine stan_plot_notitle(x,y)
-    use Kinds
-    implicit none
-    real(DP),dimension(:),intent(in)   :: x,y
-    integer                            :: ii
-    
-    open(100,file="titles.dat",action="write", &
-         & status="replace",form="formatted")        
-    open(101,file="output.dat",action="write", &
-         & status="replace",form="formatted")
-
-    write(100,'(a15)') " "
-    write(100,'(a15)') " "
-    write(100,'(a3)') "nil"
-    write(100,'(a3)') "nil"
-    do ii=1,size(x)
-       write(101,'(2es20.9)') x(ii), y(ii)
-    end do
-
-    close(100)
-    close(101)
-
-    call system("./pyplots.py")
-
-  end subroutine stan_plot_notitle
-
-  subroutine stan_plot_two(x,y,z,w)
-    use Kinds
-    implicit none
-    real(DP),dimension(:),intent(in)   :: x,y,z,w
-    integer                            :: ii
-    
-    open(100,file="titles.dat",action="write", &
-         & status="replace",form="formatted")        
-    open(101,file="output.dat",action="write", &
-         & status="replace",form="formatted")
-
-    write(100,'(a15)') " "
-    write(100,'(a15)') " "
-    write(100,'(a3)') "nil"
-    write(100,'(a3)') "nil"
-    do ii=1,size(x)
-       write(101,'(4es20.9)') x(ii), y(ii), z(ii), w(ii)
-    end do
-
-    close(100)
-    close(101)
-
-    call system("./pyplots.py")
-
-  end subroutine stan_plot_two
-
-  subroutine stan_plot_two_legend(x,y,z,w,len1,len2)
-    use Kinds
-    implicit none
-    real(DP),dimension(:),intent(in)   :: x,y,z,w
-    character(len=*),intent(in)        :: len1,len2
-    integer                            :: ii
-    
-    open(100,file="titles.dat",action="write", &
-         & status="replace",form="formatted")        
-    open(101,file="output.dat",action="write", &
-         & status="replace",form="formatted")
-
-    write(100,'(a15)') " "
-    write(100,'(a15)') " "
-    write(100,'(a9)') len1
-    write(100,'(a9)') len2
-    do ii=1,size(x)
-       write(101,'(4es20.9)') x(ii), y(ii), z(ii), w(ii)
-    end do
-
-    close(100)
-    close(101)
-
-    call system("./pyplots.py")
-
-  end subroutine stan_plot_two_legend
-  
-end module pyplots
