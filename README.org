@@ -3,7 +3,7 @@
 #+TITLE: numFort
 
 * Description
-numFort is a numerical library for FORTRAN that includes quadpack, lapack and PLplot source code. It enables the use of handy mathematical macros such as linspace.
+numFort is a numerical library for FORTRAN that includes quadpack, lapack and PLplot source code. It enables the use of handy mathematical macros such as linspace. I have wasted so much of my life on this nonsense. 
 
 * Installation - Linux/Unix
 ** ifort
@@ -284,14 +284,50 @@ Numerically calculates an integral given a function and bounds. Using Gaussin qu
 
 ** PLplot
 
-Call PLplot by using the subroutine plot(), It can be then called under a normal syntax like plot(x,y,xlabel,ylabel,title) or even plot(MATRIX). Make sure that you either include all axes labels and title or neither.
+Call PLplot by using the subroutine plot() for example, this will call various wrappers to plplot which can be found within numFort. Below is a list of said wrappers and their arguments. Axes labels and title may be omitted in all below routines if one wishes.
 
-|----------+---------------------------------------------|
-| Variable | Description                                 |
-|----------+---------------------------------------------|
-| x        | matrix of values or vector                  |
-| y        | vector of values                            |
-| xlabel   | x axis label                                |
-| ylabel   | y axis label                                |
-| title    | Title for the plots                         |
-|----------+---------------------------------------------|
+*** plot
+Can be called in the two following ways
+#+BEGIN_SRC fortran
+  real(DP),dimension(N,M) :: data ! x values in columns 1,3,.. y values in 2,4,...
+  real(DP),dimension(N)   :: x,y
+  character(len=*)        :: xlabel,ylabel,title
+
+  call plot(x,y,xlabel,ylabel,title)
+  call plot(data,xlabel,ylabel,title)
+#+END_SRC
+produces a standard x vs y plot. 
+
+*** scatterplot
+Can be called in the two following ways
+#+BEGIN_SRC fortran
+  real(DP),dimension(N)   :: x,y
+  character(len=*)        :: xlabel,ylabel,title,style ! style = "+" for example
+
+  call scatterplot(x,y,style,xaxis,yaxis,title)
+#+END_SRC
+produces a standard scatter plot of x vs y.
+
+*** surf
+Can be called in the two following ways
+#+BEGIN_SRC fortran
+  real(DP),dimension(N)   :: X
+  real(DP),dimension(M)   :: Y
+  real(DP),dimension(M,N) :: Z
+  character(len=*)        :: xlabel,ylabel,zlabel,title
+
+  ! usually create the grids for Z using "call meshgrid(x,y,XX,YY)"
+  ! XX = MxN and YY = MxN
+
+  call surf(X,Y,Z,xlabel,ylabel,zlabel,title)
+#+END_SRC
+
+
+*** scatter3D
+Can be called in the two following ways
+#+BEGIN_SRC fortran
+  real(DP),dimension(N)   :: x,y,z
+  character(len=*)        :: xlabel,ylabel,zlabel,title
+
+ call scatter3D(X,Y,Z,xlabel,ylabel,zlabel,title)
+#+END_SRC

@@ -28,11 +28,14 @@
 !   - linspaceInt                                                             !
 ! - deriv                                                                     !
 ! - integral                                                                  !
+! - returnMaxAndMin                                                           !
+!   - returnMaxAndMinXYZ                                                      !
 !                                                                             !
 ! - PLplot                                                                    !
-!   - plotNolabels                                                            !
+!   - plot                                                                    !
 !   - plotMany                                                                !
-!   - plotManyNolabels                                                        !
+!   - surf                                                                    !
+!   - scatter3D                                                               !
 !                                                                             !
 !*****************************************************************************!
 
@@ -69,11 +72,11 @@ module numFort
      module procedure GuessZero,GuessZeroNew
   end interface GuessZero
   interface plot
-     module procedure plot,plotNoLabels,plotmany,plotmanyNoLabels
+     module procedure plot,plotmany
   end interface plot
-  interface scatterplot
-     module procedure scatterplot,scatterplotNoLabels
-  end interface scatterplot
+  interface returnMaxAndMin
+     module procedure returnMaxAndMin,returnMaxAndMinXYZ
+  end interface returnMaxAndMin
 
 contains
 
@@ -767,6 +770,8 @@ contains
 
   end function integralBreakPts
 
+  ! return maximum values of given arguments
+
   subroutine returnMaxAndMin(x,y,xmin,xmax,ymin,ymax)
     use kinds
     implicit none
@@ -781,6 +786,21 @@ contains
 
   end subroutine returnMaxAndMin
 
+  subroutine returnMaxAndMinXYZ(x,y,z,xmin,xmax,ymin,ymax,zmin,zmax)
+    use kinds
+    implicit none
+
+    real(DP),dimension(:),intent(in)::x,y,z
+    real(DP),intent(out)::xmin,xmax,ymin,ymax,zmin,zmax
+
+    xmin = minval(x)
+    xmax = maxval(x)
+    ymin = minval(y)
+    ymax = maxval(y)
+    zmin = minval(z)
+    zmax = maxval(z)
+
+  end subroutine returnMaxAndMinXYZ
 
 !===============================================================================
 !###############################################################################
@@ -792,11 +812,17 @@ contains
   !                                                                     !
   !---------------------------------------------------------------------!
 
+! See documentation for further description of the plotting algorithim
+
 !===============================================================================
 !###############################################################################
 !===============================================================================
 
-! Standard x vs y plot  
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                             Regular Plot                            !
+  !                                                                     !
+  !---------------------------------------------------------------------!
 
   subroutine plot(x,y,xlabel,ylabel,title)
     use kinds
@@ -804,9 +830,18 @@ contains
     implicit none 
 
     real(DP),dimension(:),intent(in) :: x,y
-    character(len=*),intent(in) :: xlabel,ylabel,title
+    character(len=*),optional,intent(in) :: xlabel,ylabel,title
 
     real(DP) :: ymin,ymax,xmin,xmax
+    character(len=23) :: xaxis,yaxis,name
+
+    xaxis = ""
+    yaxis = ""
+    name  = ""
+
+    if(present(xlabel)) xaxis = xlabel
+    if(present(ylabel)) xaxis = ylabel
+    if(present(title)) name = title
 
     ymin = minval(y)*1.2_DP
     xmin = minval(x)*1.2_DP
@@ -816,40 +851,18 @@ contains
     call plsdev("xwin")
     call plinit
     call plenv(xmin,xmax,ymin,ymax,0,0)
-    call pllab(xlabel,ylabel,title)
+    call pllab(xaxis,yaxis,name)
     call plcol0(3)
     call plline(x,y)
     call plend
 
   end subroutine plot
 
-! x vs y plot with no axis no title labels
-
-  subroutine plotNoLabels(x,y)
-    use kinds
-    use plplot  
-    implicit none 
-
-    real(DP),dimension(:),intent(in) :: x,y
-
-    real(DP) :: ymin,ymax,xmin,xmax
-
-    ymin = minval(y)*1.2_DP
-    xmin = minval(x)*1.2_DP
-    ymax = maxval(y)*1.2_DP
-    xmax = maxval(x)*1.2_DP
-
-    call plsdev("xwin")
-    call plinit
-    call plenv(xmin,xmax,ymin,ymax,0,0)
-    call plcol0(3)
-    call plline(x,y)
-    call plend
-
-  end subroutine plotNoLabels
-
-  ! scatter plot for x vs y, style is the type of point display you want
-  ! e.g. style = "+"
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                             Scatter Plot                            !
+  !                                                                     !
+  !---------------------------------------------------------------------!
 
   subroutine scatterplot(x,y,style,xlabel,ylabel,title)
     use kinds
@@ -857,9 +870,19 @@ contains
     implicit none 
 
     real(DP),dimension(:),intent(in) :: x,y
-    character(len=*),intent(in) :: xlabel,ylabel,title,style
+    character(len=*),intent(in)      :: style
+    character(len=*),optional,intent(in) :: xlabel,ylabel,title
 
     real(DP) :: ymin,ymax,xmin,xmax
+    character(len=23) :: xaxis,yaxis,name
+
+    xaxis = ""
+    yaxis = ""
+    name  = ""
+
+    if(present(xlabel)) xaxis = xlabel
+    if(present(ylabel)) xaxis = ylabel
+    if(present(title)) name = title
 
     ymin = minval(y)*1.2_DP
     xmin = minval(x)*1.2_DP
@@ -869,40 +892,18 @@ contains
     call plsdev("xwin")
     call plinit
     call plenv(xmin,xmax,ymin,ymax,0,0)
-    call pllab(xlabel,ylabel,title)
+    call pllab(xaxis,yaxis,name)
     call plcol0(3)
     call plstring(x,y,style)
     call plend
 
   end subroutine scatterplot
 
-! Scatter plot for x vs y without axis labels or title
-
-  subroutine scatterplotNoLabels(x,y,style)
-    use kinds
-    use plplot  
-    implicit none 
-
-    real(DP),dimension(:),intent(in) :: x,y
-    character(len=*),intent(in) :: style
-
-    real(DP) :: ymin,ymax,xmin,xmax
-
-    ymin = minval(y)*1.2_DP
-    xmin = minval(x)*1.2_DP
-    ymax = maxval(y)*1.2_DP
-    xmax = maxval(x)*1.2_DP
-
-    call plsdev("xwin")
-    call plinit
-    call plenv(xmin,xmax,ymin,ymax,0,0)
-    call plcol0(3)
-    call plstring(x,y,style)
-    call plend
-
-  end subroutine scatterplotNoLabels
-
-! Multidimensional plot for as many x's and y's as necessary
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                              MultiPlot                              !
+  !                                                                     !
+  !---------------------------------------------------------------------!
 
   subroutine plotMany(data,xlabel,ylabel,title)
     use kinds
@@ -910,10 +911,20 @@ contains
     implicit none 
 
     real(DP),dimension(:,:),intent(in) :: data
-    character(len=*),intent(in) :: xlabel,ylabel,title
+    character(len=*),optional,intent(in) :: xlabel,ylabel,title
+
 
     real(DP) :: ymin,ymax,xmin,xmax,newval
     integer :: i,N
+    character(len=23) :: xaxis,yaxis,name
+
+    xaxis = ""
+    yaxis = ""
+    name  = ""
+
+    if(present(xlabel)) xaxis = xlabel
+    if(present(ylabel)) xaxis = ylabel
+    if(present(title)) name = title
 
     N = size(data(1,:))
     xmin = data(1,1)
@@ -940,7 +951,7 @@ contains
     call plsdev("xwin")
     call plinit
     call plenv(xmin,xmax,ymin,ymax,0,0)
-    call pllab(xlabel,ylabel,title)
+    call pllab(xaxis,yaxis,name)
     do i = 1,N/2
        call plcol0(i+2)
        call plline(data(:,2*i-1),data(:,2*i))
@@ -949,45 +960,142 @@ contains
 
   end subroutine plotmany
 
-! Multidimensional plot with no axes labels
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                             Surface Plot                            !
+  !                                                                     !
+  !---------------------------------------------------------------------!
 
-  subroutine plotmanyNoLabels(data)
+  subroutine surf(X,Y,Z,xlabel,ylabel,zlabel,title)
     use kinds
-    use plplot  
-    implicit none 
+    use plplot
+    implicit none
 
-    real(DP),dimension(:,:),intent(in) :: data
+    real(DP),dimension(:),intent(in)   :: x,y
+    real(DP),dimension(:,:),intent(in) :: Z
+    character(len=*),optional,intent(in)        :: xlabel,ylabel,zlabel,title
 
-    real(DP) :: ymin,ymax,xmin,xmax,newval
-    integer :: i,N
+    integer                :: opt=3,nxsub,nysub,nzsub
+    real(DP)               :: xmin,xmax,ymin,ymax,zmin,&
+         & zmax,xtick,ytick,ztick
+    real(DP)               :: altitude    =  20.0_DP   
+    real(DP)               :: azimuth     = 298.0_DP   
+    real(DP)               :: azimuthStep =   0.2_DP   
+    real(DP)               :: basex  = 1.0_DP          
+    real(DP)               :: basey  = 1.0_DP          
+    real(DP)               :: height = 1.0_DP          
+    real(kind=pl_test_flt) :: alt = 33.0_pl_test_flt
+    real(kind=pl_test_flt) :: az  = 24.0_pl_test_flt
 
-    N = size(data(1,:))
-    xmin = data(1,1)
-    xmax = data(1,1)
-    ymin = data(1,2)
-    ymax = data(1,2)
+    character(len=23) :: xaxis,yaxis,zaxis,name
 
-    do i = 1,N,2
-       newval = minval(data(:,i+1))
-       if ( newval < ymin ) ymin = newval
-       newval = maxval(data(:,i+1))
-       if ( newval > ymax ) ymax = newval
-       newval = minval(data(:,i))
-       if ( newval < xmin ) xmin = newval
-       newval = maxval(data(:,i))
-       if ( newval > xmax ) xmax = newval
-    end do
+    xaxis = ""
+    yaxis = ""
+    zaxis = ""
+    name  = ""
+
+    if(present(xlabel)) xaxis = xlabel
+    if(present(ylabel)) xaxis = ylabel
+    if(present(zlabel)) zaxis = zlabel
+    if(present(title)) name = title    
+
+    xtick=0
+    ytick=0
+    ztick=0
+    nxsub=0
+    nysub=0
+    nzsub=0
+
+    xmin = minval(x)
+    xmax = maxval(x)
+    ymin = minval(y)
+    ymax = maxval(y)
+    zmin = minval(z)
+    zmax = maxval(z)
 
     call plsdev("xwin")
-    call plinit
-    call plenv(xmin,xmax,ymin,ymax,0,0)
-    do i = 1,N/2
-       call plcol0(i+2)
-       call plline(data(:,2*i-1),data(:,2*i))
-    end do
-    call plend
+    call plinit()
+    call pladv(0)
+    call plvpor(0.0_pl_test_flt,1.0_pl_test_flt,0.0_pl_test_flt,0.9_pl_test_flt)
+    call plwind(-1.0_pl_test_flt,1.0_pl_test_flt,-1.0_pl_test_flt,1.5_pl_test_flt)
+    call plw3d(1.0_pl_test_flt, 1.0_pl_test_flt, 1.2_pl_test_flt, xmin, &
+         xmax, ymin, ymax, zmin, zmax, alt,az)
+    call plbox3('bnstu',xaxis, 0.0_pl_test_flt, 0, &
+         'bnstu',yaxis, 0.0_pl_test_flt, 0, &
+         'bcdmnstuv',zaxis, 0.0_pl_test_flt, 0)
+    call plmtex('t', 1.0_pl_test_flt, 0.5_pl_test_flt, 0.5_pl_test_flt,name)
+    call plmesh(x, y, z, ior(opt, MAG_COLOR))
+    call plend()
 
-  end subroutine plotmanyNoLabels
+  end subroutine surf
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                           3D scatter plot                           !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  subroutine scatter3D(X,Y,Z,xlabel,ylabel,zlabel,title)
+    use kinds
+    use plplot
+    implicit none
+
+    real(DP),dimension(:),intent(in) :: X,Y,Z
+    character(len=*),optional,intent(in)        :: xlabel,ylabel,zlabel,title
+
+    integer                :: opt=3,nxsub,nysub,nzsub
+    real(DP)               :: xmin,xmax,ymin,ymax,zmin,&
+         & zmax,xtick,ytick,ztick
+    real(DP)               :: altitude    =  20.0_DP   
+    real(DP)               :: azimuth     = 298.0_DP   
+    real(DP)               :: azimuthStep =   0.2_DP   
+    real(DP)               :: basex  = 1.0_DP          
+    real(DP)               :: basey  = 1.0_DP          
+    real(DP)               :: height = 1.0_DP          
+    real(kind=pl_test_flt) :: alt = 33.0_pl_test_flt
+    real(kind=pl_test_flt) :: az  = 24.0_pl_test_flt
+
+    character(len=23) :: xaxis,yaxis,zaxis,name
+
+    xaxis = ""
+    yaxis = ""
+    zaxis = ""
+    name  = ""
+
+    if(present(xlabel)) xaxis = xlabel
+    if(present(ylabel)) xaxis = ylabel
+    if(present(zlabel)) zaxis = zlabel
+    if(present(title)) name = title
+
+    xtick=0
+    ytick=0
+    ztick=0
+    nxsub=0
+    nysub=0
+    nzsub=0
+
+    xmin = minval(x)
+    xmax = maxval(x)
+    ymin = minval(y)
+    ymax = maxval(y)
+    zmin = minval(z)
+    zmax = maxval(z)
+
+    call plsdev("xwin")
+    call plinit()
+    call pladv(0)
+    call plvpor(0.0_pl_test_flt,1.0_pl_test_flt,0.0_pl_test_flt,0.9_pl_test_flt)
+    call plwind(-1.0_pl_test_flt,1.0_pl_test_flt,-1.0_pl_test_flt,1.5_pl_test_flt)
+    call plw3d(1.0_pl_test_flt, 1.0_pl_test_flt, 1.2_pl_test_flt, xmin, &
+         xmax, ymin, ymax, zmin, zmax, alt,az)
+    call plbox3('bnstu',xaxis, 0.0_pl_test_flt, 0, &
+         'bnstu',yaxis, 0.0_pl_test_flt, 0, &
+         'bcdmnstuv',zaxis, 0.0_pl_test_flt, 0)
+    call plmtex('t', 1.0_pl_test_flt, 0.5_pl_test_flt, 0.5_pl_test_flt,name)
+    call plstring3(x,y,z,".")
+    call plend()
+
+  end subroutine scatter3D
 
 end module numFort
 
