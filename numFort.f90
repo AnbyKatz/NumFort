@@ -28,7 +28,8 @@
 !   - linspaceInt                                                             !
 ! - deriv                                                                     !
 ! - integral                                                                  !
-! - plot                                                                      !
+!                                                                             !
+! - PLplot                                                                    !
 !   - plotNolabels                                                            !
 !   - plotMany                                                                !
 !   - plotManyNolabels                                                        !
@@ -70,6 +71,9 @@ module numFort
   interface plot
      module procedure plot,plotNoLabels,plotmany,plotmanyNoLabels
   end interface plot
+  interface scatterplot
+     module procedure scatterplot,scatterplotNoLabels
+  end interface scatterplot
 
 contains
 
@@ -763,11 +767,36 @@ contains
 
   end function integralBreakPts
 
+  subroutine returnMaxAndMin(x,y,xmin,xmax,ymin,ymax)
+    use kinds
+    implicit none
+
+    real(DP),dimension(:),intent(in)::x,y
+    real(DP),intent(out)::xmin,xmax,ymin,ymax
+
+    xmin = minval(x)
+    xmax = maxval(x)
+    ymin = minval(y)
+    ymax = maxval(y)
+
+  end subroutine returnMaxAndMin
+
+
+!===============================================================================
+!###############################################################################
+!===============================================================================
+
   !---------------------------------------------------------------------!
   !                                                                     !
-  !                             Ploting Code                            !
+  !                             PLplot Code                             !
   !                                                                     !
   !---------------------------------------------------------------------!
+
+!===============================================================================
+!###############################################################################
+!===============================================================================
+
+! Standard x vs y plot  
 
   subroutine plot(x,y,xlabel,ylabel,title)
     use kinds
@@ -779,10 +808,10 @@ contains
 
     real(DP) :: ymin,ymax,xmin,xmax
 
-    ymin = minval(y)
-    xmin = minval(x)
-    ymax = maxval(y)
-    xmax = maxval(x)
+    ymin = minval(y)*1.2_DP
+    xmin = minval(x)*1.2_DP
+    ymax = maxval(y)*1.2_DP
+    xmax = maxval(x)*1.2_DP
 
     call plsdev("xwin")
     call plinit
@@ -794,6 +823,8 @@ contains
 
   end subroutine plot
 
+! x vs y plot with no axis no title labels
+
   subroutine plotNoLabels(x,y)
     use kinds
     use plplot  
@@ -803,10 +834,10 @@ contains
 
     real(DP) :: ymin,ymax,xmin,xmax
 
-    ymin = minval(y)
-    xmin = minval(x)
-    ymax = maxval(y)
-    xmax = maxval(x)
+    ymin = minval(y)*1.2_DP
+    xmin = minval(x)*1.2_DP
+    ymax = maxval(y)*1.2_DP
+    xmax = maxval(x)*1.2_DP
 
     call plsdev("xwin")
     call plinit
@@ -816,6 +847,62 @@ contains
     call plend
 
   end subroutine plotNoLabels
+
+  ! scatter plot for x vs y, style is the type of point display you want
+  ! e.g. style = "+"
+
+  subroutine scatterplot(x,y,style,xlabel,ylabel,title)
+    use kinds
+    use plplot  
+    implicit none 
+
+    real(DP),dimension(:),intent(in) :: x,y
+    character(len=*),intent(in) :: xlabel,ylabel,title,style
+
+    real(DP) :: ymin,ymax,xmin,xmax
+
+    ymin = minval(y)*1.2_DP
+    xmin = minval(x)*1.2_DP
+    ymax = maxval(y)*1.2_DP
+    xmax = maxval(x)*1.2_DP
+
+    call plsdev("xwin")
+    call plinit
+    call plenv(xmin,xmax,ymin,ymax,0,0)
+    call pllab(xlabel,ylabel,title)
+    call plcol0(3)
+    call plstring(x,y,style)
+    call plend
+
+  end subroutine scatterplot
+
+! Scatter plot for x vs y without axis labels or title
+
+  subroutine scatterplotNoLabels(x,y,style)
+    use kinds
+    use plplot  
+    implicit none 
+
+    real(DP),dimension(:),intent(in) :: x,y
+    character(len=*),intent(in) :: style
+
+    real(DP) :: ymin,ymax,xmin,xmax
+
+    ymin = minval(y)*1.2_DP
+    xmin = minval(x)*1.2_DP
+    ymax = maxval(y)*1.2_DP
+    xmax = maxval(x)*1.2_DP
+
+    call plsdev("xwin")
+    call plinit
+    call plenv(xmin,xmax,ymin,ymax,0,0)
+    call plcol0(3)
+    call plstring(x,y,style)
+    call plend
+
+  end subroutine scatterplotNoLabels
+
+! Multidimensional plot for as many x's and y's as necessary
 
   subroutine plotMany(data,xlabel,ylabel,title)
     use kinds
@@ -845,6 +932,11 @@ contains
        if ( newval > xmax ) xmax = newval
     end do
 
+    xmin = xmin*1.2_DP
+    xmax = xmax*1.2_DP
+    ymin = ymin*1.2_DP
+    ymax = ymax*1.2_DP
+
     call plsdev("xwin")
     call plinit
     call plenv(xmin,xmax,ymin,ymax,0,0)
@@ -856,6 +948,8 @@ contains
     call plend
 
   end subroutine plotmany
+
+! Multidimensional plot with no axes labels
 
   subroutine plotmanyNoLabels(data)
     use kinds

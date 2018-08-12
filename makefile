@@ -1,6 +1,6 @@
 # Fortran base MakeFile
 # Directory to numFort
-DIR = /home/anthony/Dropbox/Code/Fortran/f90-toolbox/
+DIR = /path/to/numFort
 
 F90C = ifort
 F90FLAGS = -O2
