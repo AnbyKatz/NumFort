@@ -3,7 +3,7 @@
 #+TITLE: numFort
 
 * Description
-numFort is a numerical library for FORTRAN that includes quadpack, lapack and PLplot source code. It enables the use of handy mathematical macros such as linspace. I have wasted so much of my life on this nonsense. 
+numFort is a numerical library for FORTRAN that includes quadpack, lapack and PLplot source code. It enables the use of handy mathematical macros such as linspace. I have wasted so much of my life on this nonsense.
 
 * Installation - Linux/Unix
 ** ifort
@@ -51,21 +51,21 @@ numFort is a numerical library for FORTRAN that includes quadpack, lapack and PL
 #+BEGIN_SRC shell
   export FC=/opt/intel/bin/ifort
 #+END_SRC
-- Back inside our ~/bin folder with our PLplotSrc sub directory, make the following directories 
+- Back inside our ~/bin folder with our PLplotSrc sub directory, make the following directories
 #+BEGIN_SRC shell
   mkdir buildDir
   mkdir installDir
   cd buildDir
 #+END_SRC
 - Just in case, copy the file CMakeLists.txt into your buildDir directory which should be located in PLplotSrc
-- We are now going to run the CMAKE command which has the following syntax 
+- We are now going to run the CMAKE command which has the following syntax
 - *MAKE SURE* you run this command whilst in the buildDir and *NOT* PLplotSrc or installDir
 #+BEGIN_SRC shell
   cmake -DCMAKE_INSTALL_PREFIX=/path/to/installDir /path/to/PLplotSrc
 #+END_SRC
 - After the command finishes run the following
 #+BEGIN_SRC shell
-  make 
+  make
   sudo make install
 #+END_SRC
 - This should take a bit but whens its done you're almost finished!
@@ -90,7 +90,7 @@ F90FLAGS = -O2
 CFLAGS = -O2 -xHost -mkl
 
 PLPLOT = $$(pkg-config --cflags --libs plplot-fortran)
-LIBS = -lmkl_lapack95_lp64 -lplplotfortran -lplplot 
+LIBS = -lmkl_lapack95_lp64 -lplplotfortran -lplplot
 MYLIBS = -I$(DIR)
 
 %.o: %.f90
@@ -101,11 +101,11 @@ LIBOBJS = $(DIR)lapack.o\
 	$(DIR)numFort.o
 
 # Own personal object files
-OBJS = 
+OBJS =
 
 all: filename
 
-filename: filename.f90 
+filename: filename.f90
 	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBOBJS) $(LIBS) $(PLPLOT) $(MYLIBS)
 
 clean:
@@ -126,7 +126,7 @@ clean:
 - Include your own module files under the variable *OBJS*. Bonza, you should be ready to go
 
 * Documentation
-The two modules you may include are /kinds/ and /numFort/. Simply include in any .f90 file via a simple use statement as per usual. 
+The two modules you may include are /kinds/ and /numFort/. Simply include in any .f90 file via a simple use statement as per usual.
 #+BEGIN_SRC fortran
   program progName
         use kinds
@@ -268,7 +268,7 @@ Numerically calculates the derivative via a centred finite difference method.
 |----------+-------------------------------|
 
 *** integral
-Numerically calculates an integral given a function and bounds. Using Gaussin quadrature.
+Numerically calculates an integral given a function and bounds. Using Gaussian quadrature.
 
 |----------+-----------------------------|
 | Variable | Description                 |
@@ -281,6 +281,22 @@ Numerically calculates an integral given a function and bounds. Using Gaussin qu
 |----------+-----------------------------|
 | integral | numerical value of integral |
 |----------+-----------------------------|
+
+*** integralPV
+Numerically calculates a Cauchy-Principle value integral using Gaussian quadrature. For a given f(x), evaluates the integral of f(x)/(x-c).
+
+|------------+-----------------------------|
+| Variable   | Description                 |
+|------------+-----------------------------|
+| f          | Input Function              |
+| c          | Pole                        |
+| a          | Left bound                  |
+| b          | Right bound                 |
+| absErr     | absolute error              |
+| relErr     | relative error              |
+|------------+-----------------------------|
+| integralPV | numerical value of integral |
+|------------+-----------------------------|
 
 ** PLplot
 
@@ -296,7 +312,7 @@ Can be called in the two following ways
   call plot(x,y,xlabel,ylabel,title)
   call plot(data,xlabel,ylabel,title)
 #+END_SRC
-produces a standard x vs y plot. 
+produces a standard x vs y plot.
 
 *** scatterplot
 Can be called in the two following ways
