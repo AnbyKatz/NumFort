@@ -120,7 +120,7 @@ clean:
 - The bash file /recompile.sh/ in the repository can be used to recompile these libraries if you should choose to edit and add. Simply run with ./recompile.sh whilst in the directory. Alternatively one may run the following command in the terminal
 
 #+BEGIN_SRC shell
-  (cd /home/username/bin; ./recompile.sh)
+  (cd /path/to/numFort/; ./recompile.sh)
 #+END_SRC
 
 - Include your own module files under the variable *OBJS*. Bonza, you should be ready to go

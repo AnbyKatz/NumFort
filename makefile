@@ -1,6 +1,6 @@
 # Fortran base MakeFile
 # Directory to numFort
-DIR = /path/to/numFort
+DIR = /path/to/numFort/
 
 F90C = ifort
 F90FLAGS = -O2

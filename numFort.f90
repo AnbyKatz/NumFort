@@ -843,8 +843,8 @@ contains
     if(present(ylabel)) yaxis = ylabel
     if(present(title)) name = title
 
-    ymin = minval(y)*1.2_DP
-    xmin = minval(x)*1.2_DP
+    ymin = minval(y)*0.8_DP
+    xmin = minval(x)*0.8_DP
     ymax = maxval(y)*1.2_DP
     xmax = maxval(x)*1.2_DP
 
@@ -884,8 +884,8 @@ contains
     if(present(ylabel)) yaxis = ylabel
     if(present(title)) name = title
 
-    ymin = minval(y)*1.2_DP
-    xmin = minval(x)*1.2_DP
+    ymin = minval(y)*0.8_DP
+    xmin = minval(x)*0.8_DP
     ymax = maxval(y)*1.2_DP
     xmax = maxval(x)*1.2_DP
 
@@ -943,8 +943,8 @@ contains
        if ( newval > xmax ) xmax = newval
     end do
 
-    xmin = xmin*1.2_DP
-    xmax = xmax*1.2_DP
+    xmin = xmin*0.8_DP
+    xmax = xmax*0.8_DP
     ymin = ymin*1.2_DP
     ymax = ymax*1.2_DP
 
