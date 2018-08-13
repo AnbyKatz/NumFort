@@ -1,11 +1,13 @@
 !*****************************************************************************!
 !                               NUMFORT                                       !
+!              Authors: Anthony Kalaitzis and Curtis Abell                    !
 !                                                                             !
 ! Numerical library for fortran. Use the following module titles              !
 ! to Move Around easily.                                                      !
 !                                                                             !
 ! 1. NumFort                                                                  !
-! 2. QuadPack                                                                 !
+! 2. pythonPlot                                                               !
+! 3. QuadPack                                                                 !
 !                                                                             !
 ! Below contains a list of the function names inside numFort for easier       !
 ! navigation purposes.                                                        !
@@ -29,8 +31,6 @@
 ! - deriv                                                                     !
 ! - integral                                                                  !
 ! - integralPV                                                                !
-! - returnMaxAndMin                                                           !
-!   - returnMaxAndMinXYZ                                                      !
 !                                                                             !
 ! - PLplot                                                                    !
 !   - plot                                                                    !
@@ -64,7 +64,7 @@ module numFort
      module procedure integral, integralToInfty, integralOf, integralBreakPts
   end interface integral
   interface rk4
-     module procedure rk4,rk42DE,rk4Step
+     module procedure rk4,rk4N
   end interface rk4
   interface splinefit
      module procedure splinefit,splinefitCoeff
@@ -75,9 +75,6 @@ module numFort
   interface plot
      module procedure plot,plotmany
   end interface plot
-  interface returnMaxAndMin
-     module procedure returnMaxAndMin,returnMaxAndMinXYZ
-  end interface returnMaxAndMin
 
 contains
 
@@ -306,47 +303,10 @@ contains
   !---------------------------------------------------------------------!
   ! Runge Kutta calculation for input function(s). For a single step    !
   ! or a range of specified values. Algorithims for a single DE or      !
-  ! two coupled DE's.                                                   !
+  ! N coupled DE's.                                                     !
   !---------------------------------------------------------------------!
 
-  subroutine rk4(t0,tN,y0,N,f,t,y)
-    use kinds
-    implicit none
-
-    real(DP),intent(in) :: t0,tN,y0
-    integer ,intent(in) :: N
-    interface
-       function f(t,y)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: t,y
-       end function f
-    end interface
-    real(DP),dimension(N),intent(out) :: y,t
-
-    real(DP) :: h,k1,k2,k3,k4
-    integer  :: i
-
-    h = (tN-t0)/N
-    t(1) = t0
-    t(N) = tN
-    do i = 2,N-1
-       t(i) = t(0) + h*(i-1)
-    end do
-    y(:) = 0
-    y(1) = y0
-    do i = 1,N-1
-       k1 = f(t(i),y(i))
-       k2 = f(t(i)+0.5_dp*h,y(i)+0.5_dp*h*k1)
-       k3 = f(t(i)+0.5_dp*h,y(i)+0.5_dp*h*k2)
-       k4 = f(t(i)+h,y(i)+k3*h)
-       y(i+1) = y(i) + (1/6.0_dp)*(k1+2*k2+2*k3+k4)*h
-    end do
-
-  end subroutine rk4
-
-  subroutine rk4Step(h,t0,y0,f,y)
+  function rk4(f,h,t0,y0)
     use kinds
     implicit none
 
@@ -359,7 +319,7 @@ contains
          real(DP), intent(in) :: t,y
        end function f
     end interface
-    real(DP),intent(out) :: y
+    real(DP) :: rk4
 
     real(DP) :: k1,k2,k3,k4
 
@@ -367,48 +327,39 @@ contains
     k2 = f(t0+0.5_dp*h,y0+0.5_dp*h*k1)
     k3 = f(t0+0.5_dp*h,y0+0.5_dp*h*k2)
     k4 = f(t0+h,y0+k3*h)
-    y = y0 + (1/6.0_dp)*(k1+2*k2+2*k3+k4)*h
+    rk4 = y0 + (1/6.0_dp)*(k1+2*k2+2*k3+k4)*h
 
-  end subroutine rk4Step
+  end function rk4
 
-  subroutine rk42DE(h,t0,y0,f,g,y1,y2)
+  function rk4N(f,h,t0,y0) 
     use kinds
     implicit none
 
-    real(DP),dimension(2) ,intent(in) :: y0
-    real(DP),intent(in)               :: h,t0
+    real(DP),intent(in)              :: t0,h
+    real(DP),dimension(:),intent(in) :: y0
     interface
-       function f(t,y1,y2)
+       function f(t0,y0,nEq)
          use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: t,y1,y2
+         implicit none 
+         integer,intent(in)    :: nEq
+         real(DP),intent(in)   :: t0,y0(nEq)
+         real(DP),dimension(nEq) :: f
        end function f
     end interface
-    interface
-       function g(t,y1,y2)
-         use kinds
-         implicit none
-         real(DP)             :: g
-         real(DP) ,intent(in) :: t,y1,y2
-       end function g
-    end interface
-    real(DP),intent(out) :: y1,y2
+    real(DP),dimension(size(y0)) :: rk4N
 
-    real(DP) :: k1,k2,k3,k4,l1,l2,l3,l4
+    real(DP),dimension(size(y0)) :: k1,k2,k3,k4
+    integer :: nEq
 
-    k1 = f(t0,y0(1),y0(2))
-    l1 = g(t0,y0(1),y0(2))
-    k2 = f(t0+0.5_dp*h,y0(1)+0.5_dp*h*k1,y0(2)+0.5_dp*h*l1)
-    l2 = g(t0+0.5_dp*h,y0(1)+0.5_dp*h*k1,y0(2)+0.5_dp*h*l1)
-    k3 = f(t0+0.5_dp*h,y0(1)+0.5_dp*h*k2,y0(2)+0.5_dp*h*l2)
-    l3 = g(t0+0.5_dp*h,y0(1)+0.5_dp*h*k2,y0(2)+0.5_dp*h*l2)
-    k4 = f(t0+h,y0(1)+k3*h,y0(2)+l3*h)
-    l4 = g(t0+h,y0(1)+k3*h,y0(2)+l3*h)
-    y1 = y0(1) + (1/6.0_dp)*(k1+2*k2+2*k3+k4)*h
-    y2 = y0(2) + (1/6.0_dp)*(l1+2*l2+2*l3+l4)*h
+    nEq = size(y0)
+    k1 = h*f(t0,y0,nEq)
+    k2 = h*f(t0 + h/2,y0 + k1/2,nEq)
+    k3 = h*f(t0 + h/2,y0 + k2/2,nEq)
+    k4 = h*f(t0 + h,y0 + k3,nEq)
 
-  end subroutine rk42DE
+    rk4N = y0 + (k1 + 2*k2 + 2*k3 + k4)/6
+
+  end function rk4N
 
   !---------------------------------------------------------------------!
   !                                                                     !
@@ -771,9 +722,16 @@ contains
 
   end function integralBreakPts
 
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                      Principle Value Integrator                     !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Evaluates the Cauchy-Principle value integral for f(x)/(x-c)        !
+  !---------------------------------------------------------------------!
 
   function integralPV(f, c, a, b, absErr, relErr)
-    ! Evaluates the Cauchy-Principle value integral for f(x)/(x-c)
+    use kinds
     implicit none
     real(DP)                  :: integralPV
     interface
@@ -851,39 +809,6 @@ contains
     end function fNonSingular
 
   end function integralPV
-
-
-  ! return maximum values of given arguments
-
-  subroutine returnMaxAndMin(x,y,xmin,xmax,ymin,ymax)
-    use kinds
-    implicit none
-
-    real(DP),dimension(:),intent(in)::x,y
-    real(DP),intent(out)::xmin,xmax,ymin,ymax
-
-    xmin = minval(x)
-    xmax = maxval(x)
-    ymin = minval(y)
-    ymax = maxval(y)
-
-  end subroutine returnMaxAndMin
-
-  subroutine returnMaxAndMinXYZ(x,y,z,xmin,xmax,ymin,ymax,zmin,zmax)
-    use kinds
-    implicit none
-
-    real(DP),dimension(:),intent(in)::x,y,z
-    real(DP),intent(out)::xmin,xmax,ymin,ymax,zmin,zmax
-
-    xmin = minval(x)
-    xmax = maxval(x)
-    ymin = minval(y)
-    ymax = maxval(y)
-    zmin = minval(z)
-    zmax = maxval(z)
-
-  end subroutine returnMaxAndMinXYZ
 
 !===============================================================================
 !###############################################################################
@@ -1183,6 +1108,122 @@ contains
   end subroutine scatter3D
 
 end module numFort
+
+!==============================================================================
+!##############################################################################
+!==============================================================================
+
+module pythonPlot
+  use Kinds
+  implicit none
+
+  interface pyplot  
+     module procedure pyplot,pyplotXY
+  end interface pyplot
+
+contains
+    
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                       Multi-Dimensional Pyplots                     !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  subroutine pyplot(x,title,xaxis,yaxis,legend)
+    use Kinds
+    implicit none
+    character(len=*),intent(in),optional              :: xaxis,yaxis,title
+    character(len=*),dimension(:),intent(in),optional :: legend
+    real(DP),dimension(:,:),intent(in)                :: x
+
+    character(len=10),dimension(size(x(1,:))/2)       :: ld
+    character(len=14)                                 :: fmt,xlabel,ylabel,name
+    integer                                           :: ii,j,N,L
+
+    N = size(x,dim=2)
+    L = size(ld)
+    
+    open(100,file="titles.dat",action="write", &
+         & status="replace",form="formatted")        
+    open(101,file="output.dat",action="write", &
+         & status="replace",form="formatted")
+    
+    name   = ""
+    xlabel = ""
+    ylabel = ""
+    ld     = ""
+
+    if(present(title)) name   = title
+    if(present(xaxis)) xlabel = xaxis
+    if(present(yaxis)) ylabel = yaxis
+    if(present(legend))ld(1:L)= legend(1:L)
+
+    write(100,'(a20)') name
+    write(100,'(a15)') xlabel
+    write(100,'(a15)') ylabel
+    write(fmt,'(a1,i1,a7)') '(', N, 'es20.9)'
+
+    do ii=1,L
+       write(100,'(a12)') ld(ii)
+    end do
+
+    do ii=1,size(x,dim=1)
+       write(101,fmt) x(ii,:)
+    end do
+
+    close(100)
+    close(101)
+
+    call system("./pyplots.py")
+
+  end subroutine pyplot
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                          Standard Pyplots                           !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  subroutine pyplotXY(x,y,title,xaxis,yaxis)
+    use Kinds
+    implicit none
+    character(len=*),intent(in),optional :: xaxis,yaxis,title
+    real(DP),dimension(:),intent(in)     :: x,y
+    
+    character(len=14)                    :: xlabel,ylabel,name,ld
+    integer                              :: ii
+
+    open(100,file="titles.dat",action="write", &
+         & status="replace",form="formatted")        
+    open(101,file="output.dat",action="write", &
+         & status="replace",form="formatted")
+
+    name   = ""
+    xlabel = ""
+    ylabel = ""
+    ld     = "empty"
+
+    if(present(title)) name   = title
+    if(present(xaxis)) xlabel = xaxis
+    if(present(yaxis)) ylabel = yaxis
+
+    write(100,'(a20)') name
+    write(100,'(a15)') xlabel
+    write(100,'(a15)') ylabel
+    write(100,'(a7)') ld
+
+    do ii=1,size(x)
+       write(101,'(2es20.9)') x(ii), y(ii)
+    end do
+
+    close(100)
+    close(101)
+
+    call system("./pyplots.py")
+
+  end subroutine pyplotXY
+
+end module pythonPlot
 
 !==============================================================================
 !##############################################################################

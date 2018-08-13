@@ -81,16 +81,16 @@ numFort is a numerical library for FORTRAN that includes quadpack, lapack and PL
 - Download and move numFort repository files to specified location eg. /path/to/numFort
 - Your final makefile should look something like this
 #+BEGIN_SRC shell
-  # Fortran base MakeFile
+# Fortran base MakeFile
 # Directory to numFort
-DIR = /path/to/numFort
+DIR = /path/to/numFort/
 
 F90C = ifort
 F90FLAGS = -O2
-CFLAGS = -O2 -xHost -mkl
+CFLAGS = -O2 -mkl
 
 PLPLOT = $$(pkg-config --cflags --libs plplot-fortran)
-LIBS = -lmkl_lapack95_lp64 -lplplotfortran -lplplot
+LIBS = -lmkl_lapack95_lp64 -lplplotfortran -lplplot 
 MYLIBS = -I$(DIR)
 
 %.o: %.f90
@@ -101,11 +101,11 @@ LIBOBJS = $(DIR)lapack.o\
 	$(DIR)numFort.o
 
 # Own personal object files
-OBJS =
+OBJS = 
 
 all: filename
 
-filename: filename.f90
+filename: filename.f90 $(OBJS)
 	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBOBJS) $(LIBS) $(PLPLOT) $(MYLIBS)
 
 clean:
@@ -126,11 +126,12 @@ clean:
 - Include your own module files under the variable *OBJS*. Bonza, you should be ready to go
 
 * Documentation
-The two modules you may include are /kinds/ and /numFort/. Simply include in any .f90 file via a simple use statement as per usual.
+The three modules you may include are /kinds/, /numFort/ and /pythonPlots/. Simply include in any .f90 file via a simple use statement as per usual.
 #+BEGIN_SRC fortran
   program progName
         use kinds
         use numFort
+        use pythonPlots
 
         ...
 
@@ -138,7 +139,7 @@ The two modules you may include are /kinds/ and /numFort/. Simply include in any
 #+END_SRC
 Below we will give short descriptions of the module files and the subroutines and functions contained inside.
 
-Make sure to search for these functions inside numFort to see their parameters. A brief description of their parameters are listed below for _ALL_ possible routine variants.
+Listed variables (some may be optional) and examples of how to call:
 
 ** Kinds
 Precision parameter file. Main uses are for constants like pi and making variables double precision.
@@ -156,34 +157,51 @@ Calculates the factorial of n
 | factorial | outputted factorial |
 |-----------+---------------------|
 
+#+BEGIN_SRC fortran
+  m = factorial(n)
+#+END_SRC
+
 *** Meshgrid
 Creates a unique lattice of points for two given vectors x and y. Usually used for making a 3D grid for 3 dimensional plots.
 
-|----------+---------------------------------------|
-| Variable | Description                           |
-|----------+---------------------------------------|
-| x        | double precision vector               |
-| y        | double precision vector               |
-|----------+---------------------------------------|
-| XX       | matrix of dimension (size(y),size(x)) |
-| YY       | matrix of dimension (size(y),size(x)) |
-|----------+---------------------------------------|
+|----------+-------------------------|
+| Variable | Description             |
+|----------+-------------------------|
+| x(N)     | double precision vector |
+| y(M)     | double precision vector |
+|----------+-------------------------|
+| XX(M,N)  | double precision matrix |
+| YY(M,N)  | double precision matrix |
+|----------+-------------------------|
+
+#+BEGIN_SRC fortran
+  call meshgrid(x,y,XX,YY)
+#+END_SRC
 
 
 *** Splinefit
 Fits a cubic spline to inputted data. This function can return the coefficients or just a list of desired points to be interpolated at.
 
-|----------+------------------------------------------|
-| Variable | Description                              |
-|----------+------------------------------------------|
-| x        | double precision vector                  |
-| y        | double precision vector                  |
-| xj       | this is the vector x for calculation use |
-| intpts   | points to interpolate at (vector)        |
-|----------+------------------------------------------|
-| intvals  | outputted interpolant values             |
-| c        | coefficients for spline fit              |
-|----------+------------------------------------------|
+|------------+------------------------------------------|
+| Variable   | Description                              |
+|------------+------------------------------------------|
+| x(N)       | double precision vector                  |
+| y(N)       | double precision vector                  |
+| xj(N)      | this is the vector x for calculation use |
+| intpts(N)  | points to interpolate at (vector)        |
+| intvals(N) | outputted interpolant values             |
+| c(N)       | coefficients for spline fit              |
+| x          | point to evaluate fit at                 |
+|------------+------------------------------------------|
+| splinevals | output values for fit                    |
+|------------+------------------------------------------|
+
+#+BEGIN_SRC fortran
+  call splinefit(x,y,intpts,intvals)
+  call splinefit(x,y,c)
+  ! should be called after splinefit
+  value = splinevals(c,xj,x)
+#+END_SRC
 
 *** PolyFit
 Exactly the same as SplineFit but for a Nth order polynomial.
@@ -192,30 +210,43 @@ Exactly the same as SplineFit but for a Nth order polynomial.
 | Variable | Description                      |
 |----------+----------------------------------|
 | N        | integer, order of polynomial     |
-| x        | double precision vector          |
-| y        | double precision vector          |
+| x(N)     | double precision vector          |
+| y(N)     | double precision vector          |
 |----------+----------------------------------|
-| c        | coefficient of fit               |
+| c(N+1)   | coefficient of fit               |
 | x        | value to calculate polynomial at |
 |----------+----------------------------------|
 
-*** rk4
-Performs a 4th order Runge Kutta solving algorithm for a given DE. Algorithms giving for a single DE or 2 coupled DE. May have this method go over a range of points or just a single step.
+#+BEGIN_SRC fortran
+  call polyfit(x,y,N,c)
+  ! Should be called after polyfit
+  value = polyCal(N,c,x)
+#+END_SRC
 
-|----------+----------------------------------------|
-| Variable | Description                            |
-|----------+----------------------------------------|
-| t0       | initial value to start stepping at     |
-| tN       | final value to step to                 |
-| y0       | initial y value                        |
-| N        | total number of points to step through |
-| f        | input function                         |
-| h        | step size                              |
-|----------+----------------------------------------|
-| x        | value to calculate polynomial at       |
-| t        | outputted x values                     |
-| y        | outputted y values                     |
-|----------+----------------------------------------|
+*** rk4
+Performs a 4th order Runge Kutta solving algorithm for a given DE. Algorithms giving for a single DE or N coupled DE.
+
+|----------+------------------------------------|
+| Variable | Description                        |
+|----------+------------------------------------|
+| t0       | initial value to start stepping at |
+| y0       | initial y value(s)                 |
+| f        | input function(s)                  |
+| h        | step size                          |
+| nEq      | number of coupled equations        |
+|----------+------------------------------------|
+| rk4      | output (y_{n+1})                   |
+|----------+------------------------------------|
+
+#+BEGIN_SRC fortran
+  function f(t,y)
+  value = rk4(f,h,t0,y0)
+
+  ! In the N DE case, y = y(N),f = f(N)
+  ! i.e. N initial conditions and equations
+  function f(t,y,nEq)
+  value = rk4(f,h,t0,y0)
+#+END_SRC
 
 *** GuessZero
 Given a set of values or a function with boundaries, returns the approximate value of where the function changes sign. An index is returned for inputted values method and the x value exactly is returned for the function method.
@@ -230,6 +261,13 @@ Given a set of values or a function with boundaries, returns the approximate val
 | GuessZero | integer index of zero location  |
 |-----------+---------------------------------|
 
+#+BEGIN_SRC fortran
+  value = guesszero(fvals)
+
+  function f(x)
+  value = guesszero(f,a,b)
+#+END_SRC
+
 *** Newton1D
 Performs a 1 dimensional newtons method to find the zero of a function.
 
@@ -241,6 +279,11 @@ Performs a 1 dimensional newtons method to find the zero of a function.
 |----------+---------------------------------------|
 | newton1D | zero of function guess location       |
 |----------+---------------------------------------|
+
+#+BEGIN_SRC fortran
+  function fn(x)
+  value = newton1D(fn,x)
+#+END_SRC
 
 *** Linspace
 Creates a linear space of points between a and b with N points.
@@ -255,6 +298,10 @@ Creates a linear space of points between a and b with N points.
 | linspace | vector of points between a and b |
 |----------+----------------------------------|
 
+#+BEGIN_SRC fortran
+  vector = linspace(a,b,N)
+#+END_SRC
+
 *** Deriv
 Numerically calculates the derivative via a centred finite difference method.
 
@@ -266,6 +313,11 @@ Numerically calculates the derivative via a centred finite difference method.
 |----------+-------------------------------|
 | deriv    | value of numerical derivative |
 |----------+-------------------------------|
+
+#+BEGIN_SRC fortran
+  function f(x)
+  value = deriv(f,x0)
+#+END_SRC
 
 *** integral
 Numerically calculates an integral given a function and bounds. Using Gaussian quadrature.
@@ -281,6 +333,11 @@ Numerically calculates an integral given a function and bounds. Using Gaussian q
 |----------+-----------------------------|
 | integral | numerical value of integral |
 |----------+-----------------------------|
+
+#+BEGIN_SRC fortran
+  function f(x)
+  value = integral(f,a,b,absErr,relErr)
+#+END_SRC
 
 *** integralPV
 Numerically calculates a Cauchy-Principle value integral using Gaussian quadrature. For a given f(x), evaluates the integral of f(x)/(x-c).
@@ -298,52 +355,106 @@ Numerically calculates a Cauchy-Principle value integral using Gaussian quadratu
 | integralPV | numerical value of integral |
 |------------+-----------------------------|
 
+#+BEGIN_SRC fortran
+  function f(x)
+  value = integralPV(f,c,a,b,absErr,relErr)
+#+END_SRC
+
 ** PLplot
 
 Call PLplot by using the subroutine plot() for example, this will call various wrappers to plplot which can be found within numFort. Below is a list of said wrappers and their arguments. Axes labels and title may be omitted in all below routines if one wishes.
 
 *** plot
-Can be called in the two following ways
-#+BEGIN_SRC fortran
-  real(DP),dimension(N,M) :: data ! x values in columns 1,3,.. y values in 2,4,...
-  real(DP),dimension(N)   :: x,y
-  character(len=*)        :: xlabel,ylabel,title
+standard x vs y plot or even x1,x2,... vs y1,y2,...
 
+|-----------+-------------------------+
+| Variable  | Description             |
+|-----------+-------------------------+
+| x(N)      | x values                |
+| y(N)      | y values                |
+| data(N,M) | multi-dimensional data  |
+| xlabel    | x axis title (optional) |
+| ylabel    | y axis title (optional) |
+| title     | title (optional)        |
+|-----------+-------------------------+
+
+#+BEGIN_SRC fortran
   call plot(x,y,xlabel,ylabel,title)
   call plot(data,xlabel,ylabel,title)
 #+END_SRC
-produces a standard x vs y plot.
+
 
 *** scatterplot
-Can be called in the two following ways
-#+BEGIN_SRC fortran
-  real(DP),dimension(N)   :: x,y
-  character(len=*)        :: xlabel,ylabel,title,style ! style = "+" for example
+standard scatter plot
+|----------+-------------------------|
+| Variable | Description             |
+|----------+-------------------------|
+| x(N)     | x values                |
+| y(N)     | y values                |
+| style    | points style e.g. "+"   |
+| xlabel   | x axis title (optional) |
+| ylabel   | y axis title (optional) |
+| title    | title (optional)        |
+|----------+-------------------------|
 
+#+BEGIN_SRC fortran
   call scatterplot(x,y,style,xaxis,yaxis,title)
 #+END_SRC
-produces a standard scatter plot of x vs y.
 
 *** surf
-Can be called in the two following ways
+3D surface plot (goes well with meshgrid)
+|----------+-------------------------|
+| Variable | Description             |
+|----------+-------------------------|
+| x(N)     | x values                |
+| y(N)     | y values                |
+| z(N,N)   | z values                |
+| xlabel   | x axis title (optional) |
+| ylabel   | y axis title (optional) |
+| zlabel   | z axis title (optional) |
+| title    | title (optional)        |
+|----------+-------------------------|
+
 #+BEGIN_SRC fortran
-  real(DP),dimension(N)   :: X
-  real(DP),dimension(M)   :: Y
-  real(DP),dimension(M,N) :: Z
-  character(len=*)        :: xlabel,ylabel,zlabel,title
-
-  ! usually create the grids for Z using "call meshgrid(x,y,XX,YY)"
-  ! XX = MxN and YY = MxN
-
   call surf(X,Y,Z,xlabel,ylabel,zlabel,title)
 #+END_SRC
 
 
 *** scatter3D
-Can be called in the two following ways
-#+BEGIN_SRC fortran
-  real(DP),dimension(N)   :: x,y,z
-  character(len=*)        :: xlabel,ylabel,zlabel,title
+3D scatter plot.
 
+|----------+-------------------------|
+| Variable | Description             |
+|----------+-------------------------|
+| x(N)     | x values                |
+| y(N)     | y values                |
+| z(N)     | z values                |
+| xlabel   | x axis title (optional) |
+| ylabel   | y axis title (optional) |
+| zlabel   | z axis title (optional) |
+| title    | title (optional)        |
+|----------+-------------------------|
+
+#+BEGIN_SRC fortran
  call scatter3D(X,Y,Z,xlabel,ylabel,zlabel,title)
+#+END_SRC
+
+** pythonPlots
+python plotting wrappers, simply copy /pyplots.py/ into the necessary directory and use the following command.
+
+|----------+-------------------------|
+| Variable | Description             |
+|----------+-------------------------|
+| x(N,M)   | multi-dimensional array |
+| x(N)     | x values                |
+| y(N)     | y values                |
+| xaxis    | x axis title (optional) |
+| yaxis    | y axis title (optional) |
+| legend   | legend (optional)       |
+| title    | title (optional)        |
+|----------+-------------------------|
+
+#+BEGIN_SRC fortran
+  call pyplot(x,title,xaxis,yaxis,legend)
+  call pyplot(x,y,title,xaxis,yaxis)
 #+END_SRC
