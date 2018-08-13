@@ -843,10 +843,12 @@ contains
     if(present(ylabel)) yaxis = ylabel
     if(present(title)) name = title
 
-    ymin = minval(y)*0.8_DP
-    xmin = minval(x)*0.8_DP
-    ymax = maxval(y)*1.2_DP
-    xmax = maxval(x)*1.2_DP
+    ymin = minval(y)
+    ymin = ymin-0.2_DP*abs(ymin)
+    ymax = maxval(y)
+    ymax = ymax+0.2_DP*abs(ymax)
+    xmin = minval(x)
+    xmax = maxval(x)
 
     call plsdev("xwin")
     call plinit
@@ -884,10 +886,12 @@ contains
     if(present(ylabel)) yaxis = ylabel
     if(present(title)) name = title
 
-    ymin = minval(y)*0.8_DP
-    xmin = minval(x)*0.8_DP
-    ymax = maxval(y)*1.2_DP
-    xmax = maxval(x)*1.2_DP
+    ymin = minval(y)
+    ymin = ymin-0.2_DP*abs(ymin)
+    ymax = maxval(y)
+    ymax = ymax+0.2_DP*abs(ymax)
+    xmin = minval(x)
+    xmax = maxval(x)
 
     call plsdev("xwin")
     call plinit
@@ -943,10 +947,8 @@ contains
        if ( newval > xmax ) xmax = newval
     end do
 
-    xmin = xmin*0.8_DP
-    xmax = xmax*0.8_DP
-    ymin = ymin*1.2_DP
-    ymax = ymax*1.2_DP
+    ymin = ymin-0.2_DP*abs(ymin)
+    ymax = ymax+0.2_DP*abs(ymax)
 
     call plsdev("xwin")
     call plinit
