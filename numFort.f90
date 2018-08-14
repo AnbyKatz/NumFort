@@ -6,8 +6,7 @@
 ! to Move Around easily.                                                      !
 !                                                                             !
 ! 1. NumFort                                                                  !
-! 2. pythonPlot                                                               !
-! 3. QuadPack                                                                 !
+! 2. QuadPack                                                                 !
 !                                                                             !
 ! Below contains a list of the function names inside numFort for easier       !
 ! navigation purposes.                                                        !
@@ -37,6 +36,7 @@
 !   - plotMany                                                                !
 !   - surf                                                                    !
 !   - scatter3D                                                               !
+! - pyplot
 !                                                                             !
 !*****************************************************************************!
 
@@ -75,8 +75,105 @@ module numFort
   interface plot
      module procedure plot,plotmany
   end interface plot
+  interface Trace
+     module procedure TraceDP,TraceSP,TraceComplexDP,TraceComplexSP
+  end interface Trace
 
 contains
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                   Calculate the trace of a Matrix                   !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  function TraceDP(M)
+    use kinds
+    implicit none
+
+    real(DP),dimension(:,:),intent(in) :: M
+    real(DP)                           :: TraceDP
+
+    integer :: rows,cols,i
+
+    rows = size(M(:,1))
+    cols = size(M(1,:))
+    TraceDP = 0
+    if ( rows .ne. cols ) then
+       write(*,'(a)') "Error, not a square matrix"
+    else
+       do i = 1,rows
+          TraceDP = TraceDP + M(i,i)
+       end do
+    end if
+
+  end function TraceDP
+
+  function TraceSP(M)
+    use kinds
+    implicit none
+
+    real(SP),dimension(:,:),intent(in) :: M
+    real(SP)                           :: TraceSP
+
+    integer :: rows,cols,i
+
+    rows = size(M(:,1))
+    cols = size(M(1,:))
+    TraceSP = 0
+    if ( rows .ne. cols ) then
+       write(*,'(a)') "Error, not a square matrix"
+    else
+       do i = 1,rows
+          TraceSP = TraceSP + M(i,i)
+       end do
+    end if
+
+  end function TraceSP
+
+  function TraceComplexDP(M)
+    use kinds
+    implicit none
+
+    complex(DP),dimension(:,:),intent(in) :: M
+    complex(DP)                           :: TraceComplexDP
+
+    integer :: rows,cols,i
+
+    rows = size(M(:,1))
+    cols = size(M(1,:))
+    TraceComplexDP = 0.0_DP
+    if ( rows .ne. cols ) then
+       write(*,'(a)') "Error, not a square matrix"
+    else
+       do i = 1,rows
+          TraceComplexDP = TraceComplexDP + M(i,i)
+       end do
+    end if
+
+  end function TraceComplexDP
+
+  function TraceComplexSP(M)
+    use kinds
+    implicit none
+
+    complex(SP),dimension(:,:),intent(in) :: M
+    complex(SP)                           :: TraceComplexSP
+
+    integer :: rows,cols,i
+
+    rows = size(M(:,1))
+    cols = size(M(1,:))
+    TraceComplexSP = 0.0_DP
+    if ( rows .ne. cols ) then
+       write(*,'(a)') "Error, not a square matrix"
+    else
+       do i = 1,rows
+          TraceComplexSP = TraceComplexSP + M(i,i)
+       end do
+    end if
+
+  end function TraceComplexSP
 
   !---------------------------------------------------------------------!
   !                                                                     !
@@ -352,12 +449,12 @@ contains
     integer :: nEq
 
     nEq = size(y0)
-    k1 = h*f(t0,y0,nEq)
-    k2 = h*f(t0 + h/2,y0 + k1/2,nEq)
-    k3 = h*f(t0 + h/2,y0 + k2/2,nEq)
-    k4 = h*f(t0 + h,y0 + k3,nEq)
+    k1 = f(t0,y0,nEq)
+    k2 = f(t0 + 0.5_DP*h,y0 + 0.5_DP*h*k1,nEq)
+    k3 = f(t0 + 0.5_DP*h,y0 + 0.5_DP*h*k2,nEq)
+    k4 = f(t0 + h,y0 + h*k3,nEq)
 
-    rk4N = y0 + (k1 + 2*k2 + 2*k3 + k4)/6
+    rk4N = y0 + (1/6.0_DP)*(k1 + 2*k2 + 2*k3 + k4)*h
 
   end function rk4N
 
@@ -1107,22 +1204,6 @@ contains
 
   end subroutine scatter3D
 
-end module numFort
-
-!==============================================================================
-!##############################################################################
-!==============================================================================
-
-module pythonPlot
-  use Kinds
-  implicit none
-
-  interface pyplot  
-     module procedure pyplot,pyplotXY
-  end interface pyplot
-
-contains
-    
   !---------------------------------------------------------------------!
   !                                                                     !
   !                       Multi-Dimensional Pyplots                     !
@@ -1223,11 +1304,18 @@ contains
 
   end subroutine pyplotXY
 
-end module pythonPlot
+end module numFort
+
+
+
 
 !==============================================================================
 !##############################################################################
 !==============================================================================
+
+
+
+
 
 module Quadpack
   use kinds

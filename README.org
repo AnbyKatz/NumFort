@@ -126,12 +126,11 @@ clean:
 - Include your own module files under the variable *OBJS*. Bonza, you should be ready to go
 
 * Documentation
-The three modules you may include are /kinds/, /numFort/ and /pythonPlots/. Simply include in any .f90 file via a simple use statement as per usual.
+The two modules you may include are /kinds/ and /numFort/. Simply include in any .f90 file via a simple use statement as per usual.
 #+BEGIN_SRC fortran
   program progName
         use kinds
         use numFort
-        use pythonPlots
 
         ...
 
@@ -145,6 +144,21 @@ Listed variables (some may be optional) and examples of how to call:
 Precision parameter file. Main uses are for constants like pi and making variables double precision.
 
 ** NumFort
+
+*** Trace
+Calculate the trace of a matrix
+
+|----------+-----------------------------------------------|
+| Variable | Description                                   |
+|----------+-----------------------------------------------|
+| M(N,N)   | Matrix, SP or DP for real or complex matrices |
+|----------+-----------------------------------------------|
+| Trace    | Same type as input matrix                     |
+|----------+-----------------------------------------------|
+
+#+BEGIN_SRC fortran
+  value = trace(M)
+#+END_SRC
 
 *** Factorial
 Calculates the factorial of n
