@@ -78,6 +78,9 @@ module numFort
   interface Trace
      module procedure TraceDP,TraceSP,TraceComplexDP,TraceComplexSP
   end interface Trace
+  interface pyplot
+     module procedure pyplot,pyplotXY
+  end interface pyplot
 
 contains
 
