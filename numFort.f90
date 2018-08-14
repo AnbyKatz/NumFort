@@ -78,6 +78,9 @@ module numFort
   interface Trace
      module procedure TraceDP,TraceSP,TraceComplexDP,TraceComplexSP
   end interface Trace
+  interface inv
+     module procedure invMatSP, invMatDP, invMatComplexSP, invMatComplexDP
+  end interface inv
   interface pyplot
      module procedure pyplot,pyplotXY
   end interface pyplot
@@ -177,6 +180,591 @@ contains
     end if
 
   end function TraceComplexSP
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                  Calculate the inverse of a matrix                  !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  function invMatSP(A) result(B)
+    real(SP), intent(in) :: A(:,:)
+    real(SP)             :: B(size(A,1),size(A,2))
+    ! Local variables
+    integer              :: n
+
+    n = size(A,1)
+    select case (n)
+    case (1)
+       if (A(1,1).eq.0.0) then
+          write(*,*) 'Matrix is numerically singular!'
+       end if
+       B(:,:) = 1.0_SP / A(:,:)
+    case (2)
+       B(:,:) = invMatSP2(A)
+    case (3)
+       B(:,:) = invMatSP3(A)
+    case (4)
+       B(:,:) = invMatSP4(A)
+    case (5:)
+       B(:,:) = invMatSPN(A)
+    end select
+
+  end function invMatSP
+
+  function invMatDP(A) result(B)
+    real(DP), intent(in) :: A(:,:)
+    real(DP)             :: B(size(A,1),size(A,2))
+    ! Local variables
+    integer              :: n
+
+    n = size(A,1)
+    select case (n)
+    case (1)
+       if (A(1,1).eq.0.0_DP) then
+          write(*,*) 'Matrix is numerically singular!'
+       end if
+       B(:,:) = 1.0_DP / A(:,:)
+    case (2)
+       B(:,:) = invMatDP2(A)
+    case (3)
+       B(:,:) = invMatDP3(A)
+    case (4)
+       B(:,:) = invMatDP4(A)
+    case (5:)
+       B(:,:) = invMatDPN(A)
+    end select
+
+  end function invMatDP
+
+  function invMatComplexSP(A) result(B)
+    complex(SP), intent(in) :: A(:,:)
+    complex(SP)             :: B(size(A,1),size(A,2))
+    ! Local variables
+    integer              :: n
+
+    n = size(A,1)
+    select case (n)
+    case (1)
+       if (A(1,1).eq.cmplx(0.0,0.0)) then
+          write(*,*) 'Matrix is numerically singular!'
+       end if
+       B(:,:) = 1.0 / A(:,:)
+    case (2)
+       B(:,:) = invMatCmplxSP2(A)
+    case (3)
+       B(:,:) = invMatCmplxSP3(A)
+    case (4)
+       B(:,:) = invMatCmplxSP4(A)
+    case (5:)
+       B(:,:) = invMatCmplxSPN(A)
+    end select
+
+  end function invMatComplexSP
+
+  function invMatComplexDP(A) result(B)
+    complex(DP), intent(in) :: A(:,:)
+    complex(DP)             :: B(size(A,1),size(A,2))
+    ! Local variables
+    integer              :: n
+
+    n = size(A,1)
+    select case (n)
+    case (1)
+       if (A(1,1).eq.cmplx(0.0_DP,0.0_DP)) then
+          write(*,*) 'Matrix is numerically singular!'
+       end if
+       B(:,:) = 1.0_DP / A(:,:)
+    case (2)
+       B(:,:) = invMatCmplxDP2(A)
+    case (3)
+       B(:,:) = invMatCmplxDP3(A)
+    case (4)
+       B(:,:) = invMatCmplxDP4(A)
+    case (5:)
+       B(:,:) = invMatCmplxDPN(A)
+    end select
+
+  end function invMatComplexDP
+
+  function invMatDP2(A) result(B)
+    ! Performs a direct calculation of the inverse of a 2×2 matrix.
+    real(dp), intent(in) :: A(2,2)   ! Matrix
+    real(dp)             :: B(2,2)   ! Inverse matrix
+    real(dp)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = A(1,1)*A(2,2) - A(1,2)*A(2,1)
+
+    if (det.eq.0.0_DP) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  A(2,2)
+    B(2,1) = -A(2,1)
+    B(1,2) = -A(1,2)
+    B(2,2) =  A(1,1)
+    B(:,:) =  B(:,:)/det
+  end function invMatDP2
+
+  function invMatDP3(A) result(B)
+    ! Performs a direct calculation of the inverse of a 3×3 matrix.
+    real(dp), intent(in) :: A(3,3)   ! Matrix
+    real(dp)             :: B(3,3)   ! Inverse matrix
+    real(dp)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = (A(1,1)*A(2,2)*A(3,3) - A(1,1)*A(2,3)*A(3,2)&
+         - A(1,2)*A(2,1)*A(3,3) + A(1,2)*A(2,3)*A(3,1)&
+         + A(1,3)*A(2,1)*A(3,2) - A(1,3)*A(2,2)*A(3,1))
+
+    if (det.eq.0.0_DP) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  (A(2,2)*A(3,3) - A(2,3)*A(3,2))
+    B(2,1) = -(A(2,1)*A(3,3) - A(2,3)*A(3,1))
+    B(3,1) =  (A(2,1)*A(3,2) - A(2,2)*A(3,1))
+    B(1,2) = -(A(1,2)*A(3,3) - A(1,3)*A(3,2))
+    B(2,2) =  (A(1,1)*A(3,3) - A(1,3)*A(3,1))
+    B(3,2) = -(A(1,1)*A(3,2) - A(1,2)*A(3,1))
+    B(1,3) =  (A(1,2)*A(2,3) - A(1,3)*A(2,2))
+    B(2,3) = -(A(1,1)*A(2,3) - A(1,3)*A(2,1))
+    B(3,3) =  (A(1,1)*A(2,2) - A(1,2)*A(2,1))
+    B(:,:) =  B(:,:)/det
+  end function invMatDP3
+
+  function invMatDP4(A) result(B)
+    ! Performs a direct calculation of the inverse of a 4×4 matrix.
+    real(dp), intent(in) :: A(4,4)   ! Matrix
+    real(dp)             :: B(4,4)   ! Inverse matrix
+    real(dp)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = &
+         1/(A(1,1)*(A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))&
+         - A(1,2)*(A(2,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))&
+         + A(1,3)*(A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))&
+         - A(1,4)*(A(2,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(2,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(2,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1))))
+
+    if (det.eq.0.0_DP) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) = (A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))
+    B(2,1) = (A(2,1)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(2,3)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(2,4)*(A(3,3)*A(4,1)-A(3,1)*A(4,3)))
+    B(3,1) = (A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(4,1) = (A(2,1)*(A(3,3)*A(4,2)-A(3,2)*A(4,3))+A(2,2)*(A(3,1)*A(4,3)-A(3,3)*A(4,1))+A(2,3)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(1,2) = (A(1,2)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(1,3)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(1,4)*(A(3,3)*A(4,2)-A(3,2)*A(4,3)))
+    B(2,2) = (A(1,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(1,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(1,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))
+    B(3,2) = (A(1,1)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(1,2)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(1,4)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(4,2) = (A(1,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(1,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(1,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(1,3) = (A(1,2)*(A(2,3)*A(4,4)-A(2,4)*A(4,3))+A(1,3)*(A(2,4)*A(4,2)-A(2,2)*A(4,4))+A(1,4)*(A(2,2)*A(4,3)-A(2,3)*A(4,2)))
+    B(2,3) = (A(1,1)*(A(2,4)*A(4,3)-A(2,3)*A(4,4))+A(1,3)*(A(2,1)*A(4,4)-A(2,4)*A(4,1))+A(1,4)*(A(2,3)*A(4,1)-A(2,1)*A(4,3)))
+    B(3,3) = (A(1,1)*(A(2,2)*A(4,4)-A(2,4)*A(4,2))+A(1,2)*(A(2,4)*A(4,1)-A(2,1)*A(4,4))+A(1,4)*(A(2,1)*A(4,2)-A(2,2)*A(4,1)))
+    B(4,3) = (A(1,1)*(A(2,3)*A(4,2)-A(2,2)*A(4,3))+A(1,2)*(A(2,1)*A(4,3)-A(2,3)*A(4,1))+A(1,3)*(A(2,2)*A(4,1)-A(2,1)*A(4,2)))
+    B(1,4) = (A(1,2)*(A(2,4)*A(3,3)-A(2,3)*A(3,4))+A(1,3)*(A(2,2)*A(3,4)-A(2,4)*A(3,2))+A(1,4)*(A(2,3)*A(3,2)-A(2,2)*A(3,3)))
+    B(2,4) = (A(1,1)*(A(2,3)*A(3,4)-A(2,4)*A(3,3))+A(1,3)*(A(2,4)*A(3,1)-A(2,1)*A(3,4))+A(1,4)*(A(2,1)*A(3,3)-A(2,3)*A(3,1)))
+    B(3,4) = (A(1,1)*(A(2,4)*A(3,2)-A(2,2)*A(3,4))+A(1,2)*(A(2,1)*A(3,4)-A(2,4)*A(3,1))+A(1,4)*(A(2,2)*A(3,1)-A(2,1)*A(3,2)))
+    B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
+    B(:,:) = B(:,:)*det
+  end function invMatDP4
+
+  function invMatDPN(A) result(Ainv)
+
+    real(dp), dimension(:,:), intent(in) :: A
+    real(dp), dimension(size(A,1),size(A,2)) :: Ainv
+
+    real(dp), dimension(size(A,1)) :: work  ! work array for LAPACK
+    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
+    integer :: n, info
+
+    ! External procedures defined in LAPACK
+    external DGETRF
+    external DGETRI
+
+    ! Store A in Ainv to prevent it from being overwritten by LAPACK
+    Ainv = A
+    n = size(A,1)
+
+    ! DGETRF computes an LU factorization of a general M-by-N matrix A
+    ! using partial pivoting with row interchanges.
+    call dgetrf(n, n, Ainv, n, ipiv, info)
+
+    if (info /= 0) then
+       stop 'Matrix is numerically singular!'
+    end if
+
+    ! DGETRI computes the inverse of a matrix using the LU factorization
+    ! computed by DGETRF.
+    call dgetri(n, Ainv, n, ipiv, work, n, info)
+
+    if (info /= 0) then
+       stop 'Matrix inversion failed!'
+    end if
+  end function invMatDPN
+
+  function invMatSP2(A) result(B)
+    ! Performs a direct calculation of the inverse of a 2×2 matrix.
+    real(SP), intent(in) :: A(2,2)   ! Matrix
+    real(SP)             :: B(2,2)   ! Inverse matrix
+    real(SP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = A(1,1)*A(2,2) - A(1,2)*A(2,1)
+
+    if (det.eq.0.0) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  A(2,2)
+    B(2,1) = -A(2,1)
+    B(1,2) = -A(1,2)
+    B(2,2) =  A(1,1)
+    B(:,:) =  B(:,:)/det
+  end function invMatSP2
+
+  function invMatSP3(A) result(B)
+    ! Performs a direct calculation of the inverse of a 3×3 matrix.
+    real(SP), intent(in) :: A(3,3)   ! Matrix
+    real(SP)             :: B(3,3)   ! Inverse matrix
+    real(SP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = (A(1,1)*A(2,2)*A(3,3) - A(1,1)*A(2,3)*A(3,2)&
+         - A(1,2)*A(2,1)*A(3,3) + A(1,2)*A(2,3)*A(3,1)&
+         + A(1,3)*A(2,1)*A(3,2) - A(1,3)*A(2,2)*A(3,1))
+
+    if (det.eq.0.0) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  (A(2,2)*A(3,3) - A(2,3)*A(3,2))
+    B(2,1) = -(A(2,1)*A(3,3) - A(2,3)*A(3,1))
+    B(3,1) =  (A(2,1)*A(3,2) - A(2,2)*A(3,1))
+    B(1,2) = -(A(1,2)*A(3,3) - A(1,3)*A(3,2))
+    B(2,2) =  (A(1,1)*A(3,3) - A(1,3)*A(3,1))
+    B(3,2) = -(A(1,1)*A(3,2) - A(1,2)*A(3,1))
+    B(1,3) =  (A(1,2)*A(2,3) - A(1,3)*A(2,2))
+    B(2,3) = -(A(1,1)*A(2,3) - A(1,3)*A(2,1))
+    B(3,3) =  (A(1,1)*A(2,2) - A(1,2)*A(2,1))
+    B(:,:) =  B(:,:)/det
+  end function invMatSP3
+
+  function invMatSP4(A) result(B)
+    ! Performs a direct calculation of the inverse of a 4×4 matrix.
+    real(SP), intent(in) :: A(4,4)   ! Matrix
+    real(SP)             :: B(4,4)   ! Inverse matrix
+    real(SP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = &
+         1/(A(1,1)*(A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))&
+         - A(1,2)*(A(2,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))&
+         + A(1,3)*(A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))&
+         - A(1,4)*(A(2,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(2,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(2,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1))))
+
+    if (det.eq.0.0) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) = (A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))
+    B(2,1) = (A(2,1)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(2,3)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(2,4)*(A(3,3)*A(4,1)-A(3,1)*A(4,3)))
+    B(3,1) = (A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(4,1) = (A(2,1)*(A(3,3)*A(4,2)-A(3,2)*A(4,3))+A(2,2)*(A(3,1)*A(4,3)-A(3,3)*A(4,1))+A(2,3)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(1,2) = (A(1,2)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(1,3)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(1,4)*(A(3,3)*A(4,2)-A(3,2)*A(4,3)))
+    B(2,2) = (A(1,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(1,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(1,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))
+    B(3,2) = (A(1,1)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(1,2)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(1,4)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(4,2) = (A(1,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(1,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(1,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(1,3) = (A(1,2)*(A(2,3)*A(4,4)-A(2,4)*A(4,3))+A(1,3)*(A(2,4)*A(4,2)-A(2,2)*A(4,4))+A(1,4)*(A(2,2)*A(4,3)-A(2,3)*A(4,2)))
+    B(2,3) = (A(1,1)*(A(2,4)*A(4,3)-A(2,3)*A(4,4))+A(1,3)*(A(2,1)*A(4,4)-A(2,4)*A(4,1))+A(1,4)*(A(2,3)*A(4,1)-A(2,1)*A(4,3)))
+    B(3,3) = (A(1,1)*(A(2,2)*A(4,4)-A(2,4)*A(4,2))+A(1,2)*(A(2,4)*A(4,1)-A(2,1)*A(4,4))+A(1,4)*(A(2,1)*A(4,2)-A(2,2)*A(4,1)))
+    B(4,3) = (A(1,1)*(A(2,3)*A(4,2)-A(2,2)*A(4,3))+A(1,2)*(A(2,1)*A(4,3)-A(2,3)*A(4,1))+A(1,3)*(A(2,2)*A(4,1)-A(2,1)*A(4,2)))
+    B(1,4) = (A(1,2)*(A(2,4)*A(3,3)-A(2,3)*A(3,4))+A(1,3)*(A(2,2)*A(3,4)-A(2,4)*A(3,2))+A(1,4)*(A(2,3)*A(3,2)-A(2,2)*A(3,3)))
+    B(2,4) = (A(1,1)*(A(2,3)*A(3,4)-A(2,4)*A(3,3))+A(1,3)*(A(2,4)*A(3,1)-A(2,1)*A(3,4))+A(1,4)*(A(2,1)*A(3,3)-A(2,3)*A(3,1)))
+    B(3,4) = (A(1,1)*(A(2,4)*A(3,2)-A(2,2)*A(3,4))+A(1,2)*(A(2,1)*A(3,4)-A(2,4)*A(3,1))+A(1,4)*(A(2,2)*A(3,1)-A(2,1)*A(3,2)))
+    B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
+    B(:,:) = B(:,:)*det
+  end function invMatSP4
+
+  function invMatSPN(A) result(Ainv)
+
+    real(SP), dimension(:,:), intent(in) :: A
+    real(SP), dimension(size(A,1),size(A,2)) :: Ainv
+
+    real(SP), dimension(size(A,1)) :: work  ! work array for LAPACK
+    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
+    integer :: n, info
+
+    ! External procedures defined in LAPACK
+    external DGETRF
+    external DGETRI
+
+    ! Store A in Ainv to prevent it from being overwritten by LAPACK
+    Ainv = A
+    n = size(A,1)
+
+    ! DGETRF computes an LU factorization of a general M-by-N matrix A
+    ! using partial pivoting with row interchanges.
+    call dgetrf(n, n, Ainv, n, ipiv, info)
+
+    if (info /= 0) then
+       stop 'Matrix is numerically singular!'
+    end if
+
+    ! DGETRI computes the inverse of a matrix using the LU factorization
+    ! computed by DGETRF.
+    call dgetri(n, Ainv, n, ipiv, work, n, info)
+
+    if (info /= 0) then
+       stop 'Matrix inversion failed!'
+    end if
+  end function invMatSPN
+
+  function invMatCmplxSP2(A) result(B)
+    ! Performs a direct calculation of the inverse of a 2×2 matrix.
+    complex(SP), intent(in) :: A(2,2)   ! Matrix
+    complex(SP)             :: B(2,2)   ! Inverse matrix
+    complex(SP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = (A(1,1)*A(2,2) - A(1,2)*A(2,1))
+
+    if (det.eq.cmplx(0.0,0.0)) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  A(2,2)
+    B(2,1) = -A(2,1)
+    B(1,2) = -A(1,2)
+    B(2,2) =  A(1,1)
+    B(:,:) =  B(:,:)/det
+  end function invMatCmplxSP2
+
+  function invMatCmplxSP3(A) result(B)
+    ! Performs a direct calculation of the inverse of a 3×3 matrix.
+    complex(SP), intent(in) :: A(3,3)   ! Matrix
+    complex(SP)             :: B(3,3)   ! Inverse matrix
+    complex(SP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = (A(1,1)*A(2,2)*A(3,3) - A(1,1)*A(2,3)*A(3,2)&
+         - A(1,2)*A(2,1)*A(3,3) + A(1,2)*A(2,3)*A(3,1)&
+         + A(1,3)*A(2,1)*A(3,2) - A(1,3)*A(2,2)*A(3,1))
+
+    if (det.eq.cmplx(0.0,0.0)) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  (A(2,2)*A(3,3) - A(2,3)*A(3,2))
+    B(2,1) = -(A(2,1)*A(3,3) - A(2,3)*A(3,1))
+    B(3,1) =  (A(2,1)*A(3,2) - A(2,2)*A(3,1))
+    B(1,2) = -(A(1,2)*A(3,3) - A(1,3)*A(3,2))
+    B(2,2) =  (A(1,1)*A(3,3) - A(1,3)*A(3,1))
+    B(3,2) = -(A(1,1)*A(3,2) - A(1,2)*A(3,1))
+    B(1,3) =  (A(1,2)*A(2,3) - A(1,3)*A(2,2))
+    B(2,3) = -(A(1,1)*A(2,3) - A(1,3)*A(2,1))
+    B(3,3) =  (A(1,1)*A(2,2) - A(1,2)*A(2,1))
+    B(:,:) =  B(:,:)/det
+  end function invMatCmplxSP3
+
+  function invMatCmplxSP4(A) result(B)
+    ! Performs a direct calculation of the inverse of a 4×4 matrix.
+    complex(SP), intent(in) :: A(4,4)   ! Matrix
+    complex(SP)             :: B(4,4)   ! Inverse matrix
+    complex(SP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = &
+         (A(1,1)*(A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))&
+         - A(1,2)*(A(2,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))&
+         + A(1,3)*(A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))&
+         - A(1,4)*(A(2,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(2,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(2,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1))))
+
+    if (det.eq.cmplx(0.0,0.0)) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) = (A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))
+    B(2,1) = (A(2,1)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(2,3)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(2,4)*(A(3,3)*A(4,1)-A(3,1)*A(4,3)))
+    B(3,1) = (A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(4,1) = (A(2,1)*(A(3,3)*A(4,2)-A(3,2)*A(4,3))+A(2,2)*(A(3,1)*A(4,3)-A(3,3)*A(4,1))+A(2,3)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(1,2) = (A(1,2)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(1,3)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(1,4)*(A(3,3)*A(4,2)-A(3,2)*A(4,3)))
+    B(2,2) = (A(1,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(1,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(1,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))
+    B(3,2) = (A(1,1)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(1,2)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(1,4)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(4,2) = (A(1,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(1,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(1,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(1,3) = (A(1,2)*(A(2,3)*A(4,4)-A(2,4)*A(4,3))+A(1,3)*(A(2,4)*A(4,2)-A(2,2)*A(4,4))+A(1,4)*(A(2,2)*A(4,3)-A(2,3)*A(4,2)))
+    B(2,3) = (A(1,1)*(A(2,4)*A(4,3)-A(2,3)*A(4,4))+A(1,3)*(A(2,1)*A(4,4)-A(2,4)*A(4,1))+A(1,4)*(A(2,3)*A(4,1)-A(2,1)*A(4,3)))
+    B(3,3) = (A(1,1)*(A(2,2)*A(4,4)-A(2,4)*A(4,2))+A(1,2)*(A(2,4)*A(4,1)-A(2,1)*A(4,4))+A(1,4)*(A(2,1)*A(4,2)-A(2,2)*A(4,1)))
+    B(4,3) = (A(1,1)*(A(2,3)*A(4,2)-A(2,2)*A(4,3))+A(1,2)*(A(2,1)*A(4,3)-A(2,3)*A(4,1))+A(1,3)*(A(2,2)*A(4,1)-A(2,1)*A(4,2)))
+    B(1,4) = (A(1,2)*(A(2,4)*A(3,3)-A(2,3)*A(3,4))+A(1,3)*(A(2,2)*A(3,4)-A(2,4)*A(3,2))+A(1,4)*(A(2,3)*A(3,2)-A(2,2)*A(3,3)))
+    B(2,4) = (A(1,1)*(A(2,3)*A(3,4)-A(2,4)*A(3,3))+A(1,3)*(A(2,4)*A(3,1)-A(2,1)*A(3,4))+A(1,4)*(A(2,1)*A(3,3)-A(2,3)*A(3,1)))
+    B(3,4) = (A(1,1)*(A(2,4)*A(3,2)-A(2,2)*A(3,4))+A(1,2)*(A(2,1)*A(3,4)-A(2,4)*A(3,1))+A(1,4)*(A(2,2)*A(3,1)-A(2,1)*A(3,2)))
+    B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
+    B(:,:) = B(:,:)/det
+  end function invMatCmplxSP4
+
+  function invMatCmplxSPN(A) result(Ainv)
+    complex(SP), dimension(:,:), intent(in) :: A
+    complex(SP), dimension(size(A,1),size(A,2)) :: Ainv
+
+    complex(SP), dimension(size(A,1)) :: work  ! work array for LAPACK
+    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
+    integer :: n, info
+
+    ! External procedures defined in LAPACK
+    external DGETRF
+    external DGETRI
+
+    ! Store A in Ainv to prevent it from being overwritten by LAPACK
+    Ainv = A
+    n = size(A,1)
+
+    ! DGETRF computes an LU factorization of a general M-by-N matrix A
+    ! using partial pivoting with row interchanges.
+    call zgetrf(n, n, Ainv, n, ipiv, info)
+
+    if (info .ne. 0) then
+       stop 'Matrix is numerically singular!'
+    end if
+
+    ! DGETRI computes the inverse of a matrix using the LU factorization
+    ! computed by DGETRF.
+    call zgetri(n, Ainv, n, ipiv, work, n, info)
+
+    if (info .ne. 0) then
+       stop 'Matrix inversion failed!'
+    end if
+  end function invMatCmplxSPN
+
+  function invMatCmplxDP2(A) result(B)
+    ! Performs a direct calculation of the inverse of a 2×2 matrix.
+    complex(DP), intent(in) :: A(2,2)   ! Matrix
+    complex(DP)             :: B(2,2)   ! Inverse matrix
+    complex(DP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = (A(1,1)*A(2,2) - A(1,2)*A(2,1))
+
+    if (det.eq.cmplx(0.0_DP,0.0_DP)) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  A(2,2)
+    B(2,1) = -A(2,1)
+    B(1,2) = -A(1,2)
+    B(2,2) =  A(1,1)
+    B(:,:) =  B(:,:)/det
+  end function invMatCmplxDP2
+
+  function invMatCmplxDP3(A) result(B)
+    ! Performs a direct calculation of the inverse of a 3×3 matrix.
+    complex(DP), intent(in) :: A(3,3)   ! Matrix
+    complex(DP)             :: B(3,3)   ! Inverse matrix
+    complex(DP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = (A(1,1)*A(2,2)*A(3,3) - A(1,1)*A(2,3)*A(3,2)&
+         - A(1,2)*A(2,1)*A(3,3) + A(1,2)*A(2,3)*A(3,1)&
+         + A(1,3)*A(2,1)*A(3,2) - A(1,3)*A(2,2)*A(3,1))
+
+    if (det.eq.cmplx(0.0_DP,0.0_DP)) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  (A(2,2)*A(3,3) - A(2,3)*A(3,2))
+    B(2,1) = -(A(2,1)*A(3,3) - A(2,3)*A(3,1))
+    B(3,1) =  (A(2,1)*A(3,2) - A(2,2)*A(3,1))
+    B(1,2) = -(A(1,2)*A(3,3) - A(1,3)*A(3,2))
+    B(2,2) =  (A(1,1)*A(3,3) - A(1,3)*A(3,1))
+    B(3,2) = -(A(1,1)*A(3,2) - A(1,2)*A(3,1))
+    B(1,3) =  (A(1,2)*A(2,3) - A(1,3)*A(2,2))
+    B(2,3) = -(A(1,1)*A(2,3) - A(1,3)*A(2,1))
+    B(3,3) =  (A(1,1)*A(2,2) - A(1,2)*A(2,1))
+    B(:,:) =  B(:,:)/det
+  end function invMatCmplxDP3
+
+  function invMatCmplxDP4(A) result(B)
+    ! Performs a direct calculation of the inverse of a 4×4 matrix.
+    complex(DP), intent(in) :: A(4,4)   ! Matrix
+    complex(DP)             :: B(4,4)   ! Inverse matrix
+    complex(DP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = &
+         (A(1,1)*(A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))&
+         - A(1,2)*(A(2,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))&
+         + A(1,3)*(A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))&
+         - A(1,4)*(A(2,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(2,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(2,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1))))
+
+    if (det.eq.cmplx(0.0_DP,0.0_DP)) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) = (A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))
+    B(2,1) = (A(2,1)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(2,3)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(2,4)*(A(3,3)*A(4,1)-A(3,1)*A(4,3)))
+    B(3,1) = (A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(4,1) = (A(2,1)*(A(3,3)*A(4,2)-A(3,2)*A(4,3))+A(2,2)*(A(3,1)*A(4,3)-A(3,3)*A(4,1))+A(2,3)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(1,2) = (A(1,2)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(1,3)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(1,4)*(A(3,3)*A(4,2)-A(3,2)*A(4,3)))
+    B(2,2) = (A(1,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(1,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(1,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))
+    B(3,2) = (A(1,1)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(1,2)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(1,4)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(4,2) = (A(1,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(1,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(1,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(1,3) = (A(1,2)*(A(2,3)*A(4,4)-A(2,4)*A(4,3))+A(1,3)*(A(2,4)*A(4,2)-A(2,2)*A(4,4))+A(1,4)*(A(2,2)*A(4,3)-A(2,3)*A(4,2)))
+    B(2,3) = (A(1,1)*(A(2,4)*A(4,3)-A(2,3)*A(4,4))+A(1,3)*(A(2,1)*A(4,4)-A(2,4)*A(4,1))+A(1,4)*(A(2,3)*A(4,1)-A(2,1)*A(4,3)))
+    B(3,3) = (A(1,1)*(A(2,2)*A(4,4)-A(2,4)*A(4,2))+A(1,2)*(A(2,4)*A(4,1)-A(2,1)*A(4,4))+A(1,4)*(A(2,1)*A(4,2)-A(2,2)*A(4,1)))
+    B(4,3) = (A(1,1)*(A(2,3)*A(4,2)-A(2,2)*A(4,3))+A(1,2)*(A(2,1)*A(4,3)-A(2,3)*A(4,1))+A(1,3)*(A(2,2)*A(4,1)-A(2,1)*A(4,2)))
+    B(1,4) = (A(1,2)*(A(2,4)*A(3,3)-A(2,3)*A(3,4))+A(1,3)*(A(2,2)*A(3,4)-A(2,4)*A(3,2))+A(1,4)*(A(2,3)*A(3,2)-A(2,2)*A(3,3)))
+    B(2,4) = (A(1,1)*(A(2,3)*A(3,4)-A(2,4)*A(3,3))+A(1,3)*(A(2,4)*A(3,1)-A(2,1)*A(3,4))+A(1,4)*(A(2,1)*A(3,3)-A(2,3)*A(3,1)))
+    B(3,4) = (A(1,1)*(A(2,4)*A(3,2)-A(2,2)*A(3,4))+A(1,2)*(A(2,1)*A(3,4)-A(2,4)*A(3,1))+A(1,4)*(A(2,2)*A(3,1)-A(2,1)*A(3,2)))
+    B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
+    B(:,:) = B(:,:)/det
+  end function invMatCmplxDP4
+
+  function invMatCmplxDPN(A) result(Ainv)
+    complex(DP), dimension(:,:), intent(in) :: A
+    complex(DP), dimension(size(A,1),size(A,2)) :: Ainv
+
+    complex(DP), dimension(size(A,1)) :: work  ! work array for LAPACK
+    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
+    integer :: n, info
+
+    ! External procedures defined in LAPACK
+    external DGETRF
+    external DGETRI
+
+    ! Store A in Ainv to prevent it from being overwritten by LAPACK
+    Ainv = A
+    n = size(A,1)
+
+    ! DGETRF computes an LU factorization of a general M-by-N matrix A
+    ! using partial pivoting with row interchanges.
+    call zgetrf(n, n, Ainv, n, ipiv, info)
+
+    if (info .ne. 0) then
+       stop 'Matrix is numerically singular!'
+    end if
+
+    ! DGETRI computes the inverse of a matrix using the LU factorization
+    ! computed by DGETRF.
+    call zgetri(n, Ainv, n, ipiv, work, n, info)
+
+    if (info .ne. 0) then
+       stop 'Matrix inversion failed!'
+    end if
+  end function invMatCmplxDPN
+
 
   !---------------------------------------------------------------------!
   !                                                                     !
@@ -431,7 +1019,7 @@ contains
 
   end function rk4
 
-  function rk4N(f,h,t0,y0) 
+  function rk4N(f,h,t0,y0)
     use kinds
     implicit none
 
@@ -440,7 +1028,7 @@ contains
     interface
        function f(t0,y0,nEq)
          use kinds
-         implicit none 
+         implicit none
          integer,intent(in)    :: nEq
          real(DP),intent(in)   :: t0,y0(nEq)
          real(DP),dimension(nEq) :: f
@@ -1226,12 +1814,12 @@ contains
 
     N = size(x,dim=2)
     L = size(ld)
-    
+
     open(100,file="titles.dat",action="write", &
-         & status="replace",form="formatted")        
+         & status="replace",form="formatted")
     open(101,file="output.dat",action="write", &
          & status="replace",form="formatted")
-    
+
     name   = ""
     xlabel = ""
     ylabel = ""
@@ -1273,12 +1861,12 @@ contains
     implicit none
     character(len=*),intent(in),optional :: xaxis,yaxis,title
     real(DP),dimension(:),intent(in)     :: x,y
-    
+
     character(len=14)                    :: xlabel,ylabel,name,ld
     integer                              :: ii
 
     open(100,file="titles.dat",action="write", &
-         & status="replace",form="formatted")        
+         & status="replace",form="formatted")
     open(101,file="output.dat",action="write", &
          & status="replace",form="formatted")
 
