@@ -237,6 +237,31 @@ Exactly the same as SplineFit but for a Nth order polynomial.
   value = polyCal(N,c,x)
 #+END_SRC
 
+*** EulerM
+Performs Eulers method to solve a single or N coupled DE's, same call notation as rk4
+
+|----------+------------------------------------|
+| Variable | Description                        |
+|----------+------------------------------------|
+| t0       | initial value to start stepping at |
+| y0       | initial y value(s)                 |
+| f        | input function(s)                  |
+| h        | step size                          |
+| nEq      | number of coupled equations        |
+|----------+------------------------------------|
+| rk4      | output (y_{n+1})                   |
+|----------+------------------------------------|
+
+#+BEGIN_SRC fortran
+  function f(t,y)
+  value = eulerM(f,h,t0,y0)
+
+  ! In the N DE case, y = y(N),f = f(N), values = values(N)
+  ! i.e. N initial conditions and equations
+  function f(t,y,nEq)
+  values = eulerM(f,h,t0,y0)
+#+END_SRC
+
 *** rk4
 Performs a 4th order Runge Kutta solving algorithm for a given DE. Algorithms giving for a single DE or N coupled DE.
 
@@ -256,10 +281,10 @@ Performs a 4th order Runge Kutta solving algorithm for a given DE. Algorithms gi
   function f(t,y)
   value = rk4(f,h,t0,y0)
 
-  ! In the N DE case, y = y(N),f = f(N)
+  ! In the N DE case, y = y(N),f = f(N), values = values(N)
   ! i.e. N initial conditions and equations
   function f(t,y,nEq)
-  value = rk4(f,h,t0,y0)
+  values = rk4(f,h,t0,y0)
 #+END_SRC
 
 *** GuessZero

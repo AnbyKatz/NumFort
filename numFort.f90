@@ -11,22 +11,17 @@
 ! Below contains a list of the function names inside numFort for easier       !
 ! navigation purposes.                                                        !
 !                                                                             !
+! - Trace                                                                     !
+! - inv                                                                       !
 ! - factorial                                                                 !
 ! - meshgrid                                                                  !
 ! - splinefit                                                                 !
-!   - splinefitCoeff                                                          !
-!   - Spinevals                                                               !
 ! - polyfit                                                                   !
-!   - polyCal                                                                 !
+! - Euler                                                                     !
 ! - rk4                                                                       !
-!   - rk4Step                                                                 !
-!   - rk42DE                                                                  !
 ! - guessZero                                                                 !
-!   - guessZeroNew                                                            !
 ! - Newton1D                                                                  !
 ! - linspace                                                                  !
-!   - linspaceReal                                                            !
-!   - linspaceInt                                                             !
 ! - deriv                                                                     !
 ! - integral                                                                  !
 ! - integralPV                                                                !
@@ -36,7 +31,7 @@
 !   - plotMany                                                                !
 !   - surf                                                                    !
 !   - scatter3D                                                               !
-! - pyplot
+! - pyplot                                                                    !
 !                                                                             !
 !*****************************************************************************!
 
@@ -84,6 +79,9 @@ module numFort
   interface pyplot
      module procedure pyplot,pyplotXY
   end interface pyplot
+  interface EulerM
+     module procedure eulerm,eulermnd
+  end interface EulerM
 
 contains
 
@@ -983,6 +981,57 @@ contains
     end if
 
   end subroutine polyfit
+
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                            Eulers method                            !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Eulers method for solving 1 or N coupled DE's                       !
+  !---------------------------------------------------------------------!
+
+  function EulerM(f,h,t0,y0)
+    use kinds
+    implicit none
+
+    real(DP),intent(in) :: h,t0,y0
+    interface
+       function f(t,y)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: t,y
+       end function f
+    end interface
+    real(DP) :: EulerM
+
+    EulerM = h*f(t0,y0)+y0
+
+  end function EulerM
+
+  function eulerMND(f,h,t0,y0)
+    use kinds
+    implicit none
+
+    real(DP),intent(in)              :: t0,h
+    real(DP),dimension(:),intent(in) :: y0
+    interface
+       function f(t0,y0,nEq)
+         use kinds
+         implicit none
+         integer,intent(in)    :: nEq
+         real(DP),intent(in)   :: t0,y0(nEq)
+         real(DP),dimension(nEq) :: f
+       end function f
+    end interface
+    real(DP),dimension(size(y0)) :: eulerMND
+    integer :: nEq
+
+    nEq = size(y0)
+    eulerMND = h*f(t0,y0,nEq)+y0
+
+  end function eulerMND
 
   !---------------------------------------------------------------------!
   !                                                                     !
