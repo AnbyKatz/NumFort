@@ -145,6 +145,21 @@ Precision parameter file. Main uses are for constants like pi and making variabl
 
 ** NumFort
 
+*** bessel
+Calculate the value of the 0<n<3 order bessel fucntion at x
+
+|----------+------------------------------|
+| Variable | Description                  |
+|----------+------------------------------|
+| n        | integer, order of bessel     |
+| x        | real double precision        |
+|----------+------------------------------|
+| bessel   | value of the bessel function |
+|----------+------------------------------|
+
+#+BEGIN_SRC fortran
+  value = bessel(x,n)
+#+END_SRC
 *** Trace
 Calculate the trace of a matrix
 
