@@ -12,6 +12,7 @@ numFort is a numerical library for FORTRAN that includes quadpack, lapack and PL
 #+BEGIN_SRC shell
   sudo ./install.sh
 #+END_SRC
+- You may wish to install it locally instead though
 - Make sure to check the math kernel for install
 - After installation you may need to export the path to the *ifort* compiler. Add code similar to below in your ~/.bashrc. Your exact path for the above libraries might be different (probably just different numbers for 2018.3.222)
 #+BEGIN_SRC shell
@@ -25,7 +26,8 @@ numFort is a numerical library for FORTRAN that includes quadpack, lapack and PL
   ifort --version
 #+END_SRC
 - Your ifort version should display
-** Cmake
+** Cmake (Optional)
+- Only needed if you wish to use PLplot
 - Download Cmake source code for linux from the following link [[https://cmake.org/download/][CMAKE]]
 - Extract the Cmake folder and then open a terminal and move inside
 - Type the following commands to install Cmake
@@ -39,7 +41,7 @@ numFort is a numerical library for FORTRAN that includes quadpack, lapack and PL
   cmake --version
 #+END_SRC
 - This should print a value for your working version of CMAKE. You may have to close and open the terminal to refresh
-** PLplot
+** PLplot (Optional)
 - Open up a terminal in your home directory. For this example we will install in a folder called ~/bin (/home/user/bin). The following commands downloads the necessary code
 #+BEGIN_SRC shell
   mkdir bin
@@ -89,16 +91,17 @@ F90C = ifort
 F90FLAGS = -O2
 CFLAGS = -O2 -mkl
 
-PLPLOT = $$(pkg-config --cflags --libs plplot-fortran)
-LIBS = -lmkl_lapack95_lp64 -lplplotfortran -lplplot 
+LIBS = -lmkl_lapack95_lp64
 MYLIBS = -I$(DIR)
+PLPLOT = -lplplotfortran -lplplot $$(pkg-config --cflags --libs plplot-fortran) # Comment out if PLplot wasn't installed
 
 %.o: %.f90
 	$(F90C) $(CFLAGS) -c $<
 
 # Library object files
 LIBOBJS = $(DIR)lapack.o\
-	$(DIR)numFort.o
+	$(DIR)numFort.o\
+	$(DIR)kinds.o
 
 # Own personal object files
 OBJS = 
@@ -106,10 +109,14 @@ OBJS =
 all: filename
 
 filename: filename.f90 $(OBJS)
-	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBOBJS) $(LIBS) $(PLPLOT) $(MYLIBS)
+	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBOBJS) $(LIBS) $(MYLIBS) $(PLPLOT)
+
+# Dependencies
+numFort.o: kinds.o lapack.o
 
 clean:
 	rm *.o *.mod
+
 #+END_SRC
 - *SOME IMPORTANT NOTES ON THE ABOVE MAKEFILE*
 
@@ -126,11 +133,13 @@ clean:
 - Include your own module files under the variable *OBJS*. Bonza, you should be ready to go
 
 * Documentation
-The two modules you may include are /kinds/ and /numFort/. Simply include in any .f90 file via a simple use statement as per usual.
+The four modules you may include are /kinds/, /lapack95/, /numFort/ and /PLplots/. Simply include in any .f90 file via a simple use statement as per usual.
 #+BEGIN_SRC fortran
   program progName
         use kinds
+        use lapack95
         use numFort
+        use use PLplots
 
         ...
 
@@ -143,10 +152,12 @@ Listed variables (some may be optional) and examples of how to call:
 ** Kinds
 Precision parameter file. Main uses are for constants like pi and making variables double precision.
 
+** lapack95
+see online lapack documentation for an extensive list on possible linear algebra computations [[https://software.intel.com/en-us/mkl-linux-developer-guide-fortran-95-interfaces-to-lapack-and-blas][online documentation]].
 ** NumFort
 
 *** bessel
-Calculate the value of the 0<n<3 order bessel fucntion at x
+Calculate the value of the 0<n<5 order bessel fucntion at x
 
 |----------+------------------------------|
 | Variable | Description                  |
@@ -413,8 +424,27 @@ Numerically calculates a Cauchy-Principle value integral using Gaussian quadratu
   function f(x)
   value = integralPV(f,c,a,b,absErr,relErr)
 #+END_SRC
+** pythonPlot
+python plotting wrappers, simply copy /pyplots.py/ into the necessary directory and use the following command.
 
-** PLplot
+|----------+-------------------------|
+| Variable | Description             |
+|----------+-------------------------|
+| x(N,M)   | multi-dimensional array |
+| x(N)     | x values                |
+| y(N)     | y values                |
+| xaxis    | x axis title (optional) |
+| yaxis    | y axis title (optional) |
+| legend   | legend (optional)       |
+| title    | title (optional)        |
+|----------+-------------------------|
+
+#+BEGIN_SRC fortran
+  call pyplot(x,title,xaxis,yaxis,legend)
+  call pyplot(x,y,title,xaxis,yaxis)
+#+END_SRC
+
+** PLplots
 
 Call PLplot by using the subroutine plot() for example, this will call various wrappers to plplot which can be found within numFort. Below is a list of said wrappers and their arguments. Axes labels and title may be omitted in all below routines if one wishes.
 
@@ -491,24 +521,4 @@ standard scatter plot
 
 #+BEGIN_SRC fortran
  call scatter3D(X,Y,Z,xlabel,ylabel,zlabel,title)
-#+END_SRC
-
-** pythonPlots
-python plotting wrappers, simply copy /pyplots.py/ into the necessary directory and use the following command.
-
-|----------+-------------------------|
-| Variable | Description             |
-|----------+-------------------------|
-| x(N,M)   | multi-dimensional array |
-| x(N)     | x values                |
-| y(N)     | y values                |
-| xaxis    | x axis title (optional) |
-| yaxis    | y axis title (optional) |
-| legend   | legend (optional)       |
-| title    | title (optional)        |
-|----------+-------------------------|
-
-#+BEGIN_SRC fortran
-  call pyplot(x,title,xaxis,yaxis,legend)
-  call pyplot(x,y,title,xaxis,yaxis)
 #+END_SRC
