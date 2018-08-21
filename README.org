@@ -139,7 +139,7 @@ The four modules you may include are /kinds/, /lapack95/, /numFort/ and /PLplots
         use kinds
         use lapack95
         use numFort
-        use use PLplots
+        use PLplots
 
         ...
 
