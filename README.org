@@ -10,15 +10,16 @@ numFort is a numerical library for FORTRAN that includes quadpack, lapack and PL
 - Before using numFort, make sure to download the ifort compiler and the necessary math kernel libraries for the use of LAPACK. These may be downloaded from the following link (free for students) [[https://software.intel.com/en-us/qualify-for-free-software/student][Parallel studio XE]], click the C++ link unless on mac
 - Simply download the custom install, extract to a location and run under sudo privileges like so
 #+BEGIN_SRC shell
+  # If you wish to install it globally use the below sudo prefix (not necessary)
   sudo ./install.sh
 #+END_SRC
-- You may wish to install it locally instead though
+- You may wish to install it locally instead though (hit option 3 i think after typing ./install.sh)
 - Make sure to check the math kernel for install
 - After installation you may need to export the path to the *ifort* compiler. Add code similar to below in your ~/.bashrc. Your exact path for the above libraries might be different (probably just different numbers for 2018.3.222)
 #+BEGIN_SRC shell
-  source /opt/intel/bin/compilervars.sh intel64
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/intel/compilers_and_libraries_2018.3.222/linux/mkl/lib/intel64_lin/
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/intel/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/
+  source /path/to/intel/bin/compilervars.sh intel64
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/intel/compilers_and_libraries_2018.3.222/linux/mkl/lib/intel64_lin/
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/intel/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/
 #+END_SRC
 - Close and open the terminal to refresh
 - Check that it's working by typing
@@ -33,8 +34,8 @@ numFort is a numerical library for FORTRAN that includes quadpack, lapack and PL
 - Type the following commands to install Cmake
 #+BEGIN_SRC shell
   ./bootstrap
-  sudo make
-  sudo make install
+  make
+  make install
 #+END_SRC
 - Check the installation was successful by opening and closing the terminal, and then typing
 #+BEGIN_SRC shell
@@ -51,7 +52,7 @@ numFort is a numerical library for FORTRAN that includes quadpack, lapack and PL
 - This will download the source code and put it into a folder. Ours will be called PLplotSrc, you may rename yours to this if you wish
 - Before continuing we will need to add some path variables in our ~/.bashrc, open ~/.bashrc and write the following. This will tell PLplot to use the ifort compiler (This should be the path to the ifort compiler i.e. where ever you installed it)
 #+BEGIN_SRC shell
-  export FC=/opt/intel/bin/ifort
+  export FC=/path/to/intel/bin/ifort
 #+END_SRC
 - Back inside our ~/bin folder with our PLplotSrc sub directory, make the following directories
 #+BEGIN_SRC shell
@@ -68,7 +69,7 @@ numFort is a numerical library for FORTRAN that includes quadpack, lapack and PL
 - After the command finishes run the following
 #+BEGIN_SRC shell
   make
-  sudo make install
+  make install
 #+END_SRC
 - This should take a bit but whens its done you're almost finished!
 - This should have filled your installDir with lovely source code. Now simply add the following to your ~/.bashrc (Double check the final files names as they may change with versions of PLplot
@@ -80,11 +81,11 @@ numFort is a numerical library for FORTRAN that includes quadpack, lapack and PL
 - Open and close the terminal, that should be everything
 
 ** NumFort
-- Download and move numFort repository files to specified location eg. /path/to/numFort
+- Download and move numFort repository files to specified location eg. /path/to/numFort/
 - Your final makefile should look something like this
 #+BEGIN_SRC shell
-# Fortran base MakeFile
 # Directory to numFort
+# DO NOT USE ~ FOR THE HOME DIRECTORY IN THIS PATH
 DIR = /path/to/numFort/
 
 F90C = ifort
@@ -93,15 +94,18 @@ CFLAGS = -O2 -mkl
 
 LIBS = -lmkl_lapack95_lp64
 MYLIBS = -I$(DIR)
-PLPLOT = -lplplotfortran -lplplot $$(pkg-config --cflags --libs plplot-fortran) # Comment out if PLplot wasn't installed
+
+# Comment out PLPLOT if it wasn't installed and all of its appearance's
+PLPLOT = -lplplotfortran -lplplot $$(pkg-config --cflags --libs plplot-fortran)
 
 %.o: %.f90
 	$(F90C) $(CFLAGS) -c $<
 
 # Library object files
-LIBOBJS = $(DIR)lapack.o\
+LIBOBJS = $(DIR)kinds.o\
+	$(DIR)lapack.o\
 	$(DIR)numFort.o\
-	$(DIR)kinds.o
+	$(DIR)PLplots.o # Comment out this line and remove a \ above if no PLPLOT
 
 # Own personal object files
 OBJS = 
@@ -112,11 +116,9 @@ filename: filename.f90 $(OBJS)
 	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBOBJS) $(LIBS) $(MYLIBS) $(PLPLOT)
 
 # Dependencies
-numFort.o: kinds.o lapack.o
 
 clean:
 	rm *.o *.mod
-
 #+END_SRC
 - *SOME IMPORTANT NOTES ON THE ABOVE MAKEFILE*
 
@@ -124,10 +126,21 @@ clean:
 
 - DIR is the directory where you have put all the numFort source code
 
-- The bash file /recompile.sh/ in the repository can be used to recompile these libraries if you should choose to edit and add. Simply run with ./recompile.sh whilst in the directory. Alternatively one may run the following command in the terminal
+- The bash file /recompileEX.sh/ in the repository can be used to recompile these libraries if you should choose to edit and add. Simply run with ./recompileEX.sh whilst in the directory (Make sure to edit the paths to the correct ones
 
 #+BEGIN_SRC shell
-  (cd /path/to/numFort/; ./recompile.sh)
+#!/bin/bash
+
+# Example recompile file
+# type chmod +x recompileEx.sh and then ./recompileEX.sh to compile
+
+ifort -O2 -c kinds.f90
+ifort -O2 -mkl -c lapack.f90
+
+# Comment out this line if you wish to not use PLplot/haven't installed it
+ifort -O2 -c PLplots.f90 -I/path/to/PLplotInstall/include/plplot -I/path/to/PLplotInstall/lib/fortran/modules/plplot -L/path/to/PLplotInstall/lib -lplplotfortran -lplplot
+
+ifort -O2 -mkl  -c numFort.f90 -lmkl_lapack95_lp64 
 #+END_SRC
 
 - Include your own module files under the variable *OBJS*. Bonza, you should be ready to go

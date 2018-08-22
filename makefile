@@ -8,6 +8,7 @@ CFLAGS = -O2 -mkl
 
 LIBS = -lmkl_lapack95_lp64
 MYLIBS = -I$(DIR)
+
 # Comment out PLPLOT if it wasn't installed and all of its appearance's
 PLPLOT = -lplplotfortran -lplplot $$(pkg-config --cflags --libs plplot-fortran)
 
@@ -18,7 +19,7 @@ PLPLOT = -lplplotfortran -lplplot $$(pkg-config --cflags --libs plplot-fortran)
 LIBOBJS = $(DIR)kinds.o\
 	$(DIR)lapack.o\
 	$(DIR)numFort.o\
-	$(DIR)PLplots.o
+	$(DIR)PLplots.o # Comment out this line and remove a \ above if no PLPLOT
 
 # Own personal object files
 OBJS = 
