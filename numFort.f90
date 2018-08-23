@@ -30,13 +30,17 @@
 ! - integralPV                                                                !
 !                                                                             !
 ! - pyplot                                                                    !
-! - PLplot                                                                    !
-!   - plot                                                                    !
-!   - plotMany                                                                !
-!   - surf                                                                    !
-!   - scatter3D                                                               !
 !                                                                             !
 !*****************************************************************************!
+
+
+
+!==============================================================================
+!##############################################################################
+!==============================================================================
+
+
+
 
 !---------------------------------------------------------------------!
 !                                                                     !
@@ -50,7 +54,6 @@ module numFort
   use LAPACK95
   implicit none
 
-  real(DP), parameter :: Infty = huge(1.0_DP)
   integer  :: neval, ifail
   real(DP) :: errEstimate
 
@@ -76,13 +79,13 @@ module numFort
      module procedure invMatSP, invMatDP, invMatComplexSP, invMatComplexDP
   end interface inv
   interface pyplot
-     module procedure pyplot,pyplotXY
+     module procedure pyplot,pyplotXY,pyplotXYZW
   end interface pyplot
   interface EulerM
      module procedure eulerm,eulermnd
   end interface EulerM
   interface writeData
-     module procedure writeDataXY,writeDataXYZW
+     module procedure writeDataXY,writeDataXYZW,writeDataN
   end interface writeData
 
 contains
@@ -139,6 +142,33 @@ contains
     close(101)
 
   end subroutine writeDataXYZW
+
+  subroutine writeDataN(x,title)
+    use Kinds
+    implicit none
+    real(DP),dimension(:,:),intent(in)     :: x
+    character(len=*),intent(in),optional   :: title
+    character(len=14)                      :: fmt
+    integer :: ii,N
+    
+    N = size(x,dim=2)
+    write(fmt,'(a1,i1,a7)') '(', N, 'es20.9)'
+
+    if (present(title)) then
+       open(101,file=title,action="write", &
+            & status="replace",form="formatted")
+    else
+       open(101,file="data.dat",action="write", &
+            & status="replace",form="formatted")
+    end if
+    do ii = 1,size(x,dim=1)
+       write(101,fmt) x(ii,:)
+    end do
+    
+    close(101)
+
+  end subroutine writeDataN
+
 
   !---------------------------------------------------------------------!
   !                                                                     !
@@ -1689,7 +1719,7 @@ contains
     close(100)
     close(101)
 
-    call system("./pyplots.py")
+    call system("python3.6 pyplots.py")
 
   end subroutine pyplot
 
@@ -1734,9 +1764,49 @@ contains
     close(100)
     close(101)
 
-    call system("./pyplots.py")
+    call system("python3.6 pyplots.py")
 
   end subroutine pyplotXY
+
+  subroutine pyplotXYZW(x,y,z,w,title,xaxis,yaxis)
+    use Kinds
+    implicit none
+    character(len=*),intent(in),optional :: xaxis,yaxis,title
+    real(DP),dimension(:),intent(in)     :: x,y,z,w
+
+    character(len=14)                    :: xlabel,ylabel,name,ld
+    integer                              :: ii
+
+    open(100,file="titles.dat",action="write", &
+         & status="replace",form="formatted")
+    open(101,file="output.dat",action="write", &
+         & status="replace",form="formatted")
+
+    name   = ""
+    xlabel = ""
+    ylabel = ""
+    ld     = "empty"
+
+    if(present(title)) name   = title
+    if(present(xaxis)) xlabel = xaxis
+    if(present(yaxis)) ylabel = yaxis
+
+    write(100,'(a20)') name
+    write(100,'(a15)') xlabel
+    write(100,'(a15)') ylabel
+    write(100,'(a7)') ld
+    write(100,'(a7)') ld    
+
+    do ii=1,size(x)
+       write(101,'(4es20.9)') x(ii), y(ii), z(ii), w(ii)
+    end do
+
+    close(100)
+    close(101)
+
+    call system("python3.6 pyplots.py")
+
+  end subroutine pyplotXYZW
 
 end module numFort
 

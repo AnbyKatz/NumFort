@@ -20,10 +20,9 @@ pypl.ylabel("",fontsize=17)
 pypl.title("" ,fontsize=23)
 pypl.grid()
 
-# pypl.plot(z,w,label="plot 2")
 # pypl.legend()
-# axes.set_xlim([8,16])
-# axes.set_ylim([8,16])
+# axes.set_xlim([,])
+# axes.set_ylim([,])
 # fig.savefig('graph.png')
 
 pypl.show()

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Example recompile file
-# type chmod +x recompileEx.sh and then ./recompileEX.sh to compile
+# type bash recompileEX.sh to compile
 
 ifort -O2 -c kinds.f90
 ifort -O2 -mkl -c lapack.f90

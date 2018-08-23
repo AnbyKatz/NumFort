@@ -1,4 +1,5 @@
-#!/usr/bin/python3.5
+#!/path/to/anaconda3/bin/python3.6
+
 import matplotlib.pyplot as pypl
 import numpy as np
 import math as m
