@@ -7,16 +7,14 @@ import pprint
 from sympy import*
 from matplotlib import rc
 
-data = np.loadtxt("data.dat")
+data = np.loadtxt("filename")
 x = data[:,0]
 y = data[:,1]
-# z = data[:,2]
-# w = data[:,3]
 
 fig = pypl.figure()
 axes = pypl.gca()
 
-pypl.plot(x,y,label="plot 1")
+pypl.plot(x,y,label="1")
 pypl.xlabel("",fontsize=17)
 pypl.ylabel("",fontsize=17)
 pypl.title("" ,fontsize=23)
