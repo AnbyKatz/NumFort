@@ -28,7 +28,7 @@ You will have to at least install PLplot or Pyplots in order to use one or the o
   ifort --version
 #+END_SRC
 - Your ifort version should display
-** PLplot
+** PLplot (Not Recommended)
 *** Cmake
 - Only needed if you wish to use PLplot
 - Download Cmake source code for linux from the following link [[https://cmake.org/download/][CMAKE]]
@@ -81,7 +81,7 @@ You will have to at least install PLplot or Pyplots in order to use one or the o
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/bin/buildDir/bindings/fortran/
 #+END_SRC
 - Open and close the terminal, that should be everything
-** Pyplots
+** Pyplots (Recommended)
 *** Conda
 Download anaconda from here [[https://www.anaconda.com/download/#linux][download link]]. navigate in the terminal to where the final was downloaded and type the following. For us the title of the file was "Anaconda-latest-Linux-x86_64.sh"
 #+BEGIN_SRC shell
