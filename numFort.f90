@@ -12,6 +12,8 @@
 ! Below contains a list of the function names inside numFort for easier       !
 ! navigation purposes.                                                        !
 !                                                                             !
+! - writeData                                                                 !
+! - bessel                                                                    !
 ! - Trace                                                                     !
 ! - inv                                                                       !
 ! - factorial                                                                 !
@@ -79,9 +81,64 @@ module numFort
   interface EulerM
      module procedure eulerm,eulermnd
   end interface EulerM
+  interface writeData
+     module procedure writeDataXY,writeDataXYZW
+  end interface writeData
 
 contains
 
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                         Write data to a file                        !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  subroutine writeDataXY(x,y,title)
+    use Kinds
+    implicit none
+    real(DP),dimension(:),intent(in)     :: x,y
+    character(len=*),intent(in),optional :: title
+    integer :: ii,N
+    
+    N = size(x)
+    if (present(title)) then
+       open(101,file=title,action="write", &
+            & status="replace",form="formatted")
+    else
+       open(101,file="data.dat",action="write", &
+            & status="replace",form="formatted")
+    end if
+    do ii = 1,N
+       write(101,'(2e20.10)') x(ii), y(ii)
+    end do
+    
+    close(101)
+
+  end subroutine writeDataXY
+
+  subroutine writeDataXYZW(x,y,z,w,title)
+    use Kinds
+    implicit none
+    real(DP),dimension(:),intent(in)     :: x,y,z,w
+    character(len=*),intent(in),optional :: title
+    integer :: ii,N
+    
+    N = size(x)
+    if (present(title)) then
+       open(101,file=title,action="write", &
+            & status="replace",form="formatted")
+    else
+       open(101,file="data.dat",action="write", &
+            & status="replace",form="formatted")
+    end if
+    do ii = 1,N
+       write(101,'(4e20.10)') x(ii), y(ii), z(ii), w(ii)
+    end do
+    
+    close(101)
+
+  end subroutine writeDataXYZW
 
   !---------------------------------------------------------------------!
   !                                                                     !
