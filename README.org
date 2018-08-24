@@ -106,7 +106,17 @@ as long as no errors pop up you should be fine. when using Pyplots, edit the pyp
 #+BEGIN_SRC python
 #!/path/to/anaconda3/bin/python3.6
 #+END_SRC
-Let me know if anaconda doesn't auto install matplotlib and numpy.
+You should also do the following to make the running process easy. Copy the file /BashFortran.sh/ from the directory /Pyplots/ into where you wish to run your FORTRAN code. Write the following lines in the terminal
+#+BEGIN_SRC shell
+  cd
+  mkdir bin
+  ln -s /path/to/anaconda3/bin/python3.6 ~/bin/python3.6
+#+END_SRC
+This will create a symbolic link for python3.6. Add the following to your .bashrc
+#+BEGIN_SRC shell
+  export PATH=$PATH:~/bin
+#+END_SRC
+Now simply edit the BashFortran.sh file as specified and type ./BashFortran.sh to run the commands listed in the file for a basic plotting routine when in the same directory as your FORTRAN file. Let me know if anaconda doesn't auto install matplotlib and numpy.
 ** NumFort
 - Download and move numFort repository files to specified location eg. /path/to/numFort/
 - Your final makefile should look something like this
