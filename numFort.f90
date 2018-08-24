@@ -58,7 +58,7 @@ module numFort
   real(DP) :: errEstimate
 
   interface linspace
-     module procedure linspace,linspaceReal
+     module procedure linspace,linspaceReal,linspaceInt
   end interface linspace
   interface integral
      module procedure integral, integralToInfty, integralOf, integralBreakPts
@@ -79,7 +79,7 @@ module numFort
      module procedure invMatSP, invMatDP, invMatComplexSP, invMatComplexDP
   end interface inv
   interface pyplot
-     module procedure pyplot,pyplotXY,pyplotXYZW
+     module procedure pyplotN,pyplotXY,pyplotXYZW
   end interface pyplot
   interface EulerM
      module procedure eulerm,eulermnd
@@ -1674,7 +1674,7 @@ contains
   !                                                                     !
   !---------------------------------------------------------------------!
 
-  subroutine pyplot(x,title,xaxis,yaxis,legend)
+  subroutine pyplotN(x,title,xaxis,yaxis,legend)
     use Kinds
     implicit none
     character(len=*),intent(in),optional              :: xaxis,yaxis,title
@@ -1721,7 +1721,7 @@ contains
 
     call system("python3.6 pyplots.py")
 
-  end subroutine pyplot
+  end subroutine pyplotN
 
   !---------------------------------------------------------------------!
   !                                                                     !

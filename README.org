@@ -3,8 +3,7 @@
 #+TITLE: numFort
 
 * Description
-numFort is a numerical library for FORTRAN that includes quadpack, lapack and PLplot source code. It enables the use of handy mathematical macros such as linspace. I have wasted so much of my life on this nonsense.
-
+numFort is a numerical library for FORTRAN that includes quadpack, lapack, PLplot and Matplotlib source code. It enables the use of handy mathematical macros such as linspace. I have wasted so much of my life on this nonsense.
 * Installation - Linux/Unix
 You will have to at least install PLplot or Pyplots in order to use one or the other for plotting algorithms or both. You may then comment out the other where specified below at run time.
 ** ifort
@@ -14,7 +13,7 @@ You will have to at least install PLplot or Pyplots in order to use one or the o
   # If you wish to install it globally use the below sudo prefix (not necessary)
   sudo ./install.sh
 #+END_SRC
-- You may wish to install it locally instead though (hit option 3 i think after typing ./install.sh)
+- _You may wish to install it locally instead though (hit option 3 i think after typing ./install.sh)_
 - Make sure to check the math kernel for install
 - After installation you may need to export the path to the *ifort* compiler. Add code similar to below in your ~/.bashrc. Your exact path for the above libraries might be different (probably just different numbers for 2018.3.222)
 #+BEGIN_SRC shell
@@ -87,13 +86,17 @@ Download anaconda from here [[https://www.anaconda.com/download/#linux][download
 #+BEGIN_SRC shell
   bash Anaconda-latest-Linux-x86_64.sh
 #+END_SRC
-follow the prompts and it should install. Say yes to append the path to your .bashrc. Add the following lines in your .bashrc as well
+follow the prompts and it should install. Say yes to append the path to your .bashrc. If it didn't add the necessary path in your .bashrc then simply type the following in your .bashrc.
 #+BEGIN_SRC shell
-  alias py="~/anaconda3/bin/python3.6"
+  export PATH="/path/to/anaconda3/bin:$PATH"
 #+END_SRC
-now type "py" and the python command line should pop up. Should say anaconda as well, type C-d to exit out of the shell.
+Try typing 
+#+BEGIN_SRC shell
+  python3.6 --version
+#+END_SRC
+and it should pop up with an anaconda label as well
 *** Matplotlib & Numpy
-This should come with matplotlib, numpy and math. To test this open a python shell with py and type the following
+This should come with matplotlib, numpy and math. To test this open a python shell with python3.6 and type the following
 #+BEGIN_SRC python
 import matplotlib.pyplot as pypl
 import numpy as np
@@ -103,7 +106,7 @@ as long as no errors pop up you should be fine. when using Pyplots, edit the pyp
 #+BEGIN_SRC python
 #!/path/to/anaconda3/bin/python3.6
 #+END_SRC
-Let me know if anaconda doesn't auto install matplotlib and numpy
+Let me know if anaconda doesn't auto install matplotlib and numpy.
 ** NumFort
 - Download and move numFort repository files to specified location eg. /path/to/numFort/
 - Your final makefile should look something like this
