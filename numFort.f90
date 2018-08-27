@@ -1719,8 +1719,6 @@ contains
     close(100)
     close(101)
 
-    call system("python3.6 pyplots.py")
-
   end subroutine pyplotN
 
   !---------------------------------------------------------------------!
@@ -1764,8 +1762,6 @@ contains
     close(100)
     close(101)
 
-    call system("python3.6 pyplots.py")
-
   end subroutine pyplotXY
 
   subroutine pyplotXYZW(x,y,z,w,title,xaxis,yaxis)
@@ -1803,8 +1799,6 @@ contains
 
     close(100)
     close(101)
-
-    call system("python3.6 pyplots.py")
 
   end subroutine pyplotXYZW
 

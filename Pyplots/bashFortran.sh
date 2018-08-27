@@ -3,5 +3,6 @@
 make all
 ./filename
 # Comment out the one you aren't using
-python3.6 pyplots.py
-python3.6 customPlot.py
+# Change to the python version you are using
+pythonVersion pyplots.py
+pythonVersion customPlot.py

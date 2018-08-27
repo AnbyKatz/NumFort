@@ -1,10 +1,8 @@
-#!/path/to/anaconda3/bin/python3.6
+#!/path/to/anaconda3/bin/pythonVersion
 
 import matplotlib.pyplot as pypl
 import numpy as np
 import math as m
-import pprint
-from sympy import*
 from matplotlib import rc
 
 data = np.loadtxt("filename")

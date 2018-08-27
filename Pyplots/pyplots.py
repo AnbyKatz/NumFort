@@ -1,4 +1,4 @@
-#!/path/to/anaconda3/bin/python3.6
+#!/path/to/anaconda3/bin/pythonVersion
 
 import matplotlib.pyplot as pypl
 import numpy as np

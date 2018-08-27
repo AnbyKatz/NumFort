@@ -1,3 +1,11 @@
-recompileHome.sh
-recompileWork.sh
+f95_precision.mod
+PLplots.o
+kinds.mod
+kinds.o
+lapack.o
+lapack95.mod
+numFort.o
+numFort.mod
+plplots.mod
+quadpack.mod
 recompile.sh

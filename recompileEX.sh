@@ -2,6 +2,7 @@
 
 # Example recompile file
 # type bash recompileEX.sh to compile
+# Make your own recompile file called recompile.sh (it is on the .gitignore)
 
 ifort -O2 -c kinds.f90
 ifort -O2 -mkl -c lapack.f90
