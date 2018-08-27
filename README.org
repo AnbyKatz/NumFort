@@ -101,31 +101,45 @@ follow the prompts and it should install. Say yes to append the path to your .ba
 #+END_SRC
 Try typing 
 #+BEGIN_SRC shell
-  python3.6 --version
+  python3.7 --version
 #+END_SRC
-and it should pop up with an anaconda label as well
+If nothing pops up type
+#+BEGIN_SRC emacs-lisp
+  conda install python=3.7
+#+END_SRC
 *** Matplotlib & Numpy
-This should come with matplotlib, numpy and math. To test this open a python shell with python3.6 and type the following
+This should come with matplotlib, numpy and math. To test this open a python shell with python3.7 and type the following
 #+BEGIN_SRC python
 import matplotlib.pyplot as pypl
 import numpy as np
 import math as m
 #+END_SRC
-as long as no errors pop up you should be fine. when using Pyplots, edit the pyplot.py file path to your install directory of anaconda as below
-#+BEGIN_SRC python
-#!/path/to/anaconda3/bin/python3.6
+as long as no errors pop up you should be fine. when using Pyplots, Copy and paste the code inside the Pyplots directory to your *.f90 file you wish to run and simply type bash bashFortran.sh or ./bashFortran to run. You may need to edit the file a little however, here is the basic template
+#+BEGIN_SRC shell
+  #!/bin/bash
+
+  make all
+
+  # Put the *.f90 file name here
+  ./filename
+
+  # Comment out the one you aren't using
+  # Change to the python version you are using
+
+  python3.7 pyplots.py
+  # python3.7 customPlot.py
 #+END_SRC
-You should also do the following to make the running process easy. Copy the file /BashFortran.sh/ from the directory /Pyplots/ into where you wish to run your FORTRAN code. Write the following lines in the terminal
+Write the following lines in the terminal
 #+BEGIN_SRC shell
   cd
   mkdir bin
-  ln -s /path/to/anaconda3/bin/python3.6 ~/bin/python3.6
+  ln -s /path/to/anaconda3/bin/python3.7 ~/bin/python3.7
 #+END_SRC
-This will create a symbolic link for python3.6. Add the following to your .bashrc
+This will create a symbolic link for python3.7. Add the following to your .bashrc
 #+BEGIN_SRC shell
   export PATH=$PATH:~/bin
 #+END_SRC
-Now simply edit the BashFortran.sh file as specified and type ./BashFortran.sh to run the commands listed in the file for a basic plotting routine when in the same directory as your FORTRAN file. Let me know if anaconda doesn't auto install matplotlib and numpy.
+Now simply edit the BashFortran.sh file as specified and type ./BashFortran.sh to run the commands listed in the file (You may need to type /chmod +x bashFortran.sh/ to turn it into an executable. For a basic plotting routine when in the same directory as your FORTRAN file.
 ** NumFort
 - Download and move numFort repository files to specified location eg. /path/to/numFort/
 - Your final makefile should look something like this
@@ -197,8 +211,9 @@ The four modules you may include are /kinds/, /lapack95/, /numFort/ and /PLplots
         use kinds
         use lapack95
         use numFort
-        use PLplots
 
+        use PLplots ! If you hate yourself
+        implicit none
         ...
 
   end progName
