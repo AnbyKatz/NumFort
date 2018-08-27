@@ -5,7 +5,7 @@ kinds.o
 lapack.o
 lapack95.mod
 numFort.o
-numFort.mod
+numfort.mod
 plplots.mod
 quadpack.mod
 recompile.sh
