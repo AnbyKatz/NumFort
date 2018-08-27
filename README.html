@@ -3,12 +3,12 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2018-08-23 Thu 17:49 -->
+<!-- 2018-08-27 Mon 19:24 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>numFort</title>
 <meta name="generator" content="Org mode" />
-<meta name="author" content="Anthony Kalaitzis" />
+<meta name="author" content="Anthony Kalaitzis &amp; Curtis Abell" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center;
@@ -180,6 +180,12 @@
   .org-svg { width: 90%; }
   /*]]>*/-->
 </style>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/readtheorg/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/readtheorg/js/readtheorg.js"></script>
 <script type="text/javascript">
 /*
 @licstart  The following is the entire license notice for the
@@ -234,55 +240,55 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org0e40e92">1. Description</a></li>
-<li><a href="#orga7cbc45">2. Installation - Linux/Unix</a>
+<li><a href="#orga163fc6">1. Description</a></li>
+<li><a href="#orgd55100c">2. Installation - Linux/Unix</a>
 <ul>
-<li><a href="#org9c0bcba">2.1. ifort</a></li>
-<li><a href="#org4655337">2.2. PLplot (Not Recommended)</a>
+<li><a href="#orgd847afb">2.1. ifort</a></li>
+<li><a href="#orge738f2a">2.2. PLplot (Not Recommended)</a>
 <ul>
-<li><a href="#orgec52d6f">2.2.1. Cmake</a></li>
-<li><a href="#org0399878">2.2.2. PLplot</a></li>
+<li><a href="#org625e033">2.2.1. Cmake</a></li>
+<li><a href="#orgef6319c">2.2.2. PLplot</a></li>
 </ul>
 </li>
-<li><a href="#orge1ac9bc">2.3. Pyplots (Recommended)</a>
+<li><a href="#org90c2e38">2.3. Pyplots (Recommended)</a>
 <ul>
-<li><a href="#org7610ffb">2.3.1. Conda</a></li>
-<li><a href="#org5d02fe4">2.3.2. Matplotlib &amp; Numpy</a></li>
+<li><a href="#org2173839">2.3.1. Conda</a></li>
+<li><a href="#org53ea446">2.3.2. Matplotlib &amp; Numpy</a></li>
 </ul>
 </li>
-<li><a href="#orgcda8a4e">2.4. NumFort</a></li>
+<li><a href="#org822fe42">2.4. NumFort</a></li>
 </ul>
 </li>
-<li><a href="#org61d7e1d">3. Documentation</a>
+<li><a href="#orgab4ee64">3. Documentation</a>
 <ul>
-<li><a href="#orge347eae">3.1. Kinds</a></li>
-<li><a href="#org9d254e5">3.2. lapack95</a></li>
-<li><a href="#org082c698">3.3. NumFort</a>
+<li><a href="#orgbe7b3f8">3.1. Kinds</a></li>
+<li><a href="#org807dffd">3.2. lapack95</a></li>
+<li><a href="#org5b46ba0">3.3. NumFort</a>
 <ul>
-<li><a href="#orge5df820">3.3.1. writeData</a></li>
-<li><a href="#org91c4bb5">3.3.2. bessel</a></li>
-<li><a href="#orgae2d40a">3.3.3. Trace</a></li>
-<li><a href="#orgb55ede1">3.3.4. Factorial</a></li>
-<li><a href="#orge7d2633">3.3.5. Meshgrid</a></li>
-<li><a href="#org2c54a8a">3.3.6. Splinefit</a></li>
-<li><a href="#orgfa60059">3.3.7. PolyFit</a></li>
-<li><a href="#org2b80a26">3.3.8. EulerM</a></li>
-<li><a href="#org4935fce">3.3.9. rk4</a></li>
-<li><a href="#org3f0e3a4">3.3.10. GuessZero</a></li>
-<li><a href="#org74d526b">3.3.11. Newton1D</a></li>
-<li><a href="#orgadc164b">3.3.12. Linspace</a></li>
-<li><a href="#orge7dc577">3.3.13. Deriv</a></li>
-<li><a href="#orgfb5a17d">3.3.14. integral</a></li>
-<li><a href="#orgb0fc36f">3.3.15. integralPV</a></li>
+<li><a href="#org557abfe">3.3.1. writeData</a></li>
+<li><a href="#org30dd6d2">3.3.2. bessel</a></li>
+<li><a href="#org81feade">3.3.3. Trace</a></li>
+<li><a href="#orgaa79156">3.3.4. Factorial</a></li>
+<li><a href="#org930f720">3.3.5. Meshgrid</a></li>
+<li><a href="#orgab21608">3.3.6. Splinefit</a></li>
+<li><a href="#orgd12b821">3.3.7. PolyFit</a></li>
+<li><a href="#orgb1837db">3.3.8. EulerM</a></li>
+<li><a href="#orgff9824c">3.3.9. rk4</a></li>
+<li><a href="#org88c3aee">3.3.10. GuessZero</a></li>
+<li><a href="#org5728b29">3.3.11. Newton1D</a></li>
+<li><a href="#orgce9a106">3.3.12. Linspace</a></li>
+<li><a href="#orgf6a188a">3.3.13. Deriv</a></li>
+<li><a href="#orgeb93489">3.3.14. integral</a></li>
+<li><a href="#org2d295af">3.3.15. integralPV</a></li>
 </ul>
 </li>
-<li><a href="#org08877a5">3.4. pythonPlot</a></li>
-<li><a href="#org3877a9c">3.5. PLplots</a>
+<li><a href="#org256888d">3.4. pythonPlot</a></li>
+<li><a href="#orgf709c13">3.5. PLplots</a>
 <ul>
-<li><a href="#org8d43f82">3.5.1. plot</a></li>
-<li><a href="#orgc09e598">3.5.2. scatterplot</a></li>
-<li><a href="#org3aac923">3.5.3. surf</a></li>
-<li><a href="#org532974b">3.5.4. scatter3D</a></li>
+<li><a href="#org3bf5f3f">3.5.1. plot</a></li>
+<li><a href="#org9b30661">3.5.2. scatterplot</a></li>
+<li><a href="#org5cf76f7">3.5.3. surf</a></li>
+<li><a href="#org7e7f2e8">3.5.4. scatter3D</a></li>
 </ul>
 </li>
 </ul>
@@ -291,24 +297,23 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org0e40e92" class="outline-2">
-<h2 id="org0e40e92"><span class="section-number-2">1</span> Description</h2>
+<div id="outline-container-orga163fc6" class="outline-2">
+<h2 id="orga163fc6"><span class="section-number-2">1</span> Description</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-numFort is a numerical library for FORTRAN that includes quadpack, lapack and PLplot source code. It enables the use of handy mathematical macros such as linspace. I have wasted so much of my life on this nonsense.
+numFort is a numerical library for FORTRAN that includes quadpack, lapack, PLplot and Matplotlib source code. It enables the use of handy mathematical macros such as linspace. I have wasted so much of my life on this nonsense.
 </p>
 </div>
 </div>
-
-<div id="outline-container-orga7cbc45" class="outline-2">
-<h2 id="orga7cbc45"><span class="section-number-2">2</span> Installation - Linux/Unix</h2>
+<div id="outline-container-orgd55100c" class="outline-2">
+<h2 id="orgd55100c"><span class="section-number-2">2</span> Installation - Linux/Unix</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 You will have to at least install PLplot or Pyplots in order to use one or the other for plotting algorithms or both. You may then comment out the other where specified below at run time.
 </p>
 </div>
-<div id="outline-container-org9c0bcba" class="outline-3">
-<h3 id="org9c0bcba"><span class="section-number-3">2.1</span> ifort</h3>
+<div id="outline-container-orgd847afb" class="outline-3">
+<h3 id="orgd847afb"><span class="section-number-3">2.1</span> ifort</h3>
 <div class="outline-text-3" id="text-2-1">
 <ul class="org-ul">
 <li>Before using numFort, make sure to download the ifort compiler and the necessary math kernel libraries for the use of LAPACK. These may be downloaded from the following link (free for students) <a href="https://software.intel.com/en-us/qualify-for-free-software/student">Parallel studio XE</a>, click the C++ link unless on mac</li>
@@ -320,7 +325,7 @@ sudo ./install.sh
 </pre>
 </div>
 <ul class="org-ul">
-<li>You may wish to install it locally instead though (hit option 3 i think after typing ./install.sh)</li>
+<li><span class="underline">You may wish to install it locally instead though (hit option 3 i think after typing ./install.sh)</span></li>
 <li>Make sure to check the math kernel for install</li>
 <li>After installation you may need to export the path to the <b>ifort</b> compiler. Add code similar to below in your ~/.bashrc. Your exact path for the above libraries might be different (probably just different numbers for 2018.3.222)</li>
 </ul>
@@ -343,12 +348,12 @@ sudo ./install.sh
 </ul>
 </div>
 </div>
-<div id="outline-container-org4655337" class="outline-3">
-<h3 id="org4655337"><span class="section-number-3">2.2</span> PLplot (Not Recommended)</h3>
+<div id="outline-container-orge738f2a" class="outline-3">
+<h3 id="orge738f2a"><span class="section-number-3">2.2</span> PLplot (Not Recommended)</h3>
 <div class="outline-text-3" id="text-2-2">
 </div>
-<div id="outline-container-orgec52d6f" class="outline-4">
-<h4 id="orgec52d6f"><span class="section-number-4">2.2.1</span> Cmake</h4>
+<div id="outline-container-org625e033" class="outline-4">
+<h4 id="org625e033"><span class="section-number-4">2.2.1</span> Cmake</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <ul class="org-ul">
 <li>Only needed if you wish to use PLplot</li>
@@ -374,8 +379,8 @@ make install
 </ul>
 </div>
 </div>
-<div id="outline-container-org0399878" class="outline-4">
-<h4 id="org0399878"><span class="section-number-4">2.2.2</span> PLplot</h4>
+<div id="outline-container-orgef6319c" class="outline-4">
+<h4 id="orgef6319c"><span class="section-number-4">2.2.2</span> PLplot</h4>
 <div class="outline-text-4" id="text-2-2-2">
 <ul class="org-ul">
 <li>Open up a terminal in your home directory. For this example we will install in a folder called ~/bin (/home/user/bin). The following commands downloads the necessary code</li>
@@ -436,12 +441,12 @@ make install
 </div>
 </div>
 </div>
-<div id="outline-container-orge1ac9bc" class="outline-3">
-<h3 id="orge1ac9bc"><span class="section-number-3">2.3</span> Pyplots (Recommended)</h3>
+<div id="outline-container-org90c2e38" class="outline-3">
+<h3 id="org90c2e38"><span class="section-number-3">2.3</span> Pyplots (Recommended)</h3>
 <div class="outline-text-3" id="text-2-3">
 </div>
-<div id="outline-container-org7610ffb" class="outline-4">
-<h4 id="org7610ffb"><span class="section-number-4">2.3.1</span> Conda</h4>
+<div id="outline-container-org2173839" class="outline-4">
+<h4 id="org2173839"><span class="section-number-4">2.3.1</span> Conda</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <p>
 Download anaconda from here <a href="https://www.anaconda.com/download/#linux">download link</a>. navigate in the terminal to where the final was downloaded and type the following. For us the title of the file was &ldquo;Anaconda-latest-Linux-x86<sub>64.sh</sub>&rdquo;
@@ -451,22 +456,29 @@ Download anaconda from here <a href="https://www.anaconda.com/download/#linux">d
 </pre>
 </div>
 <p>
-follow the prompts and it should install. Say yes to append the path to your .bashrc. Add the following lines in your .bashrc as well
+follow the prompts and it should install. Say yes to append the path to your .bashrc. If it didn&rsquo;t add the necessary path in your .bashrc then simply type the following in your .bashrc.
 </p>
 <div class="org-src-container">
-<pre class="src src-shell"><span style="color: #87ceeb;">alias</span> <span style="color: #ffc125;">py</span>=<span style="color: #ff00ff;">"~/anaconda3/bin/python3.6"</span>
+<pre class="src src-shell"><span style="color: #87ceeb;">export</span> <span style="color: #ffc125;">PATH</span>=<span style="color: #ff00ff;">"/path/to/anaconda3/bin:$PATH"</span>
 </pre>
 </div>
 <p>
-now type &ldquo;py&rdquo; and the python command line should pop up. Should say anaconda as well, type C-d to exit out of the shell.
+Try typing 
+</p>
+<div class="org-src-container">
+<pre class="src src-shell">python3.6 --version
+</pre>
+</div>
+<p>
+and it should pop up with an anaconda label as well
 </p>
 </div>
 </div>
-<div id="outline-container-org5d02fe4" class="outline-4">
-<h4 id="org5d02fe4"><span class="section-number-4">2.3.2</span> Matplotlib &amp; Numpy</h4>
+<div id="outline-container-org53ea446" class="outline-4">
+<h4 id="org53ea446"><span class="section-number-4">2.3.2</span> Matplotlib &amp; Numpy</h4>
 <div class="outline-text-4" id="text-2-3-2">
 <p>
-This should come with matplotlib, numpy and math. To test this open a python shell with py and type the following
+This should come with matplotlib, numpy and math. To test this open a python shell with python3.6 and type the following
 </p>
 <div class="org-src-container">
 <pre class="src src-python"><span style="color: #00ffff; font-weight: bold;">import</span> matplotlib.pyplot <span style="color: #00ffff; font-weight: bold;">as</span> pypl
@@ -482,13 +494,29 @@ as long as no errors pop up you should be fine. when using Pyplots, edit the pyp
 </pre>
 </div>
 <p>
-Let me know if anaconda doesn&rsquo;t auto install matplotlib and numpy
+You should also do the following to make the running process easy. Copy the file <i>BashFortran.sh</i> from the directory <i>Pyplots</i> into where you wish to run your FORTRAN code. Write the following lines in the terminal
+</p>
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #87ceeb;">cd</span>
+mkdir bin
+ln -s /path/to/anaconda3/bin/python3.6 ~/bin/python3.6
+</pre>
+</div>
+<p>
+This will create a symbolic link for python3.6. Add the following to your .bashrc
+</p>
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #87ceeb;">export</span> <span style="color: #ffc125;">PATH</span>=$<span style="color: #ffc125;">PATH</span>:~/bin
+</pre>
+</div>
+<p>
+Now simply edit the BashFortran.sh file as specified and type ./BashFortran.sh to run the commands listed in the file for a basic plotting routine when in the same directory as your FORTRAN file. Let me know if anaconda doesn&rsquo;t auto install matplotlib and numpy.
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-orgcda8a4e" class="outline-3">
-<h3 id="orgcda8a4e"><span class="section-number-3">2.4</span> NumFort</h3>
+<div id="outline-container-org822fe42" class="outline-3">
+<h3 id="org822fe42"><span class="section-number-3">2.4</span> NumFort</h3>
 <div class="outline-text-3" id="text-2-4">
 <ul class="org-ul">
 <li>Download and move numFort repository files to specified location eg. <i>path/to/numFort</i></li>
@@ -496,7 +524,7 @@ Let me know if anaconda doesn&rsquo;t auto install matplotlib and numpy
 </ul>
 <div class="org-src-container">
 <pre class="src src-shell"><span style="color: #75715E;"># </span><span style="color: #999999; font-style: italic;">Directory to numFort</span>
-<span style="color: #75715E;"># </span><span style="color: #999999; font-style: italic;">DO NOT USE ~ FOR THE HOME DIRECTORY IN THIS PATH</span>
+<span style="color: #75715E;"># </span><span style="color: #999999; font-style: italic;">DO NOT USE ~ FOR THE HOME DIRECTORY IN THIS PATH, add those slashes</span>
 DIR = /path/to/numFort/
 
 F90C = ifort
@@ -533,13 +561,11 @@ clean:
 </pre>
 </div>
 <ul class="org-ul">
-<li><b>SOME IMPORTANT NOTES ON THE ABOVE MAKEFILE</b></li>
-
 <li>for the PLPLOT variable, plplot-fortran is the name of the pkg-config FORTRAN file located in installDir/lib/pkgconfig. It may have a different name for you (In this case for us it is called plplot-fortran.pc)</li>
 
 <li>DIR is the directory where you have put all the numFort source code</li>
 
-<li>The bash file <i>recompileEX.sh</i> in the repository can be used to recompile these libraries if you should choose to edit and add. Simply run with ./recompileEX.sh whilst in the directory (Make sure to edit the paths to the correct ones</li>
+<li>The bash file <i>recompileEX.sh</i> is an example of how to compile these libraries. Make a file called <i>recompile.sh</i> and paste in the below template or the template in recompile or rename the <i>recompileEX.sh</i> file. Edit as specified below and then type <i>bash recompile.sh</i> in the terminal to compile the libraries. You may have to type it twice for unknown reasons.</li>
 </ul>
 
 <div class="org-src-container">
@@ -552,9 +578,10 @@ ifort -O2 -c kinds.f90
 ifort -O2 -mkl -c lapack.f90
 
 <span style="color: #75715E;"># </span><span style="color: #999999; font-style: italic;">Comment out this line if you wish to not use PLplot/haven't installed it</span>
+<span style="color: #75715E;"># </span><span style="color: #999999; font-style: italic;">Edit the paths if you wish to use</span>
 ifort -O2 -c PLplots.f90 -I/path/to/PLplotInstall/include/plplot -I/path/to/PLplotInstall/lib/fortran/modules/plplot -L/path/to/PLplotInstall/lib -lplplotfortran -lplplot
 
-ifort -O2 -mkl  -c numFort.f90 -lmkl_lapack95_lp64 
+ifort -O2 -mkl -c numFort.f90 -lmkl_lapack95_lp64 
 </pre>
 </div>
 
@@ -565,8 +592,8 @@ ifort -O2 -mkl  -c numFort.f90 -lmkl_lapack95_lp64
 </div>
 </div>
 
-<div id="outline-container-org61d7e1d" class="outline-2">
-<h2 id="org61d7e1d"><span class="section-number-2">3</span> Documentation</h2>
+<div id="outline-container-orgab4ee64" class="outline-2">
+<h2 id="orgab4ee64"><span class="section-number-2">3</span> Documentation</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 The four modules you may include are <i>kinds</i>, <i>lapack95</i>, <i>numFort</i> and <i>PLplots</i>. Simply include in any .f90 file via a simple use statement as per usual.
@@ -592,8 +619,8 @@ Listed variables (some may be optional) and examples of how to call:
 </p>
 </div>
 
-<div id="outline-container-orge347eae" class="outline-3">
-<h3 id="orge347eae"><span class="section-number-3">3.1</span> Kinds</h3>
+<div id="outline-container-orgbe7b3f8" class="outline-3">
+<h3 id="orgbe7b3f8"><span class="section-number-3">3.1</span> Kinds</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 Precision parameter file. Main uses are for constants like pi and making variables double precision.
@@ -601,20 +628,20 @@ Precision parameter file. Main uses are for constants like pi and making variabl
 </div>
 </div>
 
-<div id="outline-container-org9d254e5" class="outline-3">
-<h3 id="org9d254e5"><span class="section-number-3">3.2</span> lapack95</h3>
+<div id="outline-container-org807dffd" class="outline-3">
+<h3 id="org807dffd"><span class="section-number-3">3.2</span> lapack95</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 see online lapack documentation for an extensive list on possible linear algebra computations <a href="https://software.intel.com/en-us/mkl-linux-developer-guide-fortran-95-interfaces-to-lapack-and-blas">online documentation</a>.
 </p>
 </div>
 </div>
-<div id="outline-container-org082c698" class="outline-3">
-<h3 id="org082c698"><span class="section-number-3">3.3</span> NumFort</h3>
+<div id="outline-container-org5b46ba0" class="outline-3">
+<h3 id="org5b46ba0"><span class="section-number-3">3.3</span> NumFort</h3>
 <div class="outline-text-3" id="text-3-3">
 </div>
-<div id="outline-container-orge5df820" class="outline-4">
-<h4 id="orge5df820"><span class="section-number-4">3.3.1</span> writeData</h4>
+<div id="outline-container-org557abfe" class="outline-4">
+<h4 id="org557abfe"><span class="section-number-4">3.3.1</span> writeData</h4>
 <div class="outline-text-4" id="text-3-3-1">
 <p>
 Writes variables to a data file which can then be used with customPlot.py to use python to plot (requires numpy and matplotlib)
@@ -670,8 +697,8 @@ Writes variables to a data file which can then be used with customPlot.py to use
 </div>
 </div>
 </div>
-<div id="outline-container-org91c4bb5" class="outline-4">
-<h4 id="org91c4bb5"><span class="section-number-4">3.3.2</span> bessel</h4>
+<div id="outline-container-org30dd6d2" class="outline-4">
+<h4 id="org30dd6d2"><span class="section-number-4">3.3.2</span> bessel</h4>
 <div class="outline-text-4" id="text-3-3-2">
 <p>
 Calculate the value of the 0&lt;n&lt;5 order bessel fucntion at x
@@ -716,8 +743,8 @@ Calculate the value of the 0&lt;n&lt;5 order bessel fucntion at x
 </div>
 </div>
 </div>
-<div id="outline-container-orgae2d40a" class="outline-4">
-<h4 id="orgae2d40a"><span class="section-number-4">3.3.3</span> Trace</h4>
+<div id="outline-container-org81feade" class="outline-4">
+<h4 id="org81feade"><span class="section-number-4">3.3.3</span> Trace</h4>
 <div class="outline-text-4" id="text-3-3-3">
 <p>
 Calculate the trace of a matrix
@@ -758,8 +785,8 @@ Calculate the trace of a matrix
 </div>
 </div>
 
-<div id="outline-container-orgb55ede1" class="outline-4">
-<h4 id="orgb55ede1"><span class="section-number-4">3.3.4</span> Factorial</h4>
+<div id="outline-container-orgaa79156" class="outline-4">
+<h4 id="orgaa79156"><span class="section-number-4">3.3.4</span> Factorial</h4>
 <div class="outline-text-4" id="text-3-3-4">
 <p>
 Calculates the factorial of n
@@ -800,8 +827,8 @@ Calculates the factorial of n
 </div>
 </div>
 
-<div id="outline-container-orge7d2633" class="outline-4">
-<h4 id="orge7d2633"><span class="section-number-4">3.3.5</span> Meshgrid</h4>
+<div id="outline-container-org930f720" class="outline-4">
+<h4 id="org930f720"><span class="section-number-4">3.3.5</span> Meshgrid</h4>
 <div class="outline-text-4" id="text-3-3-5">
 <p>
 Creates a unique lattice of points for two given vectors x and y. Usually used for making a 3D grid for 3 dimensional plots.
@@ -853,8 +880,8 @@ Creates a unique lattice of points for two given vectors x and y. Usually used f
 </div>
 
 
-<div id="outline-container-org2c54a8a" class="outline-4">
-<h4 id="org2c54a8a"><span class="section-number-4">3.3.6</span> Splinefit</h4>
+<div id="outline-container-orgab21608" class="outline-4">
+<h4 id="orgab21608"><span class="section-number-4">3.3.6</span> Splinefit</h4>
 <div class="outline-text-4" id="text-3-3-6">
 <p>
 Fits a cubic spline to inputted data. This function can return the coefficients or just a list of desired points to be interpolated at.
@@ -928,8 +955,8 @@ value = splinevals<span style="color: #AE81FF;">(</span>c,xj,x<span style="color
 </div>
 </div>
 
-<div id="outline-container-orgfa60059" class="outline-4">
-<h4 id="orgfa60059"><span class="section-number-4">3.3.7</span> PolyFit</h4>
+<div id="outline-container-orgd12b821" class="outline-4">
+<h4 id="orgd12b821"><span class="section-number-4">3.3.7</span> PolyFit</h4>
 <div class="outline-text-4" id="text-3-3-7">
 <p>
 Exactly the same as SplineFit but for a Nth order polynomial.
@@ -987,8 +1014,8 @@ value = polyCal<span style="color: #AE81FF;">(</span>N,c,x<span style="color: #A
 </div>
 </div>
 
-<div id="outline-container-org2b80a26" class="outline-4">
-<h4 id="org2b80a26"><span class="section-number-4">3.3.8</span> EulerM</h4>
+<div id="outline-container-orgb1837db" class="outline-4">
+<h4 id="orgb1837db"><span class="section-number-4">3.3.8</span> EulerM</h4>
 <div class="outline-text-4" id="text-3-3-8">
 <p>
 Performs Eulers method to solve a single or N coupled DE&rsquo;s, same call notation as rk4
@@ -1055,8 +1082,8 @@ values = eulerM<span style="color: #AE81FF;">(</span>f,h,t0,y0<span style="color
 </div>
 </div>
 
-<div id="outline-container-org4935fce" class="outline-4">
-<h4 id="org4935fce"><span class="section-number-4">3.3.9</span> rk4</h4>
+<div id="outline-container-orgff9824c" class="outline-4">
+<h4 id="orgff9824c"><span class="section-number-4">3.3.9</span> rk4</h4>
 <div class="outline-text-4" id="text-3-3-9">
 <p>
 Performs a 4th order Runge Kutta solving algorithm for a given DE. Algorithms giving for a single DE or N coupled DE.
@@ -1123,8 +1150,8 @@ values = rk4<span style="color: #AE81FF;">(</span>f,h,t0,y0<span style="color: #
 </div>
 </div>
 
-<div id="outline-container-org3f0e3a4" class="outline-4">
-<h4 id="org3f0e3a4"><span class="section-number-4">3.3.10</span> GuessZero</h4>
+<div id="outline-container-org88c3aee" class="outline-4">
+<h4 id="org88c3aee"><span class="section-number-4">3.3.10</span> GuessZero</h4>
 <div class="outline-text-4" id="text-3-3-10">
 <p>
 Given a set of values or a function with boundaries, returns the approximate value of where the function changes sign. An index is returned for inputted values method and the x value exactly is returned for the function method.
@@ -1178,8 +1205,8 @@ value = guesszero<span style="color: #AE81FF;">(</span>f,a,b<span style="color: 
 </div>
 </div>
 
-<div id="outline-container-org74d526b" class="outline-4">
-<h4 id="org74d526b"><span class="section-number-4">3.3.11</span> Newton1D</h4>
+<div id="outline-container-org5728b29" class="outline-4">
+<h4 id="org5728b29"><span class="section-number-4">3.3.11</span> Newton1D</h4>
 <div class="outline-text-4" id="text-3-3-11">
 <p>
 Performs a 1 dimensional newtons method to find the zero of a function.
@@ -1226,8 +1253,8 @@ value = newton1D<span style="color: #AE81FF;">(</span>fn,x<span style="color: #A
 </div>
 </div>
 
-<div id="outline-container-orgadc164b" class="outline-4">
-<h4 id="orgadc164b"><span class="section-number-4">3.3.12</span> Linspace</h4>
+<div id="outline-container-orgce9a106" class="outline-4">
+<h4 id="orgce9a106"><span class="section-number-4">3.3.12</span> Linspace</h4>
 <div class="outline-text-4" id="text-3-3-12">
 <p>
 Creates a linear space of points between a and b with N points.
@@ -1278,8 +1305,8 @@ Creates a linear space of points between a and b with N points.
 </div>
 </div>
 
-<div id="outline-container-orge7dc577" class="outline-4">
-<h4 id="orge7dc577"><span class="section-number-4">3.3.13</span> Deriv</h4>
+<div id="outline-container-orgf6a188a" class="outline-4">
+<h4 id="orgf6a188a"><span class="section-number-4">3.3.13</span> Deriv</h4>
 <div class="outline-text-4" id="text-3-3-13">
 <p>
 Numerically calculates the derivative via a centred finite difference method.
@@ -1326,8 +1353,8 @@ value = deriv<span style="color: #AE81FF;">(</span>f,x0<span style="color: #AE81
 </div>
 </div>
 
-<div id="outline-container-orgfb5a17d" class="outline-4">
-<h4 id="orgfb5a17d"><span class="section-number-4">3.3.14</span> integral</h4>
+<div id="outline-container-orgeb93489" class="outline-4">
+<h4 id="orgeb93489"><span class="section-number-4">3.3.14</span> integral</h4>
 <div class="outline-text-4" id="text-3-3-14">
 <p>
 Numerically calculates an integral given a function and bounds. Using Gaussian quadrature.
@@ -1389,8 +1416,8 @@ value = integral<span style="color: #AE81FF;">(</span>f,a,b,absErr,relErr<span s
 </div>
 </div>
 
-<div id="outline-container-orgb0fc36f" class="outline-4">
-<h4 id="orgb0fc36f"><span class="section-number-4">3.3.15</span> integralPV</h4>
+<div id="outline-container-org2d295af" class="outline-4">
+<h4 id="org2d295af"><span class="section-number-4">3.3.15</span> integralPV</h4>
 <div class="outline-text-4" id="text-3-3-15">
 <p>
 Numerically calculates a Cauchy-Principle value integral using Gaussian quadrature. For a given f(x), evaluates the integral of f(x)/(x-c).
@@ -1457,11 +1484,11 @@ value = integralPV<span style="color: #AE81FF;">(</span>f,c,a,b,absErr,relErr<sp
 </div>
 </div>
 </div>
-<div id="outline-container-org08877a5" class="outline-3">
-<h3 id="org08877a5"><span class="section-number-3">3.4</span> pythonPlot</h3>
+<div id="outline-container-org256888d" class="outline-3">
+<h3 id="org256888d"><span class="section-number-3">3.4</span> pythonPlot</h3>
 <div class="outline-text-3" id="text-3-4">
 <p>
-python plotting wrappers, simply copy <i>pyplots.py</i> (or customPlot.py if you&rsquo;re ready for danger) into the necessary directory and use the following command.
+python plotting wrappers, simply copy <i>pyplots.py</i> (or customPlot.py if you&rsquo;re ready for danger) into the necessary directory and use the following command (For custom plots you will have to manually run the python file or better yet, see the Pyplots folder for the BashFortran file and simply run that instead).
 </p>
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -1524,16 +1551,16 @@ python plotting wrappers, simply copy <i>pyplots.py</i> (or customPlot.py if you
 </div>
 </div>
 
-<div id="outline-container-org3877a9c" class="outline-3">
-<h3 id="org3877a9c"><span class="section-number-3">3.5</span> PLplots</h3>
+<div id="outline-container-orgf709c13" class="outline-3">
+<h3 id="orgf709c13"><span class="section-number-3">3.5</span> PLplots</h3>
 <div class="outline-text-3" id="text-3-5">
 <p>
 Call PLplot by using the subroutine plot() for example, this will call various wrappers to plplot which can be found within numFort. Below is a list of said wrappers and their arguments. Axes labels and title may be omitted in all below routines if one wishes.
 </p>
 </div>
 
-<div id="outline-container-org8d43f82" class="outline-4">
-<h4 id="org8d43f82"><span class="section-number-4">3.5.1</span> plot</h4>
+<div id="outline-container-org3bf5f3f" class="outline-4">
+<h4 id="org3bf5f3f"><span class="section-number-4">3.5.1</span> plot</h4>
 <div class="outline-text-4" id="text-3-5-1">
 <p>
 standard x vs y plot or even x1,x2,&#x2026; vs y1,y2,&#x2026;
@@ -1594,8 +1621,8 @@ standard x vs y plot or even x1,x2,&#x2026; vs y1,y2,&#x2026;
 </div>
 </div>
 
-<div id="outline-container-orgc09e598" class="outline-4">
-<h4 id="orgc09e598"><span class="section-number-4">3.5.2</span> scatterplot</h4>
+<div id="outline-container-org9b30661" class="outline-4">
+<h4 id="org9b30661"><span class="section-number-4">3.5.2</span> scatterplot</h4>
 <div class="outline-text-4" id="text-3-5-2">
 <p>
 standard scatter plot
@@ -1654,8 +1681,8 @@ standard scatter plot
 </div>
 </div>
 
-<div id="outline-container-org3aac923" class="outline-4">
-<h4 id="org3aac923"><span class="section-number-4">3.5.3</span> surf</h4>
+<div id="outline-container-org5cf76f7" class="outline-4">
+<h4 id="org5cf76f7"><span class="section-number-4">3.5.3</span> surf</h4>
 <div class="outline-text-4" id="text-3-5-3">
 <p>
 3D surface plot (goes well with meshgrid)
@@ -1719,8 +1746,8 @@ standard scatter plot
 </div>
 </div>
 
-<div id="outline-container-org532974b" class="outline-4">
-<h4 id="org532974b"><span class="section-number-4">3.5.4</span> scatter3D</h4>
+<div id="outline-container-org7e7f2e8" class="outline-4">
+<h4 id="org7e7f2e8"><span class="section-number-4">3.5.4</span> scatter3D</h4>
 <div class="outline-text-4" id="text-3-5-4">
 <p>
 3D scatter plot.
@@ -1788,8 +1815,8 @@ standard scatter plot
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: Anthony Kalaitzis</p>
-<p class="date">Created: 2018-08-23 Thu 17:49</p>
+<p class="author">Author: Anthony Kalaitzis &amp; Curtis Abell</p>
+<p class="date">Created: 2018-08-27 Mon 19:24</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

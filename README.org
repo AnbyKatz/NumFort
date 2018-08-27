@@ -1,5 +1,14 @@
-#+AUTHOR: Anthony Kalaitzis
+# -*- mode: org; -*-
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/readtheorg/css/readtheorg.css"/>
+#+HTML_HEAD: <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+#+HTML_HEAD: <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="http://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="http://www.pirilampo.org/styles/readtheorg/js/readtheorg.js"></script>
+
+#+AUTHOR: Anthony Kalaitzis & Curtis Abell
 #+EMAIL: anthony.kalaitzis@gmail.com
+#+EMAIL: curtis.abell@student.adelaide.edu.au
 #+TITLE: numFort
 
 * Description
@@ -122,7 +131,7 @@ Now simply edit the BashFortran.sh file as specified and type ./BashFortran.sh t
 - Your final makefile should look something like this
 #+BEGIN_SRC shell
 # Directory to numFort
-# DO NOT USE ~ FOR THE HOME DIRECTORY IN THIS PATH
+# DO NOT USE ~ FOR THE HOME DIRECTORY IN THIS PATH, add those slashes
 DIR = /path/to/numFort/
 
 F90C = ifort
@@ -157,13 +166,11 @@ filename: filename.f90 $(OBJS)
 clean:
 	rm *.o *.mod
 #+END_SRC
-- *SOME IMPORTANT NOTES ON THE ABOVE MAKEFILE*
-
 - for the PLPLOT variable, plplot-fortran is the name of the pkg-config FORTRAN file located in installDir/lib/pkgconfig. It may have a different name for you (In this case for us it is called plplot-fortran.pc)
 
 - DIR is the directory where you have put all the numFort source code
 
-- The bash file /recompileEX.sh/ in the repository can be used to recompile these libraries if you should choose to edit and add. Simply run with ./recompileEX.sh whilst in the directory (Make sure to edit the paths to the correct ones
+- The bash file /recompileEX.sh/ is an example of how to compile these libraries. Make a file called /recompile.sh/ and paste in the below template or the template in recompile or rename the /recompileEX.sh/ file. Edit as specified below and then type /bash recompile.sh/ in the terminal to compile the libraries. You may have to type it twice for unknown reasons.
 
 #+BEGIN_SRC shell
 #!/bin/bash
@@ -175,9 +182,10 @@ ifort -O2 -c kinds.f90
 ifort -O2 -mkl -c lapack.f90
 
 # Comment out this line if you wish to not use PLplot/haven't installed it
+# Edit the paths if you wish to use
 ifort -O2 -c PLplots.f90 -I/path/to/PLplotInstall/include/plplot -I/path/to/PLplotInstall/lib/fortran/modules/plplot -L/path/to/PLplotInstall/lib -lplplotfortran -lplplot
 
-ifort -O2 -mkl  -c numFort.f90 -lmkl_lapack95_lp64 
+ifort -O2 -mkl -c numFort.f90 -lmkl_lapack95_lp64 
 #+END_SRC
 
 - Include your own module files under the variable *OBJS*. Bonza, you should be ready to go
@@ -492,7 +500,7 @@ Numerically calculates a Cauchy-Principle value integral using Gaussian quadratu
   value = integralPV(f,c,a,b,absErr,relErr)
 #+END_SRC
 ** pythonPlot
-python plotting wrappers, simply copy /pyplots.py/ (or customPlot.py if you're ready for danger) into the necessary directory and use the following command.
+python plotting wrappers, simply copy /pyplots.py/ (or customPlot.py if you're ready for danger) into the necessary directory and use the following command (For custom plots you will have to manually run the python file or better yet, see the Pyplots folder for the BashFortran file and simply run that instead).
 
 |----------+-------------------------|
 | Variable | Description             |
