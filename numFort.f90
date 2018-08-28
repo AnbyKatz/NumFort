@@ -1,6 +1,7 @@
 !*****************************************************************************!
 !                               NUMFORT                                       !
-!              Authors: Anthony Kalaitzis and Curtis Abell                    !
+!              Authors: Anthony Kalaitzis, Curtis Abell,                      !
+!                 Derek Leinweber and John Burkardt                           !             
 !                                                                             !
 ! Numerical library for fortran. Use the following module titles              !
 ! to Move Around easily.                                                      !
