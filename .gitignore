@@ -9,3 +9,7 @@ numfort.mod
 plplots.mod
 quadpack.mod
 recompile.sh
+pyplots.py
+customPlot.py
+makefile
+Pyplots/

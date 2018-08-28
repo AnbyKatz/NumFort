@@ -1,4 +1,3 @@
-#!/path/to/anaconda3/bin/pythonVersion
 
 import matplotlib.pyplot as pypl
 import numpy as np
