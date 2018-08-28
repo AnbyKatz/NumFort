@@ -86,6 +86,7 @@ read pyVersion
 mkdir Pyplots
 touch pyplots.py
 touch customPlot.py
+touch bashFortran.sh
 
 cat .pyplotTemp >> pyplots.py
 pypath=$(which python$pyVersion)
@@ -94,8 +95,15 @@ echo "#!$pypath" | cat - pyplots.py > temp && mv temp pyplots.py
 cat .customTemp >> customPlot.py
 echo "#!$pypath" | cat - customPlot.py > temp && mv temp customPlot.py
 
+echo "#!/bin/bash" | cat - bashFortran.sh > temp && mv temp bashFortran.sh
+echo "make all" | cat - bashFortran.sh > temp && mv temp bashFortran.sh
+echo "./filename" | cat - bashFortran.sh > temp && mv temp bashFortran.sh
+echo "python3.7 pyplots.py" | cat - bashFortran.sh > temp && mv temp bashFortran.sh
+echo "# python3.7 customPlot.py" | cat - bashFortran.sh > temp && mv temp bashFortran.sh
+
 chmod +x pyplots.py
 chmod +x customPlot.py
+chmod +x bashFortran.sh
 
 cp pyplots.py Pyplots/pyplots.py
 cp customPlot.py Pyplots/customPlot.py
