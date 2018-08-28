@@ -95,11 +95,11 @@ echo "#!$pypath" | cat - pyplots.py > temp && mv temp pyplots.py
 cat .customTemp >> customPlot.py
 echo "#!$pypath" | cat - customPlot.py > temp && mv temp customPlot.py
 
-echo "#!/bin/bash" | cat - bashFortran.sh > temp && mv temp bashFortran.sh
-echo "make all" | cat - bashFortran.sh > temp && mv temp bashFortran.sh
-echo "./filename" | cat - bashFortran.sh > temp && mv temp bashFortran.sh
-echo "python3.7 pyplots.py" | cat - bashFortran.sh > temp && mv temp bashFortran.sh
-echo "# python3.7 customPlot.py" | cat - bashFortran.sh > temp && mv temp bashFortran.sh
+echo "#!/bin/bash" >> bashFortran.sh
+echo "make all" >> bashFortran.sh
+echo "./filename" >> bashFortran.sh
+echo "python$pyVersion pyplots.py" >> bashFortran.sh
+echo "# python$pyVersion customPlot.py" >> bashFortran.sh
 
 chmod +x pyplots.py
 chmod +x customPlot.py
