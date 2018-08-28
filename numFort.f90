@@ -5,12 +5,11 @@
 ! Numerical library for fortran. Use the following module titles              !
 ! to Move Around easily.                                                      !
 !                                                                             !
-! 1. NumFort                                                                  !
-! 2. PLplot                                                                   !
-! 3. QuadPack                                                                 !
+! 1. QuadPack                                                                 !
+! 2. NumFort                                                                  !
 !                                                                             !
 ! Below contains a list of the function names inside numFort for easier       !
-! navigation purposes.                                                        !
+! navigation purposes. Jump to the bottom for numFort.                        !
 !                                                                             !
 ! - writeData                                                                 !
 ! - bessel                                                                    !
@@ -28,7 +27,6 @@
 ! - deriv                                                                     !
 ! - integral                                                                  !
 ! - integralPV                                                                !
-!                                                                             !
 ! - pyplot                                                                    !
 !                                                                             !
 !*****************************************************************************!
@@ -38,1781 +36,6 @@
 !==============================================================================
 !##############################################################################
 !==============================================================================
-
-
-
-
-!---------------------------------------------------------------------!
-!                                                                     !
-!                      NumFort numerical library                      !
-!                                                                     !
-!---------------------------------------------------------------------!
-
-module numFort
-  use kinds
-  use quadpack
-  use LAPACK95
-  implicit none
-
-  integer  :: neval, ifail
-  real(DP) :: errEstimate
-
-  interface linspace
-     module procedure linspace,linspaceReal,linspaceInt
-  end interface linspace
-  interface integral
-     module procedure integral, integralToInfty, integralOf, integralBreakPts
-  end interface integral
-  interface rk4
-     module procedure rk4,rk4N
-  end interface rk4
-  interface splinefit
-     module procedure splinefit,splinefitCoeff
-  end interface splinefit
-  interface GuessZero
-     module procedure GuessZero,GuessZeroNew
-  end interface GuessZero
-  interface Trace
-     module procedure TraceDP,TraceSP,TraceComplexDP,TraceComplexSP
-  end interface Trace
-  interface inv
-     module procedure invMatSP, invMatDP, invMatComplexSP, invMatComplexDP
-  end interface inv
-  interface pyplot
-     module procedure pyplotN,pyplotXY,pyplotXYZW
-  end interface pyplot
-  interface EulerM
-     module procedure eulerm,eulermnd
-  end interface EulerM
-  interface writeData
-     module procedure writeDataXY,writeDataXYZW,writeDataN
-  end interface writeData
-
-contains
-
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                         Write data to a file                        !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-
-  subroutine writeDataXY(x,y,title)
-    use Kinds
-    implicit none
-    real(DP),dimension(:),intent(in)     :: x,y
-    character(len=*),intent(in),optional :: title
-    integer :: ii,N
-    
-    N = size(x)
-    if (present(title)) then
-       open(101,file=title,action="write", &
-            & status="replace",form="formatted")
-    else
-       open(101,file="data.dat",action="write", &
-            & status="replace",form="formatted")
-    end if
-    do ii = 1,N
-       write(101,'(2e20.10)') x(ii), y(ii)
-    end do
-    
-    close(101)
-
-  end subroutine writeDataXY
-
-  subroutine writeDataXYZW(x,y,z,w,title)
-    use Kinds
-    implicit none
-    real(DP),dimension(:),intent(in)     :: x,y,z,w
-    character(len=*),intent(in),optional :: title
-    integer :: ii,N
-    
-    N = size(x)
-    if (present(title)) then
-       open(101,file=title,action="write", &
-            & status="replace",form="formatted")
-    else
-       open(101,file="data.dat",action="write", &
-            & status="replace",form="formatted")
-    end if
-    do ii = 1,N
-       write(101,'(4e20.10)') x(ii), y(ii), z(ii), w(ii)
-    end do
-    
-    close(101)
-
-  end subroutine writeDataXYZW
-
-  subroutine writeDataN(x,title)
-    use Kinds
-    implicit none
-    real(DP),dimension(:,:),intent(in)     :: x
-    character(len=*),intent(in),optional   :: title
-    character(len=14)                      :: fmt
-    integer :: ii,N
-    
-    N = size(x,dim=2)
-    write(fmt,'(a1,i1,a7)') '(', N, 'es20.9)'
-
-    if (present(title)) then
-       open(101,file=title,action="write", &
-            & status="replace",form="formatted")
-    else
-       open(101,file="data.dat",action="write", &
-            & status="replace",form="formatted")
-    end if
-    do ii = 1,size(x,dim=1)
-       write(101,fmt) x(ii,:)
-    end do
-    
-    close(101)
-
-  end subroutine writeDataN
-
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !             evaluate Bessel function at x of order 0<n<3            !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-
-  function bessel(x,n) result(val)
-    use kinds
-    implicit none
-
-    real(DP),intent(in) :: x
-    integer ,intent(in) :: n
-    real(DP)            :: val
-
-    if( n > 5 .or. n < 0 ) then
-       write(*,'(a)') "Error: n must be an integer between 0 and 3"
-    else
-
-       select case(n)
-       case(0)
-          val = sin(x)/x
-       case(1)
-          val = sin(x)/x**2-cos(x)/x
-       case(2)
-          val = (3/x**2-1)*sin(x)/x -3*cos(x)/x**2
-       case(3)
-          val = (15/x**3-6/x)*sin(x)/x-(15/x**2-1)*sin(x)/x
-       case(4)
-          val = (sin(x)+4*cos(x)/x-12*sin(x)/x**2-24*cos(x)/x**3+24*sin(x)/x**4)/x
-       case(5)
-          val = (cos(x)-5*sin(x)/x-20*cos(x)/x**2+60*sin(x)/x**3+120*cos(x)/x**4-120*sin(x)/x**5)/x
-       end select
-    end if
-
-  end function bessel
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                   Calculate the trace of a Matrix                   !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-
-  function TraceDP(M)
-    use kinds
-    implicit none
-
-    real(DP),dimension(:,:),intent(in) :: M
-    real(DP)                           :: TraceDP
-
-    integer :: rows,cols,i
-
-    rows = size(M(:,1))
-    cols = size(M(1,:))
-    TraceDP = 0
-    if ( rows .ne. cols ) then
-       write(*,'(a)') "Error, not a square matrix"
-    else
-       do i = 1,rows
-          TraceDP = TraceDP + M(i,i)
-       end do
-    end if
-
-  end function TraceDP
-
-  function TraceSP(M)
-    use kinds
-    implicit none
-
-    real(SP),dimension(:,:),intent(in) :: M
-    real(SP)                           :: TraceSP
-
-    integer :: rows,cols,i
-
-    rows = size(M(:,1))
-    cols = size(M(1,:))
-    TraceSP = 0
-    if ( rows .ne. cols ) then
-       write(*,'(a)') "Error, not a square matrix"
-    else
-       do i = 1,rows
-          TraceSP = TraceSP + M(i,i)
-       end do
-    end if
-
-  end function TraceSP
-
-  function TraceComplexDP(M)
-    use kinds
-    implicit none
-
-    complex(DP),dimension(:,:),intent(in) :: M
-    complex(DP)                           :: TraceComplexDP
-
-    integer :: rows,cols,i
-
-    rows = size(M(:,1))
-    cols = size(M(1,:))
-    TraceComplexDP = 0.0_DP
-    if ( rows .ne. cols ) then
-       write(*,'(a)') "Error, not a square matrix"
-    else
-       do i = 1,rows
-          TraceComplexDP = TraceComplexDP + M(i,i)
-       end do
-    end if
-
-  end function TraceComplexDP
-
-  function TraceComplexSP(M)
-    use kinds
-    implicit none
-
-    complex(SP),dimension(:,:),intent(in) :: M
-    complex(SP)                           :: TraceComplexSP
-
-    integer :: rows,cols,i
-
-    rows = size(M(:,1))
-    cols = size(M(1,:))
-    TraceComplexSP = 0.0_DP
-    if ( rows .ne. cols ) then
-       write(*,'(a)') "Error, not a square matrix"
-    else
-       do i = 1,rows
-          TraceComplexSP = TraceComplexSP + M(i,i)
-       end do
-    end if
-
-  end function TraceComplexSP
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                  Calculate the inverse of a matrix                  !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-
-  function invMatSP(A) result(B)
-    real(SP), intent(in) :: A(:,:)
-    real(SP)             :: B(size(A,1),size(A,2))
-    ! Local variables
-    integer              :: n
-
-    n = size(A,1)
-    select case (n)
-    case (1)
-       if (A(1,1).eq.0.0) then
-          write(*,*) 'Matrix is numerically singular!'
-       end if
-       B(:,:) = 1.0_SP / A(:,:)
-    case (2)
-       B(:,:) = invMatSP2(A)
-    case (3)
-       B(:,:) = invMatSP3(A)
-    case (4)
-       B(:,:) = invMatSP4(A)
-    case (5:)
-       B(:,:) = invMatSPN(A)
-    end select
-
-  end function invMatSP
-
-  function invMatDP(A) result(B)
-    real(DP), intent(in) :: A(:,:)
-    real(DP)             :: B(size(A,1),size(A,2))
-    ! Local variables
-    integer              :: n
-
-    n = size(A,1)
-    select case (n)
-    case (1)
-       if (A(1,1).eq.0.0_DP) then
-          write(*,*) 'Matrix is numerically singular!'
-       end if
-       B(:,:) = 1.0_DP / A(:,:)
-    case (2)
-       B(:,:) = invMatDP2(A)
-    case (3)
-       B(:,:) = invMatDP3(A)
-    case (4)
-       B(:,:) = invMatDP4(A)
-    case (5:)
-       B(:,:) = invMatDPN(A)
-    end select
-
-  end function invMatDP
-
-  function invMatComplexSP(A) result(B)
-    complex(SP), intent(in) :: A(:,:)
-    complex(SP)             :: B(size(A,1),size(A,2))
-    ! Local variables
-    integer              :: n
-
-    n = size(A,1)
-    select case (n)
-    case (1)
-       if (A(1,1).eq.cmplx(0.0,0.0)) then
-          write(*,*) 'Matrix is numerically singular!'
-       end if
-       B(:,:) = 1.0 / A(:,:)
-    case (2)
-       B(:,:) = invMatCmplxSP2(A)
-    case (3)
-       B(:,:) = invMatCmplxSP3(A)
-    case (4)
-       B(:,:) = invMatCmplxSP4(A)
-    case (5:)
-       B(:,:) = invMatCmplxSPN(A)
-    end select
-
-  end function invMatComplexSP
-
-  function invMatComplexDP(A) result(B)
-    complex(DP), intent(in) :: A(:,:)
-    complex(DP)             :: B(size(A,1),size(A,2))
-    ! Local variables
-    integer              :: n
-
-    n = size(A,1)
-    select case (n)
-    case (1)
-       if (A(1,1).eq.cmplx(0.0_DP,0.0_DP)) then
-          write(*,*) 'Matrix is numerically singular!'
-       end if
-       B(:,:) = 1.0_DP / A(:,:)
-    case (2)
-       B(:,:) = invMatCmplxDP2(A)
-    case (3)
-       B(:,:) = invMatCmplxDP3(A)
-    case (4)
-       B(:,:) = invMatCmplxDP4(A)
-    case (5:)
-       B(:,:) = invMatCmplxDPN(A)
-    end select
-
-  end function invMatComplexDP
-
-  function invMatDP2(A) result(B)
-    ! Performs a direct calculation of the inverse of a 2×2 matrix.
-    real(dp), intent(in) :: A(2,2)   ! Matrix
-    real(dp)             :: B(2,2)   ! Inverse matrix
-    real(dp)             :: det
-
-    ! Calculate the inverse determinant of the matrix
-    det = A(1,1)*A(2,2) - A(1,2)*A(2,1)
-
-    if (det.eq.0.0_DP) then
-       write(*,*) 'Matrix is numerically singular!'
-    end if
-
-    ! Calculate the inverse of the matrix
-    B(1,1) =  A(2,2)
-    B(2,1) = -A(2,1)
-    B(1,2) = -A(1,2)
-    B(2,2) =  A(1,1)
-    B(:,:) =  B(:,:)/det
-  end function invMatDP2
-
-  function invMatDP3(A) result(B)
-    ! Performs a direct calculation of the inverse of a 3×3 matrix.
-    real(dp), intent(in) :: A(3,3)   ! Matrix
-    real(dp)             :: B(3,3)   ! Inverse matrix
-    real(dp)             :: det
-
-    ! Calculate the inverse determinant of the matrix
-    det = (A(1,1)*A(2,2)*A(3,3) - A(1,1)*A(2,3)*A(3,2)&
-         - A(1,2)*A(2,1)*A(3,3) + A(1,2)*A(2,3)*A(3,1)&
-         + A(1,3)*A(2,1)*A(3,2) - A(1,3)*A(2,2)*A(3,1))
-
-    if (det.eq.0.0_DP) then
-       write(*,*) 'Matrix is numerically singular!'
-    end if
-
-    ! Calculate the inverse of the matrix
-    B(1,1) =  (A(2,2)*A(3,3) - A(2,3)*A(3,2))
-    B(2,1) = -(A(2,1)*A(3,3) - A(2,3)*A(3,1))
-    B(3,1) =  (A(2,1)*A(3,2) - A(2,2)*A(3,1))
-    B(1,2) = -(A(1,2)*A(3,3) - A(1,3)*A(3,2))
-    B(2,2) =  (A(1,1)*A(3,3) - A(1,3)*A(3,1))
-    B(3,2) = -(A(1,1)*A(3,2) - A(1,2)*A(3,1))
-    B(1,3) =  (A(1,2)*A(2,3) - A(1,3)*A(2,2))
-    B(2,3) = -(A(1,1)*A(2,3) - A(1,3)*A(2,1))
-    B(3,3) =  (A(1,1)*A(2,2) - A(1,2)*A(2,1))
-    B(:,:) =  B(:,:)/det
-  end function invMatDP3
-
-  function invMatDP4(A) result(B)
-    ! Performs a direct calculation of the inverse of a 4×4 matrix.
-    real(dp), intent(in) :: A(4,4)   ! Matrix
-    real(dp)             :: B(4,4)   ! Inverse matrix
-    real(dp)             :: det
-
-    ! Calculate the inverse determinant of the matrix
-    det = &
-         1/(A(1,1)*(A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))&
-         - A(1,2)*(A(2,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))&
-         + A(1,3)*(A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))&
-         - A(1,4)*(A(2,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(2,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(2,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1))))
-
-    if (det.eq.0.0_DP) then
-       write(*,*) 'Matrix is numerically singular!'
-    end if
-
-    ! Calculate the inverse of the matrix
-    B(1,1) = (A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))
-    B(2,1) = (A(2,1)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(2,3)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(2,4)*(A(3,3)*A(4,1)-A(3,1)*A(4,3)))
-    B(3,1) = (A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
-    B(4,1) = (A(2,1)*(A(3,3)*A(4,2)-A(3,2)*A(4,3))+A(2,2)*(A(3,1)*A(4,3)-A(3,3)*A(4,1))+A(2,3)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
-    B(1,2) = (A(1,2)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(1,3)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(1,4)*(A(3,3)*A(4,2)-A(3,2)*A(4,3)))
-    B(2,2) = (A(1,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(1,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(1,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))
-    B(3,2) = (A(1,1)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(1,2)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(1,4)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
-    B(4,2) = (A(1,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(1,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(1,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
-    B(1,3) = (A(1,2)*(A(2,3)*A(4,4)-A(2,4)*A(4,3))+A(1,3)*(A(2,4)*A(4,2)-A(2,2)*A(4,4))+A(1,4)*(A(2,2)*A(4,3)-A(2,3)*A(4,2)))
-    B(2,3) = (A(1,1)*(A(2,4)*A(4,3)-A(2,3)*A(4,4))+A(1,3)*(A(2,1)*A(4,4)-A(2,4)*A(4,1))+A(1,4)*(A(2,3)*A(4,1)-A(2,1)*A(4,3)))
-    B(3,3) = (A(1,1)*(A(2,2)*A(4,4)-A(2,4)*A(4,2))+A(1,2)*(A(2,4)*A(4,1)-A(2,1)*A(4,4))+A(1,4)*(A(2,1)*A(4,2)-A(2,2)*A(4,1)))
-    B(4,3) = (A(1,1)*(A(2,3)*A(4,2)-A(2,2)*A(4,3))+A(1,2)*(A(2,1)*A(4,3)-A(2,3)*A(4,1))+A(1,3)*(A(2,2)*A(4,1)-A(2,1)*A(4,2)))
-    B(1,4) = (A(1,2)*(A(2,4)*A(3,3)-A(2,3)*A(3,4))+A(1,3)*(A(2,2)*A(3,4)-A(2,4)*A(3,2))+A(1,4)*(A(2,3)*A(3,2)-A(2,2)*A(3,3)))
-    B(2,4) = (A(1,1)*(A(2,3)*A(3,4)-A(2,4)*A(3,3))+A(1,3)*(A(2,4)*A(3,1)-A(2,1)*A(3,4))+A(1,4)*(A(2,1)*A(3,3)-A(2,3)*A(3,1)))
-    B(3,4) = (A(1,1)*(A(2,4)*A(3,2)-A(2,2)*A(3,4))+A(1,2)*(A(2,1)*A(3,4)-A(2,4)*A(3,1))+A(1,4)*(A(2,2)*A(3,1)-A(2,1)*A(3,2)))
-    B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
-    B(:,:) = B(:,:)*det
-  end function invMatDP4
-
-  function invMatDPN(A) result(Ainv)
-
-    real(dp), dimension(:,:), intent(in) :: A
-    real(dp), dimension(size(A,1),size(A,2)) :: Ainv
-
-    real(dp), dimension(size(A,1)) :: work  ! work array for LAPACK
-    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
-    integer :: n, info
-
-    ! External procedures defined in LAPACK
-    external DGETRF
-    external DGETRI
-
-    ! Store A in Ainv to prevent it from being overwritten by LAPACK
-    Ainv = A
-    n = size(A,1)
-
-    ! DGETRF computes an LU factorization of a general M-by-N matrix A
-    ! using partial pivoting with row interchanges.
-    call dgetrf(n, n, Ainv, n, ipiv, info)
-
-    if (info /= 0) then
-       stop 'Matrix is numerically singular!'
-    end if
-
-    ! DGETRI computes the inverse of a matrix using the LU factorization
-    ! computed by DGETRF.
-    call dgetri(n, Ainv, n, ipiv, work, n, info)
-
-    if (info /= 0) then
-       stop 'Matrix inversion failed!'
-    end if
-  end function invMatDPN
-
-  function invMatSP2(A) result(B)
-    ! Performs a direct calculation of the inverse of a 2×2 matrix.
-    real(SP), intent(in) :: A(2,2)   ! Matrix
-    real(SP)             :: B(2,2)   ! Inverse matrix
-    real(SP)             :: det
-
-    ! Calculate the inverse determinant of the matrix
-    det = A(1,1)*A(2,2) - A(1,2)*A(2,1)
-
-    if (det.eq.0.0) then
-       write(*,*) 'Matrix is numerically singular!'
-    end if
-
-    ! Calculate the inverse of the matrix
-    B(1,1) =  A(2,2)
-    B(2,1) = -A(2,1)
-    B(1,2) = -A(1,2)
-    B(2,2) =  A(1,1)
-    B(:,:) =  B(:,:)/det
-  end function invMatSP2
-
-  function invMatSP3(A) result(B)
-    ! Performs a direct calculation of the inverse of a 3×3 matrix.
-    real(SP), intent(in) :: A(3,3)   ! Matrix
-    real(SP)             :: B(3,3)   ! Inverse matrix
-    real(SP)             :: det
-
-    ! Calculate the inverse determinant of the matrix
-    det = (A(1,1)*A(2,2)*A(3,3) - A(1,1)*A(2,3)*A(3,2)&
-         - A(1,2)*A(2,1)*A(3,3) + A(1,2)*A(2,3)*A(3,1)&
-         + A(1,3)*A(2,1)*A(3,2) - A(1,3)*A(2,2)*A(3,1))
-
-    if (det.eq.0.0) then
-       write(*,*) 'Matrix is numerically singular!'
-    end if
-
-    ! Calculate the inverse of the matrix
-    B(1,1) =  (A(2,2)*A(3,3) - A(2,3)*A(3,2))
-    B(2,1) = -(A(2,1)*A(3,3) - A(2,3)*A(3,1))
-    B(3,1) =  (A(2,1)*A(3,2) - A(2,2)*A(3,1))
-    B(1,2) = -(A(1,2)*A(3,3) - A(1,3)*A(3,2))
-    B(2,2) =  (A(1,1)*A(3,3) - A(1,3)*A(3,1))
-    B(3,2) = -(A(1,1)*A(3,2) - A(1,2)*A(3,1))
-    B(1,3) =  (A(1,2)*A(2,3) - A(1,3)*A(2,2))
-    B(2,3) = -(A(1,1)*A(2,3) - A(1,3)*A(2,1))
-    B(3,3) =  (A(1,1)*A(2,2) - A(1,2)*A(2,1))
-    B(:,:) =  B(:,:)/det
-  end function invMatSP3
-
-  function invMatSP4(A) result(B)
-    ! Performs a direct calculation of the inverse of a 4×4 matrix.
-    real(SP), intent(in) :: A(4,4)   ! Matrix
-    real(SP)             :: B(4,4)   ! Inverse matrix
-    real(SP)             :: det
-
-    ! Calculate the inverse determinant of the matrix
-    det = &
-         1/(A(1,1)*(A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))&
-         - A(1,2)*(A(2,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))&
-         + A(1,3)*(A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))&
-         - A(1,4)*(A(2,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(2,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(2,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1))))
-
-    if (det.eq.0.0) then
-       write(*,*) 'Matrix is numerically singular!'
-    end if
-
-    ! Calculate the inverse of the matrix
-    B(1,1) = (A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))
-    B(2,1) = (A(2,1)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(2,3)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(2,4)*(A(3,3)*A(4,1)-A(3,1)*A(4,3)))
-    B(3,1) = (A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
-    B(4,1) = (A(2,1)*(A(3,3)*A(4,2)-A(3,2)*A(4,3))+A(2,2)*(A(3,1)*A(4,3)-A(3,3)*A(4,1))+A(2,3)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
-    B(1,2) = (A(1,2)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(1,3)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(1,4)*(A(3,3)*A(4,2)-A(3,2)*A(4,3)))
-    B(2,2) = (A(1,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(1,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(1,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))
-    B(3,2) = (A(1,1)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(1,2)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(1,4)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
-    B(4,2) = (A(1,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(1,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(1,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
-    B(1,3) = (A(1,2)*(A(2,3)*A(4,4)-A(2,4)*A(4,3))+A(1,3)*(A(2,4)*A(4,2)-A(2,2)*A(4,4))+A(1,4)*(A(2,2)*A(4,3)-A(2,3)*A(4,2)))
-    B(2,3) = (A(1,1)*(A(2,4)*A(4,3)-A(2,3)*A(4,4))+A(1,3)*(A(2,1)*A(4,4)-A(2,4)*A(4,1))+A(1,4)*(A(2,3)*A(4,1)-A(2,1)*A(4,3)))
-    B(3,3) = (A(1,1)*(A(2,2)*A(4,4)-A(2,4)*A(4,2))+A(1,2)*(A(2,4)*A(4,1)-A(2,1)*A(4,4))+A(1,4)*(A(2,1)*A(4,2)-A(2,2)*A(4,1)))
-    B(4,3) = (A(1,1)*(A(2,3)*A(4,2)-A(2,2)*A(4,3))+A(1,2)*(A(2,1)*A(4,3)-A(2,3)*A(4,1))+A(1,3)*(A(2,2)*A(4,1)-A(2,1)*A(4,2)))
-    B(1,4) = (A(1,2)*(A(2,4)*A(3,3)-A(2,3)*A(3,4))+A(1,3)*(A(2,2)*A(3,4)-A(2,4)*A(3,2))+A(1,4)*(A(2,3)*A(3,2)-A(2,2)*A(3,3)))
-    B(2,4) = (A(1,1)*(A(2,3)*A(3,4)-A(2,4)*A(3,3))+A(1,3)*(A(2,4)*A(3,1)-A(2,1)*A(3,4))+A(1,4)*(A(2,1)*A(3,3)-A(2,3)*A(3,1)))
-    B(3,4) = (A(1,1)*(A(2,4)*A(3,2)-A(2,2)*A(3,4))+A(1,2)*(A(2,1)*A(3,4)-A(2,4)*A(3,1))+A(1,4)*(A(2,2)*A(3,1)-A(2,1)*A(3,2)))
-    B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
-    B(:,:) = B(:,:)*det
-  end function invMatSP4
-
-  function invMatSPN(A) result(Ainv)
-
-    real(SP), dimension(:,:), intent(in) :: A
-    real(SP), dimension(size(A,1),size(A,2)) :: Ainv
-
-    real(SP), dimension(size(A,1)) :: work  ! work array for LAPACK
-    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
-    integer :: n, info
-
-    ! External procedures defined in LAPACK
-    external DGETRF
-    external DGETRI
-
-    ! Store A in Ainv to prevent it from being overwritten by LAPACK
-    Ainv = A
-    n = size(A,1)
-
-    ! DGETRF computes an LU factorization of a general M-by-N matrix A
-    ! using partial pivoting with row interchanges.
-    call dgetrf(n, n, Ainv, n, ipiv, info)
-
-    if (info /= 0) then
-       stop 'Matrix is numerically singular!'
-    end if
-
-    ! DGETRI computes the inverse of a matrix using the LU factorization
-    ! computed by DGETRF.
-    call dgetri(n, Ainv, n, ipiv, work, n, info)
-
-    if (info /= 0) then
-       stop 'Matrix inversion failed!'
-    end if
-  end function invMatSPN
-
-  function invMatCmplxSP2(A) result(B)
-    ! Performs a direct calculation of the inverse of a 2×2 matrix.
-    complex(SP), intent(in) :: A(2,2)   ! Matrix
-    complex(SP)             :: B(2,2)   ! Inverse matrix
-    complex(SP)             :: det
-
-    ! Calculate the inverse determinant of the matrix
-    det = (A(1,1)*A(2,2) - A(1,2)*A(2,1))
-
-    if (det.eq.cmplx(0.0,0.0)) then
-       write(*,*) 'Matrix is numerically singular!'
-    end if
-
-    ! Calculate the inverse of the matrix
-    B(1,1) =  A(2,2)
-    B(2,1) = -A(2,1)
-    B(1,2) = -A(1,2)
-    B(2,2) =  A(1,1)
-    B(:,:) =  B(:,:)/det
-  end function invMatCmplxSP2
-
-  function invMatCmplxSP3(A) result(B)
-    ! Performs a direct calculation of the inverse of a 3×3 matrix.
-    complex(SP), intent(in) :: A(3,3)   ! Matrix
-    complex(SP)             :: B(3,3)   ! Inverse matrix
-    complex(SP)             :: det
-
-    ! Calculate the inverse determinant of the matrix
-    det = (A(1,1)*A(2,2)*A(3,3) - A(1,1)*A(2,3)*A(3,2)&
-         - A(1,2)*A(2,1)*A(3,3) + A(1,2)*A(2,3)*A(3,1)&
-         + A(1,3)*A(2,1)*A(3,2) - A(1,3)*A(2,2)*A(3,1))
-
-    if (det.eq.cmplx(0.0,0.0)) then
-       write(*,*) 'Matrix is numerically singular!'
-    end if
-
-    ! Calculate the inverse of the matrix
-    B(1,1) =  (A(2,2)*A(3,3) - A(2,3)*A(3,2))
-    B(2,1) = -(A(2,1)*A(3,3) - A(2,3)*A(3,1))
-    B(3,1) =  (A(2,1)*A(3,2) - A(2,2)*A(3,1))
-    B(1,2) = -(A(1,2)*A(3,3) - A(1,3)*A(3,2))
-    B(2,2) =  (A(1,1)*A(3,3) - A(1,3)*A(3,1))
-    B(3,2) = -(A(1,1)*A(3,2) - A(1,2)*A(3,1))
-    B(1,3) =  (A(1,2)*A(2,3) - A(1,3)*A(2,2))
-    B(2,3) = -(A(1,1)*A(2,3) - A(1,3)*A(2,1))
-    B(3,3) =  (A(1,1)*A(2,2) - A(1,2)*A(2,1))
-    B(:,:) =  B(:,:)/det
-  end function invMatCmplxSP3
-
-  function invMatCmplxSP4(A) result(B)
-    ! Performs a direct calculation of the inverse of a 4×4 matrix.
-    complex(SP), intent(in) :: A(4,4)   ! Matrix
-    complex(SP)             :: B(4,4)   ! Inverse matrix
-    complex(SP)             :: det
-
-    ! Calculate the inverse determinant of the matrix
-    det = &
-         (A(1,1)*(A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))&
-         - A(1,2)*(A(2,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))&
-         + A(1,3)*(A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))&
-         - A(1,4)*(A(2,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(2,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(2,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1))))
-
-    if (det.eq.cmplx(0.0,0.0)) then
-       write(*,*) 'Matrix is numerically singular!'
-    end if
-
-    ! Calculate the inverse of the matrix
-    B(1,1) = (A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))
-    B(2,1) = (A(2,1)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(2,3)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(2,4)*(A(3,3)*A(4,1)-A(3,1)*A(4,3)))
-    B(3,1) = (A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
-    B(4,1) = (A(2,1)*(A(3,3)*A(4,2)-A(3,2)*A(4,3))+A(2,2)*(A(3,1)*A(4,3)-A(3,3)*A(4,1))+A(2,3)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
-    B(1,2) = (A(1,2)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(1,3)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(1,4)*(A(3,3)*A(4,2)-A(3,2)*A(4,3)))
-    B(2,2) = (A(1,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(1,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(1,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))
-    B(3,2) = (A(1,1)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(1,2)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(1,4)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
-    B(4,2) = (A(1,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(1,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(1,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
-    B(1,3) = (A(1,2)*(A(2,3)*A(4,4)-A(2,4)*A(4,3))+A(1,3)*(A(2,4)*A(4,2)-A(2,2)*A(4,4))+A(1,4)*(A(2,2)*A(4,3)-A(2,3)*A(4,2)))
-    B(2,3) = (A(1,1)*(A(2,4)*A(4,3)-A(2,3)*A(4,4))+A(1,3)*(A(2,1)*A(4,4)-A(2,4)*A(4,1))+A(1,4)*(A(2,3)*A(4,1)-A(2,1)*A(4,3)))
-    B(3,3) = (A(1,1)*(A(2,2)*A(4,4)-A(2,4)*A(4,2))+A(1,2)*(A(2,4)*A(4,1)-A(2,1)*A(4,4))+A(1,4)*(A(2,1)*A(4,2)-A(2,2)*A(4,1)))
-    B(4,3) = (A(1,1)*(A(2,3)*A(4,2)-A(2,2)*A(4,3))+A(1,2)*(A(2,1)*A(4,3)-A(2,3)*A(4,1))+A(1,3)*(A(2,2)*A(4,1)-A(2,1)*A(4,2)))
-    B(1,4) = (A(1,2)*(A(2,4)*A(3,3)-A(2,3)*A(3,4))+A(1,3)*(A(2,2)*A(3,4)-A(2,4)*A(3,2))+A(1,4)*(A(2,3)*A(3,2)-A(2,2)*A(3,3)))
-    B(2,4) = (A(1,1)*(A(2,3)*A(3,4)-A(2,4)*A(3,3))+A(1,3)*(A(2,4)*A(3,1)-A(2,1)*A(3,4))+A(1,4)*(A(2,1)*A(3,3)-A(2,3)*A(3,1)))
-    B(3,4) = (A(1,1)*(A(2,4)*A(3,2)-A(2,2)*A(3,4))+A(1,2)*(A(2,1)*A(3,4)-A(2,4)*A(3,1))+A(1,4)*(A(2,2)*A(3,1)-A(2,1)*A(3,2)))
-    B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
-    B(:,:) = B(:,:)/det
-  end function invMatCmplxSP4
-
-  function invMatCmplxSPN(A) result(Ainv)
-    complex(SP), dimension(:,:), intent(in) :: A
-    complex(SP), dimension(size(A,1),size(A,2)) :: Ainv
-
-    complex(SP), dimension(size(A,1)) :: work  ! work array for LAPACK
-    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
-    integer :: n, info
-
-    ! External procedures defined in LAPACK
-    external DGETRF
-    external DGETRI
-
-    ! Store A in Ainv to prevent it from being overwritten by LAPACK
-    Ainv = A
-    n = size(A,1)
-
-    ! DGETRF computes an LU factorization of a general M-by-N matrix A
-    ! using partial pivoting with row interchanges.
-    call zgetrf(n, n, Ainv, n, ipiv, info)
-
-    if (info .ne. 0) then
-       stop 'Matrix is numerically singular!'
-    end if
-
-    ! DGETRI computes the inverse of a matrix using the LU factorization
-    ! computed by DGETRF.
-    call zgetri(n, Ainv, n, ipiv, work, n, info)
-
-    if (info .ne. 0) then
-       stop 'Matrix inversion failed!'
-    end if
-  end function invMatCmplxSPN
-
-  function invMatCmplxDP2(A) result(B)
-    ! Performs a direct calculation of the inverse of a 2×2 matrix.
-    complex(DP), intent(in) :: A(2,2)   ! Matrix
-    complex(DP)             :: B(2,2)   ! Inverse matrix
-    complex(DP)             :: det
-
-    ! Calculate the inverse determinant of the matrix
-    det = (A(1,1)*A(2,2) - A(1,2)*A(2,1))
-
-    if (det.eq.cmplx(0.0_DP,0.0_DP)) then
-       write(*,*) 'Matrix is numerically singular!'
-    end if
-
-    ! Calculate the inverse of the matrix
-    B(1,1) =  A(2,2)
-    B(2,1) = -A(2,1)
-    B(1,2) = -A(1,2)
-    B(2,2) =  A(1,1)
-    B(:,:) =  B(:,:)/det
-  end function invMatCmplxDP2
-
-  function invMatCmplxDP3(A) result(B)
-    ! Performs a direct calculation of the inverse of a 3×3 matrix.
-    complex(DP), intent(in) :: A(3,3)   ! Matrix
-    complex(DP)             :: B(3,3)   ! Inverse matrix
-    complex(DP)             :: det
-
-    ! Calculate the inverse determinant of the matrix
-    det = (A(1,1)*A(2,2)*A(3,3) - A(1,1)*A(2,3)*A(3,2)&
-         - A(1,2)*A(2,1)*A(3,3) + A(1,2)*A(2,3)*A(3,1)&
-         + A(1,3)*A(2,1)*A(3,2) - A(1,3)*A(2,2)*A(3,1))
-
-    if (det.eq.cmplx(0.0_DP,0.0_DP)) then
-       write(*,*) 'Matrix is numerically singular!'
-    end if
-
-    ! Calculate the inverse of the matrix
-    B(1,1) =  (A(2,2)*A(3,3) - A(2,3)*A(3,2))
-    B(2,1) = -(A(2,1)*A(3,3) - A(2,3)*A(3,1))
-    B(3,1) =  (A(2,1)*A(3,2) - A(2,2)*A(3,1))
-    B(1,2) = -(A(1,2)*A(3,3) - A(1,3)*A(3,2))
-    B(2,2) =  (A(1,1)*A(3,3) - A(1,3)*A(3,1))
-    B(3,2) = -(A(1,1)*A(3,2) - A(1,2)*A(3,1))
-    B(1,3) =  (A(1,2)*A(2,3) - A(1,3)*A(2,2))
-    B(2,3) = -(A(1,1)*A(2,3) - A(1,3)*A(2,1))
-    B(3,3) =  (A(1,1)*A(2,2) - A(1,2)*A(2,1))
-    B(:,:) =  B(:,:)/det
-  end function invMatCmplxDP3
-
-  function invMatCmplxDP4(A) result(B)
-    ! Performs a direct calculation of the inverse of a 4×4 matrix.
-    complex(DP), intent(in) :: A(4,4)   ! Matrix
-    complex(DP)             :: B(4,4)   ! Inverse matrix
-    complex(DP)             :: det
-
-    ! Calculate the inverse determinant of the matrix
-    det = &
-         (A(1,1)*(A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))&
-         - A(1,2)*(A(2,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))&
-         + A(1,3)*(A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))&
-         - A(1,4)*(A(2,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(2,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(2,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1))))
-
-    if (det.eq.cmplx(0.0_DP,0.0_DP)) then
-       write(*,*) 'Matrix is numerically singular!'
-    end if
-
-    ! Calculate the inverse of the matrix
-    B(1,1) = (A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))
-    B(2,1) = (A(2,1)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(2,3)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(2,4)*(A(3,3)*A(4,1)-A(3,1)*A(4,3)))
-    B(3,1) = (A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
-    B(4,1) = (A(2,1)*(A(3,3)*A(4,2)-A(3,2)*A(4,3))+A(2,2)*(A(3,1)*A(4,3)-A(3,3)*A(4,1))+A(2,3)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
-    B(1,2) = (A(1,2)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(1,3)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(1,4)*(A(3,3)*A(4,2)-A(3,2)*A(4,3)))
-    B(2,2) = (A(1,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(1,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(1,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))
-    B(3,2) = (A(1,1)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(1,2)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(1,4)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
-    B(4,2) = (A(1,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(1,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(1,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
-    B(1,3) = (A(1,2)*(A(2,3)*A(4,4)-A(2,4)*A(4,3))+A(1,3)*(A(2,4)*A(4,2)-A(2,2)*A(4,4))+A(1,4)*(A(2,2)*A(4,3)-A(2,3)*A(4,2)))
-    B(2,3) = (A(1,1)*(A(2,4)*A(4,3)-A(2,3)*A(4,4))+A(1,3)*(A(2,1)*A(4,4)-A(2,4)*A(4,1))+A(1,4)*(A(2,3)*A(4,1)-A(2,1)*A(4,3)))
-    B(3,3) = (A(1,1)*(A(2,2)*A(4,4)-A(2,4)*A(4,2))+A(1,2)*(A(2,4)*A(4,1)-A(2,1)*A(4,4))+A(1,4)*(A(2,1)*A(4,2)-A(2,2)*A(4,1)))
-    B(4,3) = (A(1,1)*(A(2,3)*A(4,2)-A(2,2)*A(4,3))+A(1,2)*(A(2,1)*A(4,3)-A(2,3)*A(4,1))+A(1,3)*(A(2,2)*A(4,1)-A(2,1)*A(4,2)))
-    B(1,4) = (A(1,2)*(A(2,4)*A(3,3)-A(2,3)*A(3,4))+A(1,3)*(A(2,2)*A(3,4)-A(2,4)*A(3,2))+A(1,4)*(A(2,3)*A(3,2)-A(2,2)*A(3,3)))
-    B(2,4) = (A(1,1)*(A(2,3)*A(3,4)-A(2,4)*A(3,3))+A(1,3)*(A(2,4)*A(3,1)-A(2,1)*A(3,4))+A(1,4)*(A(2,1)*A(3,3)-A(2,3)*A(3,1)))
-    B(3,4) = (A(1,1)*(A(2,4)*A(3,2)-A(2,2)*A(3,4))+A(1,2)*(A(2,1)*A(3,4)-A(2,4)*A(3,1))+A(1,4)*(A(2,2)*A(3,1)-A(2,1)*A(3,2)))
-    B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
-    B(:,:) = B(:,:)/det
-  end function invMatCmplxDP4
-
-  function invMatCmplxDPN(A) result(Ainv)
-    complex(DP), dimension(:,:), intent(in) :: A
-    complex(DP), dimension(size(A,1),size(A,2)) :: Ainv
-
-    complex(DP), dimension(size(A,1)) :: work  ! work array for LAPACK
-    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
-    integer :: n, info
-
-    ! External procedures defined in LAPACK
-    external DGETRF
-    external DGETRI
-
-    ! Store A in Ainv to prevent it from being overwritten by LAPACK
-    Ainv = A
-    n = size(A,1)
-
-    ! DGETRF computes an LU factorization of a general M-by-N matrix A
-    ! using partial pivoting with row interchanges.
-    call zgetrf(n, n, Ainv, n, ipiv, info)
-
-    if (info .ne. 0) then
-       stop 'Matrix is numerically singular!'
-    end if
-
-    ! DGETRI computes the inverse of a matrix using the LU factorization
-    ! computed by DGETRF.
-    call zgetri(n, Ainv, n, ipiv, work, n, info)
-
-    if (info .ne. 0) then
-       stop 'Matrix inversion failed!'
-    end if
-  end function invMatCmplxDPN
-
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                      Useful Mathamatical functions                  !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-
-  function factorial(n)
-    implicit none
-
-    integer,intent(in) :: n
-    integer            :: factorial
-
-    integer            :: i
-
-    factorial = 1
-
-    do i = 1,n
-       factorial = factorial*i
-    end do
-
-  end function factorial
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                               MeshGrid                              !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! creates a unique lattice of points given 2 vectors x,y of length    !
-  ! N and M. Can be used for 3d plots. See Matlab meshgrid              !
-  ! documentation for more details                                      !
-  !---------------------------------------------------------------------!
-
-  subroutine meshgrid(x,y,XX,YY)
-    use kinds
-    implicit none
-
-    real(DP),dimension(:),intent(in)    :: x
-    real(DP),dimension(:),intent(in)    :: y
-    real(DP),dimension(:,:),intent(out) :: XX,YY
-
-    integer :: i,j,rows,cols
-
-    rows = size(x)
-    cols = size(y)
-
-    do j = 1,cols
-       XX(j,1:rows) = x(1:rows)
-    end do
-    do j = 1,rows
-       YY(1:cols,j) = y(1:cols)
-    end do
-
-  end subroutine meshgrid
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                           Cubic Spline Fit                          !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Fits a cubic spline to input data. First version fits and outputs   !
-  ! values at specified interpolated points. Next version returns       !
-  ! the coefficients of the cubic spline fit which can then be passed   !
-  ! to the next function to evaluate the spline at a certain x.         !
-  !                                                                     !
-  ! Uses Lapack for necessary linear algebra                            !
-  !---------------------------------------------------------------------!
-
-  subroutine splinefit(x,y,intpts,intvals)
-    use kinds
-    use LAPACK95
-    implicit none
-
-    real(DP),dimension(:),intent(in)    :: x,y
-    real(DP),dimension(:),intent(in)    :: intpts
-    real(DP),dimension(:),intent(out)   :: intvals
-
-    integer                             :: N
-    real(DP),dimension(:,:),allocatable :: A,B
-    integer ,dimension(:)  ,allocatable :: ipiv
-    integer                             :: i,j
-
-    N = size(x)
-    allocate(A(N,N),B(N,1),ipiv(N))
-
-    B(:,1) = y(:)
-    A(:,1) = 1.0_DP
-    A(:,2) = x(:)
-    do i = 1,N
-       do j = 3,N
-          A(i,j) = abs(x(i)-x(j-1))
-       end do
-    end do
-    call getrf(A,ipiv)
-    call getrs(A,ipiv,B)
-    do i = 1,size(intpts)
-       intvals(i) = B(1,1) + B(2,1)*intpts(i)+&
-            & sum( B(3:N,1)*abs(intpts(i)-x(2:N-1)) )
-    end do
-
-    deallocate(A,B,ipiv)
-
-  end subroutine splinefit
-
-  subroutine splinefitCoeff(x,y,c)
-    use kinds
-    use LAPACK95
-    implicit none
-
-    real(DP),dimension(:),intent(in)    :: x,y
-    real(DP),dimension(:),intent(out)   :: c
-
-    integer                             :: N
-    real(DP),dimension(:,:),allocatable :: A,B
-    integer ,dimension(:)  ,allocatable :: ipiv
-    integer                             :: i,j
-
-    N = size(x)
-    allocate(A(N,N),B(N,1),ipiv(N))
-
-    B(:,1) = y(:)
-    A(:,1) = 1.0_DP
-    A(:,2) = x(:)
-    do i = 1,N
-       do j = 3,N
-          A(i,j) = abs(x(i)-x(j-1))
-       end do
-    end do
-    call getrf(A,ipiv)
-    call getrs(A,ipiv,B)
-    c(:) = B(:,1)
-
-    deallocate(A,B,ipiv)
-
-  end subroutine splinefitCoeff
-
-  function splineVals(c,xj,x)
-    use kinds
-    implicit none
-
-    real(DP),dimension(:),intent(in) :: c,xj
-    real(DP),intent(in) :: x
-    real(DP) :: splinevals
-
-    integer :: N
-
-    N = size(c)
-    splinevals = c(1)+c(2)*x+sum(c(3:N)*abs(x-xj(2:N-1)))
-
-  end function splineVals
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                               PolyFit                               !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! N dimensional polynomial fitting algorithim which outputs the       !
-  ! coefficitents of the fit. Can then be passed into polycal to        !
-  ! evaluate the fit at a certain point.                                !
-  !                                                                     !
-  ! Uses Lapack for necessary linear algebra                            !
-  !---------------------------------------------------------------------!
-
-  function polyCal(N,c,x)
-    implicit none
-
-    integer ,intent(in)                :: N
-    real(DP),dimension(N+1),intent(in) :: c
-    real(DP)               ,intent(in) :: x
-
-    real(DP)                           :: polycal
-    real(DP),dimension(N+1)            :: xx
-    integer ,dimension(N+1)            :: indexx
-    integer                            :: i
-
-    do i = 0,N
-       indexx(i+1) = N-i
-    end do
-    xx = x**indexx
-    polycal = sum(c*xx)
-
-  end function polycal
-
-  subroutine polyfit(x,y,N,c)
-    use kinds
-    use LAPACK95
-    implicit none
-
-    integer ,intent(in)              :: N
-    real(DP),dimension(:),intent(in) :: x,y
-    real(DP),dimension(N+1),intent(out) :: c
-
-    real(DP),dimension(N+1,N+1) :: A
-    real(DP),dimension(N+1,1) :: B
-    integer ,dimension(N+1)   :: ipiv
-
-    integer :: i,j,L
-
-    if ( N > size(x) ) then
-       write(*,'(a)') "Error, order of polynomial must be less then the number of entered points"
-    else
-
-       L = N+1
-       do i = 1,L
-          do j = 1,L
-             A(i,j) = x(i)**(L-j)
-          end do
-          B(i,1) = y(i)
-       end do
-
-       call getrf(A,ipiv)
-       call getrs(A,ipiv,B)
-
-       c(:) = B(:,1)
-
-    end if
-
-  end subroutine polyfit
-
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                            Eulers method                            !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Eulers method for solving 1 or N coupled DE's                       !
-  !---------------------------------------------------------------------!
-
-  function EulerM(f,h,t0,y0)
-    use kinds
-    implicit none
-
-    real(DP),intent(in) :: h,t0,y0
-    interface
-       function f(t,y)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: t,y
-       end function f
-    end interface
-    real(DP) :: EulerM
-
-    EulerM = h*f(t0,y0)+y0
-
-  end function EulerM
-
-  function eulerMND(f,h,t0,y0)
-    use kinds
-    implicit none
-
-    real(DP),intent(in)              :: t0,h
-    real(DP),dimension(:),intent(in) :: y0
-    interface
-       function f(t0,y0,nEq)
-         use kinds
-         implicit none
-         integer,intent(in)    :: nEq
-         real(DP),intent(in)   :: t0,y0(nEq)
-         real(DP),dimension(nEq) :: f
-       end function f
-    end interface
-    real(DP),dimension(size(y0)) :: eulerMND
-    integer :: nEq
-
-    nEq = size(y0)
-    eulerMND = h*f(t0,y0,nEq)+y0
-
-  end function eulerMND
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                       Runge Kutta 4th Order                         !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Runge Kutta calculation for input function(s). For a single step    !
-  ! or a range of specified values. Algorithims for a single DE or      !
-  ! N coupled DE's.                                                     !
-  !---------------------------------------------------------------------!
-
-  function rk4(f,h,t0,y0)
-    use kinds
-    implicit none
-
-    real(DP),intent(in) :: h,t0,y0
-    interface
-       function f(t,y)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: t,y
-       end function f
-    end interface
-    real(DP) :: rk4
-
-    real(DP) :: k1,k2,k3,k4
-
-    k1 = f(t0,y0)
-    k2 = f(t0+0.5_dp*h,y0+0.5_dp*h*k1)
-    k3 = f(t0+0.5_dp*h,y0+0.5_dp*h*k2)
-    k4 = f(t0+h,y0+k3*h)
-    rk4 = y0 + (1/6.0_dp)*(k1+2*k2+2*k3+k4)*h
-
-  end function rk4
-
-  function rk4N(f,h,t0,y0)
-    use kinds
-    implicit none
-
-    real(DP),intent(in)              :: t0,h
-    real(DP),dimension(:),intent(in) :: y0
-    interface
-       function f(t0,y0,nEq)
-         use kinds
-         implicit none
-         integer,intent(in)    :: nEq
-         real(DP),intent(in)   :: t0,y0(nEq)
-         real(DP),dimension(nEq) :: f
-       end function f
-    end interface
-    real(DP),dimension(size(y0)) :: rk4N
-
-    real(DP),dimension(size(y0)) :: k1,k2,k3,k4
-    integer :: nEq
-
-    nEq = size(y0)
-    k1 = f(t0,y0,nEq)
-    k2 = f(t0 + 0.5_DP*h,y0 + 0.5_DP*h*k1,nEq)
-    k3 = f(t0 + 0.5_DP*h,y0 + 0.5_DP*h*k2,nEq)
-    k4 = f(t0 + h,y0 + h*k3,nEq)
-
-    rk4N = y0 + (1/6.0_DP)*(k1 + 2*k2 + 2*k3 + k4)*h
-
-  end function rk4N
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                               Guess Zero                            !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Returns the points where a function changes sign. Can be an input   !
-  ! function of an input set of values.                                 !
-  !---------------------------------------------------------------------!
-
-  function guessZero(fvals)
-    use Kinds
-    implicit none
-    real(DP),dimension(:),intent(in) :: fvals
-    integer                          :: GuessZero
-
-    integer                          :: jj
-
-    do jj=3,size(fvals)
-       if ( sign( fvals(jj-1)/abs(fvals(jj-1)) , fvals(jj)/abs(fvals(jj)) ) .ne. &
-            sign( fvals(jj-2)/abs(fvals(jj-2)) , fvals(jj-1)/abs(fvals(jj-1)) ) ) exit
-    end do
-
-    GuessZero = jj
-
-  end function GuessZero
-
-  function guessZeroNew(f,a,b)
-    use kinds
-    implicit none
-
-    real(DP),intent(in) :: a,b
-    real(DP)            :: GuessZeroNew
-    interface
-       function f(x)
-         use kinds
-         implicit none
-         real(DP),intent(in) :: x
-         real(DP)            :: f
-       end function f
-    end interface
-
-    real(DP) :: h,fval
-    integer :: i,sign,newsign,N
-
-    h = a*1e-4
-    N = int((b-a)/h)
-    fval = f(a)
-    sign = int(fval/abs(fval))
-
-    do i = 1,N
-       fval = f(a+i*h)
-       newsign = int(fval/abs(fval))
-       if ( newsign .ne. sign ) exit
-    end do
-    if ( i .eq. N ) then
-       write(*,*) "Error Max itterations reached"
-    else
-       GuessZeroNew = a+i*h
-    end if
-
-  end function GuessZeroNew
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                         Newtons Method                              !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Newtons method for an input function of 1 variable                  !
-  !                                                                     !
-  !                 CODE WRITTEN BY CURTIS ABELL                        !
-  !---------------------------------------------------------------------!
-
-  function newton1D(fn,guess)
-    use Kinds
-    implicit none
-    real(DP) :: newton1D
-    interface
-       function fn(x)
-         use kinds
-         implicit none
-         real(DP)             :: fn
-         real(DP), intent(in) :: x
-       end function fn
-    end interface
-    real(DP) :: guess
-    ! Local Variables
-    real(DP) :: newt_tol = 1e-6
-    real(DP) :: h ! = 1e-6_DP
-    real(DP) :: fx, fxfh,fxbh, dfdx
-    integer :: attempt
-    integer :: attempt_limit = 20
-    logical :: verbose = .false.
-
-    if (verbose) write(*,*) 'Newton-Raphson Method'
-    h = guess * 1.0e-6_DP
-    newton1D = guess
-    attempt = 1
-
-    do
-       fx = fn(newton1D)
-       if (abs(fx) <= newt_tol) then
-          if (verbose) then
-             write(*,'(a,i3,a)') 'Success after', attempt, ' attempts.'
-             write(*,*) 'Zero  = ', newton1D
-          end if
-          exit
-       else if (attempt >= attempt_limit) then
-          write(*,*) 'Failed, change initial guess or increase attempt limit.'
-          exit
-       end if
-
-       fxfh = fn(newton1D + h/2)
-       fxbh = fn(newton1D - h/2)
-       dfdx = (fxfh-fxbh) / h
-       newton1D = newton1D - fx / dfdx
-
-       attempt = attempt + 1
-    end do
-  end function newton1D
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                               Linspace                              !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Creates a linear space of points. See matlab documentation for      !
-  ! further details.                                                    !
-  !---------------------------------------------------------------------!
-
-  function linspace(start,finish,N)
-    integer                :: N
-    real(DP), intent(in)   :: start, finish
-    real(DP), dimension(N) :: linspace
-
-    real(DP)               :: int
-    integer                :: i
-
-    linspace(1) = start
-    linspace(N) = finish
-    int  = (real(finish)-start)/(N-1)
-
-    do i=2,N-1
-       linspace(i)=linspace(i-1)+int
-    end do
-
-  end function linspace
-
-  function linspaceReal(start,finish,N)
-    integer                :: N
-    real, intent(in)       :: start, finish
-    real, dimension(N)     :: linspaceReal
-
-    real(DP)               :: int
-    integer                :: i
-
-    linspaceReal(1) = start
-    linspaceReal(N) = finish
-    int  = (real(finish)-start)/(N-1)
-
-    do i=2,N-1
-       linspaceReal(i)=linspaceReal(i-1)+int
-    end do
-
-  end function linspaceReal
-
-  function linspaceInt(start,finish,N)
-    integer                :: N
-    integer, intent(in)       :: start, finish
-    integer, dimension(N)     :: linspaceInt
-
-    real(DP)               :: int
-    integer                :: i
-
-    linspaceInt(1) = start
-    linspaceInt(N) = finish
-    int  = (real(finish)-start)/(N-1)
-
-    do i=2,N-1
-       linspaceInt(i)=linspaceInt(i-1)+int
-    end do
-
-  end function linspaceInt
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                          Finite difference                          !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Numerically calculates the derivative with finite difference        !
-  !---------------------------------------------------------------------!
-
-  function deriv(f,x0)
-    use Kinds
-    implicit none
-    real(DP)                 :: deriv
-    interface
-       function f(x)
-         use kinds
-         implicit none
-         real(DP)            :: f
-         real(DP),intent(in) :: x
-       end function f
-    end interface
-    real(DP),intent(in)      :: x0
-    real(DP)                 :: h,fxfh,fxbh
-
-    h     = x0*1e-6_DP
-    fxfh  = f(x0+h/2)
-    fxbh  = f(x0-h/2)
-    deriv = (fxfh-fxbh)/h
-
-  end function deriv
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                      QuadPack Integral wrapper                      !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Wrappers for the Quadpack integral routine shown above.             !
-  !---------------------------------------------------------------------!
-
-
-  function integral(f, a, b, absErr, relErr)
-    implicit none
-    real(DP)                  :: integral
-    interface                                   ! Interfaces: Sections 5.11, 5.18
-       function f(x)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: x
-       end function f
-    end interface
-    real(DP), intent(in)      :: a, b, absErr, relErr
-
-    !  Local variables
-    !
-    real(DP)                  :: integResult, bound=0.0_DP
-    integer                   :: inf
-
-    !  Determine if the limits include infinity and call qagi if nessary
-    !
-    if (a == -Infty) then
-       if (b == Infty) then
-          inf=2
-          call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
-          if ( ifail /= 0 ) then
-             write(*,*) 'Warning from qagi: the error code is ', ifail
-          end if
-       else
-          inf = -1
-          bound = b
-          call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
-          if ( ifail /= 0 ) then
-             write(*,*) 'Warning from qagi: the error code is ', ifail
-          end if
-       end if
-    else
-       if (b == Infty) then
-          inf = 1
-          bound = a
-          call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
-          if ( ifail /= 0 ) then
-             write(*,*) 'Warning from qagi: the error code is ', ifail
-          end if
-       else
-          call qags(f, a, b, absErr, relErr, integResult, errEstimate, neval, ifail)
-          if ( ifail /= 0 ) then
-             write(*,*) 'Warning from qags: the error code is ', ifail
-          end if
-       end if
-    end if
-    integral = integResult
-
-  end function integral
-
-
-  function integralToInfty(f, bound, absErr, relErr)
-    implicit none
-    real(DP)                  :: integralToInfty
-    interface
-       function f(x)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: x
-       end function f
-    end interface
-    real(DP), intent(in)      :: bound, absErr, relErr
-
-    !  Local variables
-    !
-    real(DP)                  :: integResult
-    integer, parameter        :: inf=1
-
-    call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
-    if ( ifail /= 0 ) then
-       write(*,*) 'Warning from qagi: the error code is ', ifail
-    end if
-    integralToInfty = integResult
-
-  end function integralToInfty
-
-
-  function integralOf(f, absErr, relErr)
-    implicit none
-    real(DP)                  :: integralOf
-    interface
-       function f(x)
-         implicit none
-         integer,  parameter  :: DP = kind(1.0d0)
-         real(DP)             :: f
-         real(DP), intent(in) :: x
-       end function f
-    end interface
-    real(DP), intent(in)      :: absErr, relErr
-
-    !  Local variables
-    !
-    real(DP)                  :: integResult, bound=0.0d0
-    integer, parameter        :: inf=2
-
-    call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
-    if ( ifail /= 0 ) then
-       write(*,*) 'Warning from qagi: the error code is ', ifail
-    end if
-    integralOf = integResult
-
-  end function integralOf
-
-
-  function integralBreakPts(f, a, b, absErr, relErr, nBreakPts, BreakPts)
-    implicit none
-    real(DP)                  :: integralBreakPts
-    interface
-       function f(x)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: x
-       end function f
-    end interface
-    real(DP), intent(in)      :: a, b, absErr, relErr
-    integer,  intent(in)      :: nBreakPts
-    real(DP), intent(in), dimension(nBreakPts) :: BreakPts
-
-    !  Local variables
-    !
-    real(DP)                         :: integResult
-    real(DP), dimension(nBreakPts+2) :: BreakPtsP2        ! Automatic array.  Similar to allocatable arrays.
-
-    BreakPtsP2(1:nBreakPts) = BreakPts(1:nBreakPts)       ! Array section limits are required here.
-
-    call qagp(f, a, b, nBreakPts+2, BreakPtsP2, absErr, relErr, integResult, errEstimate, neval, ifail)
-    if ( ifail /= 0 ) then
-       write(*,*) 'Warning from qagp: the error code is ', ifail
-    end if
-    integralBreakPts = integResult
-
-  end function integralBreakPts
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                      Principle Value Integrator                     !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Evaluates the Cauchy-Principle value integral for f(x)/(x-c)        !
-  !---------------------------------------------------------------------!
-
-  function integralPV(f, c, a, b, absErr, relErr)
-    use kinds
-    implicit none
-    real(DP)                  :: integralPV
-    interface
-       function f(x)
-         use kinds
-         implicit none
-         real(DP)             :: f
-         real(DP), intent(in) :: x
-       end function f
-    end interface
-    real(DP), intent(in)      :: c, a, b, absErr, relErr
-
-    ! ---------------------------Local Variables--------------------------
-    real(DP)                  :: res, errRequest
-    integer                   :: inf ! -1 for -infty, +1 for infty
-    ! Used to split the integral if a or b are at plus/minux infty
-    !    into semi-infinite integrals and a PV integral. This is done
-    !    by moving the upper and/or lower bounds of the integral
-    !    away from the pole and splitting the integral into 2 (3).
-    real(DP)                  :: intBoundaryHigh, intBoundaryLow
-
-    integralPV = 0.0_DP
-    intBoundaryLow = a
-    intBoundaryHigh = b
-
-    ! Integral from -Infty to lower bound
-    if (a.eq.-Infty) then
-       inf = -1
-       if (abs(c).lt.2.0_DP) then
-          intBoundaryLow = -4.0_DP
-       else
-          intBoundaryLow = c / 2.0_DP
-       end if
-       call qagi(f, intBoundaryLow, inf, absErr, relErr, res &
-            & , errEstimate, neval, ifail)
-       integralPV = integralPV + res
-       if ( ifail.ne.0 ) then
-          write(*,*) ' Warning from qagi from -Infty: the error code is ', ifail
-       end if
-    end if
-
-    ! Integral from upper bound to Infty
-    if (b.eq.Infty) then
-       inf = 1
-       if (abs(c).lt.2.0_DP) then
-          intBoundaryHigh = 4.0_DP
-       else
-          intBoundaryHigh = c * 2.0_DP
-       end if
-       call qagi(fNonSingular, intBoundaryHigh, inf, absErr  &
-            & , relErr, res, errEstimate, neval, ifail)
-       integralPV = integralPV + res
-       if ( ifail.ne.0 ) then
-          write(*,*) ' Warning from qagi to Infty: the error code is ', ifail
-       end if
-    end if
-
-    ! Principle-value integral
-    call qawc(f, intBoundaryLow, intBoundaryHigh, c, absErr, relErr &
-         & , res, errEstimate, neval, ifail)
-    if ( ifail.ne.0 ) then
-       write(*,*) ' Warning from qawc: the error code is ', ifail
-    end if
-    integralPV = integralPV + res
-
-  contains
-    ! Function to pass to the semi-infinite integrals
-    !    - now includes the (x-c) on the denominator
-    function fNonSingular(x)
-      use kinds
-      implicit none
-      real(DP) :: fNonSingular
-      real(DP), intent(in) :: x
-      fNonSingular = f(x)/(x - c)
-    end function fNonSingular
-
-  end function integralPV
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                       Multi-Dimensional Pyplots                     !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-
-  subroutine pyplotN(x,title,xaxis,yaxis,legend)
-    use Kinds
-    implicit none
-    character(len=*),intent(in),optional              :: xaxis,yaxis,title
-    character(len=*),dimension(:),intent(in),optional :: legend
-    real(DP),dimension(:,:),intent(in)                :: x
-
-    character(len=10),dimension(size(x(1,:))/2)       :: ld
-    character(len=14)                                 :: fmt,xlabel,ylabel,name
-    integer                                           :: ii,j,N,L
-
-    N = size(x,dim=2)
-    L = size(ld)
-
-    open(100,file="titles.dat",action="write", &
-         & status="replace",form="formatted")
-    open(101,file="output.dat",action="write", &
-         & status="replace",form="formatted")
-
-    name   = ""
-    xlabel = ""
-    ylabel = ""
-    ld     = ""
-
-    if(present(title)) name   = title
-    if(present(xaxis)) xlabel = xaxis
-    if(present(yaxis)) ylabel = yaxis
-    if(present(legend))ld(1:L)= legend(1:L)
-
-    write(100,'(a20)') name
-    write(100,'(a15)') xlabel
-    write(100,'(a15)') ylabel
-    write(fmt,'(a1,i1,a7)') '(', N, 'es20.9)'
-
-    do ii=1,L
-       write(100,'(a12)') ld(ii)
-    end do
-
-    do ii=1,size(x,dim=1)
-       write(101,fmt) x(ii,:)
-    end do
-
-    close(100)
-    close(101)
-
-  end subroutine pyplotN
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                          Standard Pyplots                           !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-
-  subroutine pyplotXY(x,y,title,xaxis,yaxis)
-    use Kinds
-    implicit none
-    character(len=*),intent(in),optional :: xaxis,yaxis,title
-    real(DP),dimension(:),intent(in)     :: x,y
-
-    character(len=14)                    :: xlabel,ylabel,name,ld
-    integer                              :: ii
-
-    open(100,file="titles.dat",action="write", &
-         & status="replace",form="formatted")
-    open(101,file="output.dat",action="write", &
-         & status="replace",form="formatted")
-
-    name   = ""
-    xlabel = ""
-    ylabel = ""
-    ld     = "empty"
-
-    if(present(title)) name   = title
-    if(present(xaxis)) xlabel = xaxis
-    if(present(yaxis)) ylabel = yaxis
-
-    write(100,'(a20)') name
-    write(100,'(a15)') xlabel
-    write(100,'(a15)') ylabel
-    write(100,'(a7)') ld
-
-    do ii=1,size(x)
-       write(101,'(2es20.9)') x(ii), y(ii)
-    end do
-
-    close(100)
-    close(101)
-
-  end subroutine pyplotXY
-
-  subroutine pyplotXYZW(x,y,z,w,title,xaxis,yaxis)
-    use Kinds
-    implicit none
-    character(len=*),intent(in),optional :: xaxis,yaxis,title
-    real(DP),dimension(:),intent(in)     :: x,y,z,w
-
-    character(len=14)                    :: xlabel,ylabel,name,ld
-    integer                              :: ii
-
-    open(100,file="titles.dat",action="write", &
-         & status="replace",form="formatted")
-    open(101,file="output.dat",action="write", &
-         & status="replace",form="formatted")
-
-    name   = ""
-    xlabel = ""
-    ylabel = ""
-    ld     = "empty"
-
-    if(present(title)) name   = title
-    if(present(xaxis)) xlabel = xaxis
-    if(present(yaxis)) ylabel = yaxis
-
-    write(100,'(a20)') name
-    write(100,'(a15)') xlabel
-    write(100,'(a15)') ylabel
-    write(100,'(a7)') ld
-    write(100,'(a7)') ld    
-
-    do ii=1,size(x)
-       write(101,'(4es20.9)') x(ii), y(ii), z(ii), w(ii)
-    end do
-
-    close(100)
-    close(101)
-
-  end subroutine pyplotXYZW
-
-end module numFort
-
-
-
-
-!==============================================================================
-!##############################################################################
-!==============================================================================
-
-
-
 
 
 module Quadpack
@@ -9595,3 +7818,1773 @@ end module Quadpack
 !===============================================================================
 !###############################################################################
 !===============================================================================
+
+
+!---------------------------------------------------------------------!
+!                                                                     !
+!                      NumFort numerical library                      !
+!                                                                     !
+!---------------------------------------------------------------------!
+
+module numFort
+  use kinds
+  use quadpack
+  use LAPACK95
+  implicit none
+
+  integer  :: neval, ifail
+  real(DP) :: errEstimate
+
+  interface linspace
+     module procedure linspace,linspaceReal,linspaceInt
+  end interface linspace
+  interface integral
+     module procedure integral, integralToInfty, integralOf, integralBreakPts
+  end interface integral
+  interface rk4
+     module procedure rk4,rk4N
+  end interface rk4
+  interface splinefit
+     module procedure splinefit,splinefitCoeff
+  end interface splinefit
+  interface GuessZero
+     module procedure GuessZero,GuessZeroNew
+  end interface GuessZero
+  interface Trace
+     module procedure TraceDP,TraceSP,TraceComplexDP,TraceComplexSP
+  end interface Trace
+  interface inv
+     module procedure invMatSP, invMatDP, invMatComplexSP, invMatComplexDP
+  end interface inv
+  interface pyplot
+     module procedure pyplotN,pyplotXY,pyplotXYZW
+  end interface pyplot
+  interface EulerM
+     module procedure eulerm,eulermnd
+  end interface EulerM
+  interface writeData
+     module procedure writeDataXY,writeDataXYZW,writeDataN
+  end interface writeData
+
+contains
+
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                         Write data to a file                        !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  subroutine writeDataXY(x,y,title)
+    use Kinds
+    implicit none
+    real(DP),dimension(:),intent(in)     :: x,y
+    character(len=*),intent(in),optional :: title
+    integer :: ii,N
+    
+    N = size(x)
+    if (present(title)) then
+       open(101,file=title,action="write", &
+            & status="replace",form="formatted")
+    else
+       open(101,file="data.dat",action="write", &
+            & status="replace",form="formatted")
+    end if
+    do ii = 1,N
+       write(101,'(2e20.10)') x(ii), y(ii)
+    end do
+    
+    close(101)
+
+  end subroutine writeDataXY
+
+  subroutine writeDataXYZW(x,y,z,w,title)
+    use Kinds
+    implicit none
+    real(DP),dimension(:),intent(in)     :: x,y,z,w
+    character(len=*),intent(in),optional :: title
+    integer :: ii,N
+    
+    N = size(x)
+    if (present(title)) then
+       open(101,file=title,action="write", &
+            & status="replace",form="formatted")
+    else
+       open(101,file="data.dat",action="write", &
+            & status="replace",form="formatted")
+    end if
+    do ii = 1,N
+       write(101,'(4e20.10)') x(ii), y(ii), z(ii), w(ii)
+    end do
+    
+    close(101)
+
+  end subroutine writeDataXYZW
+
+  subroutine writeDataN(x,title)
+    use Kinds
+    implicit none
+    real(DP),dimension(:,:),intent(in)     :: x
+    character(len=*),intent(in),optional   :: title
+    character(len=14)                      :: fmt
+    integer :: ii,N
+    
+    N = size(x,dim=2)
+    write(fmt,'(a1,i1,a7)') '(', N, 'es20.9)'
+
+    if (present(title)) then
+       open(101,file=title,action="write", &
+            & status="replace",form="formatted")
+    else
+       open(101,file="data.dat",action="write", &
+            & status="replace",form="formatted")
+    end if
+    do ii = 1,size(x,dim=1)
+       write(101,fmt) x(ii,:)
+    end do
+    
+    close(101)
+
+  end subroutine writeDataN
+
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !             evaluate Bessel function at x of order 0<n<3            !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  function bessel(x,n) result(val)
+    use kinds
+    implicit none
+
+    real(DP),intent(in) :: x
+    integer ,intent(in) :: n
+    real(DP)            :: val
+
+    if( n > 5 .or. n < 0 ) then
+       write(*,'(a)') "Error: n must be an integer between 0 and 3"
+    else
+
+       select case(n)
+       case(0)
+          val = sin(x)/x
+       case(1)
+          val = sin(x)/x**2-cos(x)/x
+       case(2)
+          val = (3/x**2-1)*sin(x)/x -3*cos(x)/x**2
+       case(3)
+          val = (15/x**3-6/x)*sin(x)/x-(15/x**2-1)*sin(x)/x
+       case(4)
+          val = (sin(x)+4*cos(x)/x-12*sin(x)/x**2-24*cos(x)/x**3+24*sin(x)/x**4)/x
+       case(5)
+          val = (cos(x)-5*sin(x)/x-20*cos(x)/x**2+60*sin(x)/x**3+120*cos(x)/x**4-120*sin(x)/x**5)/x
+       end select
+    end if
+
+  end function bessel
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                   Calculate the trace of a Matrix                   !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  function TraceDP(M)
+    use kinds
+    implicit none
+
+    real(DP),dimension(:,:),intent(in) :: M
+    real(DP)                           :: TraceDP
+
+    integer :: rows,cols,i
+
+    rows = size(M(:,1))
+    cols = size(M(1,:))
+    TraceDP = 0
+    if ( rows .ne. cols ) then
+       write(*,'(a)') "Error, not a square matrix"
+    else
+       do i = 1,rows
+          TraceDP = TraceDP + M(i,i)
+       end do
+    end if
+
+  end function TraceDP
+
+  function TraceSP(M)
+    use kinds
+    implicit none
+
+    real(SP),dimension(:,:),intent(in) :: M
+    real(SP)                           :: TraceSP
+
+    integer :: rows,cols,i
+
+    rows = size(M(:,1))
+    cols = size(M(1,:))
+    TraceSP = 0
+    if ( rows .ne. cols ) then
+       write(*,'(a)') "Error, not a square matrix"
+    else
+       do i = 1,rows
+          TraceSP = TraceSP + M(i,i)
+       end do
+    end if
+
+  end function TraceSP
+
+  function TraceComplexDP(M)
+    use kinds
+    implicit none
+
+    complex(DP),dimension(:,:),intent(in) :: M
+    complex(DP)                           :: TraceComplexDP
+
+    integer :: rows,cols,i
+
+    rows = size(M(:,1))
+    cols = size(M(1,:))
+    TraceComplexDP = 0.0_DP
+    if ( rows .ne. cols ) then
+       write(*,'(a)') "Error, not a square matrix"
+    else
+       do i = 1,rows
+          TraceComplexDP = TraceComplexDP + M(i,i)
+       end do
+    end if
+
+  end function TraceComplexDP
+
+  function TraceComplexSP(M)
+    use kinds
+    implicit none
+
+    complex(SP),dimension(:,:),intent(in) :: M
+    complex(SP)                           :: TraceComplexSP
+
+    integer :: rows,cols,i
+
+    rows = size(M(:,1))
+    cols = size(M(1,:))
+    TraceComplexSP = 0.0_DP
+    if ( rows .ne. cols ) then
+       write(*,'(a)') "Error, not a square matrix"
+    else
+       do i = 1,rows
+          TraceComplexSP = TraceComplexSP + M(i,i)
+       end do
+    end if
+
+  end function TraceComplexSP
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                  Calculate the inverse of a matrix                  !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  function invMatSP(A) result(B)
+    real(SP), intent(in) :: A(:,:)
+    real(SP)             :: B(size(A,1),size(A,2))
+    ! Local variables
+    integer              :: n
+
+    n = size(A,1)
+    select case (n)
+    case (1)
+       if (A(1,1).eq.0.0) then
+          write(*,*) 'Matrix is numerically singular!'
+       end if
+       B(:,:) = 1.0_SP / A(:,:)
+    case (2)
+       B(:,:) = invMatSP2(A)
+    case (3)
+       B(:,:) = invMatSP3(A)
+    case (4)
+       B(:,:) = invMatSP4(A)
+    case (5:)
+       B(:,:) = invMatSPN(A)
+    end select
+
+  end function invMatSP
+
+  function invMatDP(A) result(B)
+    real(DP), intent(in) :: A(:,:)
+    real(DP)             :: B(size(A,1),size(A,2))
+    ! Local variables
+    integer              :: n
+
+    n = size(A,1)
+    select case (n)
+    case (1)
+       if (A(1,1).eq.0.0_DP) then
+          write(*,*) 'Matrix is numerically singular!'
+       end if
+       B(:,:) = 1.0_DP / A(:,:)
+    case (2)
+       B(:,:) = invMatDP2(A)
+    case (3)
+       B(:,:) = invMatDP3(A)
+    case (4)
+       B(:,:) = invMatDP4(A)
+    case (5:)
+       B(:,:) = invMatDPN(A)
+    end select
+
+  end function invMatDP
+
+  function invMatComplexSP(A) result(B)
+    complex(SP), intent(in) :: A(:,:)
+    complex(SP)             :: B(size(A,1),size(A,2))
+    ! Local variables
+    integer              :: n
+
+    n = size(A,1)
+    select case (n)
+    case (1)
+       if (A(1,1).eq.cmplx(0.0,0.0)) then
+          write(*,*) 'Matrix is numerically singular!'
+       end if
+       B(:,:) = 1.0 / A(:,:)
+    case (2)
+       B(:,:) = invMatCmplxSP2(A)
+    case (3)
+       B(:,:) = invMatCmplxSP3(A)
+    case (4)
+       B(:,:) = invMatCmplxSP4(A)
+    case (5:)
+       B(:,:) = invMatCmplxSPN(A)
+    end select
+
+  end function invMatComplexSP
+
+  function invMatComplexDP(A) result(B)
+    complex(DP), intent(in) :: A(:,:)
+    complex(DP)             :: B(size(A,1),size(A,2))
+    ! Local variables
+    integer              :: n
+
+    n = size(A,1)
+    select case (n)
+    case (1)
+       if (A(1,1).eq.cmplx(0.0_DP,0.0_DP)) then
+          write(*,*) 'Matrix is numerically singular!'
+       end if
+       B(:,:) = 1.0_DP / A(:,:)
+    case (2)
+       B(:,:) = invMatCmplxDP2(A)
+    case (3)
+       B(:,:) = invMatCmplxDP3(A)
+    case (4)
+       B(:,:) = invMatCmplxDP4(A)
+    case (5:)
+       B(:,:) = invMatCmplxDPN(A)
+    end select
+
+  end function invMatComplexDP
+
+  function invMatDP2(A) result(B)
+    ! Performs a direct calculation of the inverse of a 2×2 matrix.
+    real(dp), intent(in) :: A(2,2)   ! Matrix
+    real(dp)             :: B(2,2)   ! Inverse matrix
+    real(dp)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = A(1,1)*A(2,2) - A(1,2)*A(2,1)
+
+    if (det.eq.0.0_DP) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  A(2,2)
+    B(2,1) = -A(2,1)
+    B(1,2) = -A(1,2)
+    B(2,2) =  A(1,1)
+    B(:,:) =  B(:,:)/det
+  end function invMatDP2
+
+  function invMatDP3(A) result(B)
+    ! Performs a direct calculation of the inverse of a 3×3 matrix.
+    real(dp), intent(in) :: A(3,3)   ! Matrix
+    real(dp)             :: B(3,3)   ! Inverse matrix
+    real(dp)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = (A(1,1)*A(2,2)*A(3,3) - A(1,1)*A(2,3)*A(3,2)&
+         - A(1,2)*A(2,1)*A(3,3) + A(1,2)*A(2,3)*A(3,1)&
+         + A(1,3)*A(2,1)*A(3,2) - A(1,3)*A(2,2)*A(3,1))
+
+    if (det.eq.0.0_DP) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  (A(2,2)*A(3,3) - A(2,3)*A(3,2))
+    B(2,1) = -(A(2,1)*A(3,3) - A(2,3)*A(3,1))
+    B(3,1) =  (A(2,1)*A(3,2) - A(2,2)*A(3,1))
+    B(1,2) = -(A(1,2)*A(3,3) - A(1,3)*A(3,2))
+    B(2,2) =  (A(1,1)*A(3,3) - A(1,3)*A(3,1))
+    B(3,2) = -(A(1,1)*A(3,2) - A(1,2)*A(3,1))
+    B(1,3) =  (A(1,2)*A(2,3) - A(1,3)*A(2,2))
+    B(2,3) = -(A(1,1)*A(2,3) - A(1,3)*A(2,1))
+    B(3,3) =  (A(1,1)*A(2,2) - A(1,2)*A(2,1))
+    B(:,:) =  B(:,:)/det
+  end function invMatDP3
+
+  function invMatDP4(A) result(B)
+    ! Performs a direct calculation of the inverse of a 4×4 matrix.
+    real(dp), intent(in) :: A(4,4)   ! Matrix
+    real(dp)             :: B(4,4)   ! Inverse matrix
+    real(dp)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = &
+         1/(A(1,1)*(A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))&
+         - A(1,2)*(A(2,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))&
+         + A(1,3)*(A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))&
+         - A(1,4)*(A(2,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(2,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(2,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1))))
+
+    if (det.eq.0.0_DP) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) = (A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))
+    B(2,1) = (A(2,1)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(2,3)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(2,4)*(A(3,3)*A(4,1)-A(3,1)*A(4,3)))
+    B(3,1) = (A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(4,1) = (A(2,1)*(A(3,3)*A(4,2)-A(3,2)*A(4,3))+A(2,2)*(A(3,1)*A(4,3)-A(3,3)*A(4,1))+A(2,3)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(1,2) = (A(1,2)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(1,3)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(1,4)*(A(3,3)*A(4,2)-A(3,2)*A(4,3)))
+    B(2,2) = (A(1,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(1,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(1,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))
+    B(3,2) = (A(1,1)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(1,2)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(1,4)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(4,2) = (A(1,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(1,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(1,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(1,3) = (A(1,2)*(A(2,3)*A(4,4)-A(2,4)*A(4,3))+A(1,3)*(A(2,4)*A(4,2)-A(2,2)*A(4,4))+A(1,4)*(A(2,2)*A(4,3)-A(2,3)*A(4,2)))
+    B(2,3) = (A(1,1)*(A(2,4)*A(4,3)-A(2,3)*A(4,4))+A(1,3)*(A(2,1)*A(4,4)-A(2,4)*A(4,1))+A(1,4)*(A(2,3)*A(4,1)-A(2,1)*A(4,3)))
+    B(3,3) = (A(1,1)*(A(2,2)*A(4,4)-A(2,4)*A(4,2))+A(1,2)*(A(2,4)*A(4,1)-A(2,1)*A(4,4))+A(1,4)*(A(2,1)*A(4,2)-A(2,2)*A(4,1)))
+    B(4,3) = (A(1,1)*(A(2,3)*A(4,2)-A(2,2)*A(4,3))+A(1,2)*(A(2,1)*A(4,3)-A(2,3)*A(4,1))+A(1,3)*(A(2,2)*A(4,1)-A(2,1)*A(4,2)))
+    B(1,4) = (A(1,2)*(A(2,4)*A(3,3)-A(2,3)*A(3,4))+A(1,3)*(A(2,2)*A(3,4)-A(2,4)*A(3,2))+A(1,4)*(A(2,3)*A(3,2)-A(2,2)*A(3,3)))
+    B(2,4) = (A(1,1)*(A(2,3)*A(3,4)-A(2,4)*A(3,3))+A(1,3)*(A(2,4)*A(3,1)-A(2,1)*A(3,4))+A(1,4)*(A(2,1)*A(3,3)-A(2,3)*A(3,1)))
+    B(3,4) = (A(1,1)*(A(2,4)*A(3,2)-A(2,2)*A(3,4))+A(1,2)*(A(2,1)*A(3,4)-A(2,4)*A(3,1))+A(1,4)*(A(2,2)*A(3,1)-A(2,1)*A(3,2)))
+    B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
+    B(:,:) = B(:,:)*det
+  end function invMatDP4
+
+  function invMatDPN(A) result(Ainv)
+
+    real(dp), dimension(:,:), intent(in) :: A
+    real(dp), dimension(size(A,1),size(A,2)) :: Ainv
+
+    real(dp), dimension(size(A,1)) :: work  ! work array for LAPACK
+    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
+    integer :: n, info
+
+    ! External procedures defined in LAPACK
+    external DGETRF
+    external DGETRI
+
+    ! Store A in Ainv to prevent it from being overwritten by LAPACK
+    Ainv = A
+    n = size(A,1)
+
+    ! DGETRF computes an LU factorization of a general M-by-N matrix A
+    ! using partial pivoting with row interchanges.
+    call dgetrf(n, n, Ainv, n, ipiv, info)
+
+    if (info /= 0) then
+       stop 'Matrix is numerically singular!'
+    end if
+
+    ! DGETRI computes the inverse of a matrix using the LU factorization
+    ! computed by DGETRF.
+    call dgetri(n, Ainv, n, ipiv, work, n, info)
+
+    if (info /= 0) then
+       stop 'Matrix inversion failed!'
+    end if
+  end function invMatDPN
+
+  function invMatSP2(A) result(B)
+    ! Performs a direct calculation of the inverse of a 2×2 matrix.
+    real(SP), intent(in) :: A(2,2)   ! Matrix
+    real(SP)             :: B(2,2)   ! Inverse matrix
+    real(SP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = A(1,1)*A(2,2) - A(1,2)*A(2,1)
+
+    if (det.eq.0.0) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  A(2,2)
+    B(2,1) = -A(2,1)
+    B(1,2) = -A(1,2)
+    B(2,2) =  A(1,1)
+    B(:,:) =  B(:,:)/det
+  end function invMatSP2
+
+  function invMatSP3(A) result(B)
+    ! Performs a direct calculation of the inverse of a 3×3 matrix.
+    real(SP), intent(in) :: A(3,3)   ! Matrix
+    real(SP)             :: B(3,3)   ! Inverse matrix
+    real(SP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = (A(1,1)*A(2,2)*A(3,3) - A(1,1)*A(2,3)*A(3,2)&
+         - A(1,2)*A(2,1)*A(3,3) + A(1,2)*A(2,3)*A(3,1)&
+         + A(1,3)*A(2,1)*A(3,2) - A(1,3)*A(2,2)*A(3,1))
+
+    if (det.eq.0.0) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  (A(2,2)*A(3,3) - A(2,3)*A(3,2))
+    B(2,1) = -(A(2,1)*A(3,3) - A(2,3)*A(3,1))
+    B(3,1) =  (A(2,1)*A(3,2) - A(2,2)*A(3,1))
+    B(1,2) = -(A(1,2)*A(3,3) - A(1,3)*A(3,2))
+    B(2,2) =  (A(1,1)*A(3,3) - A(1,3)*A(3,1))
+    B(3,2) = -(A(1,1)*A(3,2) - A(1,2)*A(3,1))
+    B(1,3) =  (A(1,2)*A(2,3) - A(1,3)*A(2,2))
+    B(2,3) = -(A(1,1)*A(2,3) - A(1,3)*A(2,1))
+    B(3,3) =  (A(1,1)*A(2,2) - A(1,2)*A(2,1))
+    B(:,:) =  B(:,:)/det
+  end function invMatSP3
+
+  function invMatSP4(A) result(B)
+    ! Performs a direct calculation of the inverse of a 4×4 matrix.
+    real(SP), intent(in) :: A(4,4)   ! Matrix
+    real(SP)             :: B(4,4)   ! Inverse matrix
+    real(SP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = &
+         1/(A(1,1)*(A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))&
+         - A(1,2)*(A(2,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))&
+         + A(1,3)*(A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))&
+         - A(1,4)*(A(2,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(2,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(2,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1))))
+
+    if (det.eq.0.0) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) = (A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))
+    B(2,1) = (A(2,1)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(2,3)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(2,4)*(A(3,3)*A(4,1)-A(3,1)*A(4,3)))
+    B(3,1) = (A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(4,1) = (A(2,1)*(A(3,3)*A(4,2)-A(3,2)*A(4,3))+A(2,2)*(A(3,1)*A(4,3)-A(3,3)*A(4,1))+A(2,3)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(1,2) = (A(1,2)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(1,3)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(1,4)*(A(3,3)*A(4,2)-A(3,2)*A(4,3)))
+    B(2,2) = (A(1,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(1,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(1,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))
+    B(3,2) = (A(1,1)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(1,2)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(1,4)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(4,2) = (A(1,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(1,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(1,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(1,3) = (A(1,2)*(A(2,3)*A(4,4)-A(2,4)*A(4,3))+A(1,3)*(A(2,4)*A(4,2)-A(2,2)*A(4,4))+A(1,4)*(A(2,2)*A(4,3)-A(2,3)*A(4,2)))
+    B(2,3) = (A(1,1)*(A(2,4)*A(4,3)-A(2,3)*A(4,4))+A(1,3)*(A(2,1)*A(4,4)-A(2,4)*A(4,1))+A(1,4)*(A(2,3)*A(4,1)-A(2,1)*A(4,3)))
+    B(3,3) = (A(1,1)*(A(2,2)*A(4,4)-A(2,4)*A(4,2))+A(1,2)*(A(2,4)*A(4,1)-A(2,1)*A(4,4))+A(1,4)*(A(2,1)*A(4,2)-A(2,2)*A(4,1)))
+    B(4,3) = (A(1,1)*(A(2,3)*A(4,2)-A(2,2)*A(4,3))+A(1,2)*(A(2,1)*A(4,3)-A(2,3)*A(4,1))+A(1,3)*(A(2,2)*A(4,1)-A(2,1)*A(4,2)))
+    B(1,4) = (A(1,2)*(A(2,4)*A(3,3)-A(2,3)*A(3,4))+A(1,3)*(A(2,2)*A(3,4)-A(2,4)*A(3,2))+A(1,4)*(A(2,3)*A(3,2)-A(2,2)*A(3,3)))
+    B(2,4) = (A(1,1)*(A(2,3)*A(3,4)-A(2,4)*A(3,3))+A(1,3)*(A(2,4)*A(3,1)-A(2,1)*A(3,4))+A(1,4)*(A(2,1)*A(3,3)-A(2,3)*A(3,1)))
+    B(3,4) = (A(1,1)*(A(2,4)*A(3,2)-A(2,2)*A(3,4))+A(1,2)*(A(2,1)*A(3,4)-A(2,4)*A(3,1))+A(1,4)*(A(2,2)*A(3,1)-A(2,1)*A(3,2)))
+    B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
+    B(:,:) = B(:,:)*det
+  end function invMatSP4
+
+  function invMatSPN(A) result(Ainv)
+
+    real(SP), dimension(:,:), intent(in) :: A
+    real(SP), dimension(size(A,1),size(A,2)) :: Ainv
+
+    real(SP), dimension(size(A,1)) :: work  ! work array for LAPACK
+    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
+    integer :: n, info
+
+    ! External procedures defined in LAPACK
+    external DGETRF
+    external DGETRI
+
+    ! Store A in Ainv to prevent it from being overwritten by LAPACK
+    Ainv = A
+    n = size(A,1)
+
+    ! DGETRF computes an LU factorization of a general M-by-N matrix A
+    ! using partial pivoting with row interchanges.
+    call dgetrf(n, n, Ainv, n, ipiv, info)
+
+    if (info /= 0) then
+       stop 'Matrix is numerically singular!'
+    end if
+
+    ! DGETRI computes the inverse of a matrix using the LU factorization
+    ! computed by DGETRF.
+    call dgetri(n, Ainv, n, ipiv, work, n, info)
+
+    if (info /= 0) then
+       stop 'Matrix inversion failed!'
+    end if
+  end function invMatSPN
+
+  function invMatCmplxSP2(A) result(B)
+    ! Performs a direct calculation of the inverse of a 2×2 matrix.
+    complex(SP), intent(in) :: A(2,2)   ! Matrix
+    complex(SP)             :: B(2,2)   ! Inverse matrix
+    complex(SP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = (A(1,1)*A(2,2) - A(1,2)*A(2,1))
+
+    if (det.eq.cmplx(0.0,0.0)) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  A(2,2)
+    B(2,1) = -A(2,1)
+    B(1,2) = -A(1,2)
+    B(2,2) =  A(1,1)
+    B(:,:) =  B(:,:)/det
+  end function invMatCmplxSP2
+
+  function invMatCmplxSP3(A) result(B)
+    ! Performs a direct calculation of the inverse of a 3×3 matrix.
+    complex(SP), intent(in) :: A(3,3)   ! Matrix
+    complex(SP)             :: B(3,3)   ! Inverse matrix
+    complex(SP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = (A(1,1)*A(2,2)*A(3,3) - A(1,1)*A(2,3)*A(3,2)&
+         - A(1,2)*A(2,1)*A(3,3) + A(1,2)*A(2,3)*A(3,1)&
+         + A(1,3)*A(2,1)*A(3,2) - A(1,3)*A(2,2)*A(3,1))
+
+    if (det.eq.cmplx(0.0,0.0)) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  (A(2,2)*A(3,3) - A(2,3)*A(3,2))
+    B(2,1) = -(A(2,1)*A(3,3) - A(2,3)*A(3,1))
+    B(3,1) =  (A(2,1)*A(3,2) - A(2,2)*A(3,1))
+    B(1,2) = -(A(1,2)*A(3,3) - A(1,3)*A(3,2))
+    B(2,2) =  (A(1,1)*A(3,3) - A(1,3)*A(3,1))
+    B(3,2) = -(A(1,1)*A(3,2) - A(1,2)*A(3,1))
+    B(1,3) =  (A(1,2)*A(2,3) - A(1,3)*A(2,2))
+    B(2,3) = -(A(1,1)*A(2,3) - A(1,3)*A(2,1))
+    B(3,3) =  (A(1,1)*A(2,2) - A(1,2)*A(2,1))
+    B(:,:) =  B(:,:)/det
+  end function invMatCmplxSP3
+
+  function invMatCmplxSP4(A) result(B)
+    ! Performs a direct calculation of the inverse of a 4×4 matrix.
+    complex(SP), intent(in) :: A(4,4)   ! Matrix
+    complex(SP)             :: B(4,4)   ! Inverse matrix
+    complex(SP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = &
+         (A(1,1)*(A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))&
+         - A(1,2)*(A(2,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))&
+         + A(1,3)*(A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))&
+         - A(1,4)*(A(2,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(2,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(2,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1))))
+
+    if (det.eq.cmplx(0.0,0.0)) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) = (A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))
+    B(2,1) = (A(2,1)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(2,3)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(2,4)*(A(3,3)*A(4,1)-A(3,1)*A(4,3)))
+    B(3,1) = (A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(4,1) = (A(2,1)*(A(3,3)*A(4,2)-A(3,2)*A(4,3))+A(2,2)*(A(3,1)*A(4,3)-A(3,3)*A(4,1))+A(2,3)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(1,2) = (A(1,2)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(1,3)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(1,4)*(A(3,3)*A(4,2)-A(3,2)*A(4,3)))
+    B(2,2) = (A(1,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(1,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(1,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))
+    B(3,2) = (A(1,1)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(1,2)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(1,4)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(4,2) = (A(1,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(1,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(1,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(1,3) = (A(1,2)*(A(2,3)*A(4,4)-A(2,4)*A(4,3))+A(1,3)*(A(2,4)*A(4,2)-A(2,2)*A(4,4))+A(1,4)*(A(2,2)*A(4,3)-A(2,3)*A(4,2)))
+    B(2,3) = (A(1,1)*(A(2,4)*A(4,3)-A(2,3)*A(4,4))+A(1,3)*(A(2,1)*A(4,4)-A(2,4)*A(4,1))+A(1,4)*(A(2,3)*A(4,1)-A(2,1)*A(4,3)))
+    B(3,3) = (A(1,1)*(A(2,2)*A(4,4)-A(2,4)*A(4,2))+A(1,2)*(A(2,4)*A(4,1)-A(2,1)*A(4,4))+A(1,4)*(A(2,1)*A(4,2)-A(2,2)*A(4,1)))
+    B(4,3) = (A(1,1)*(A(2,3)*A(4,2)-A(2,2)*A(4,3))+A(1,2)*(A(2,1)*A(4,3)-A(2,3)*A(4,1))+A(1,3)*(A(2,2)*A(4,1)-A(2,1)*A(4,2)))
+    B(1,4) = (A(1,2)*(A(2,4)*A(3,3)-A(2,3)*A(3,4))+A(1,3)*(A(2,2)*A(3,4)-A(2,4)*A(3,2))+A(1,4)*(A(2,3)*A(3,2)-A(2,2)*A(3,3)))
+    B(2,4) = (A(1,1)*(A(2,3)*A(3,4)-A(2,4)*A(3,3))+A(1,3)*(A(2,4)*A(3,1)-A(2,1)*A(3,4))+A(1,4)*(A(2,1)*A(3,3)-A(2,3)*A(3,1)))
+    B(3,4) = (A(1,1)*(A(2,4)*A(3,2)-A(2,2)*A(3,4))+A(1,2)*(A(2,1)*A(3,4)-A(2,4)*A(3,1))+A(1,4)*(A(2,2)*A(3,1)-A(2,1)*A(3,2)))
+    B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
+    B(:,:) = B(:,:)/det
+  end function invMatCmplxSP4
+
+  function invMatCmplxSPN(A) result(Ainv)
+    complex(SP), dimension(:,:), intent(in) :: A
+    complex(SP), dimension(size(A,1),size(A,2)) :: Ainv
+
+    complex(SP), dimension(size(A,1)) :: work  ! work array for LAPACK
+    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
+    integer :: n, info
+
+    ! External procedures defined in LAPACK
+    external DGETRF
+    external DGETRI
+
+    ! Store A in Ainv to prevent it from being overwritten by LAPACK
+    Ainv = A
+    n = size(A,1)
+
+    ! DGETRF computes an LU factorization of a general M-by-N matrix A
+    ! using partial pivoting with row interchanges.
+    call zgetrf(n, n, Ainv, n, ipiv, info)
+
+    if (info .ne. 0) then
+       stop 'Matrix is numerically singular!'
+    end if
+
+    ! DGETRI computes the inverse of a matrix using the LU factorization
+    ! computed by DGETRF.
+    call zgetri(n, Ainv, n, ipiv, work, n, info)
+
+    if (info .ne. 0) then
+       stop 'Matrix inversion failed!'
+    end if
+  end function invMatCmplxSPN
+
+  function invMatCmplxDP2(A) result(B)
+    ! Performs a direct calculation of the inverse of a 2×2 matrix.
+    complex(DP), intent(in) :: A(2,2)   ! Matrix
+    complex(DP)             :: B(2,2)   ! Inverse matrix
+    complex(DP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = (A(1,1)*A(2,2) - A(1,2)*A(2,1))
+
+    if (det.eq.cmplx(0.0_DP,0.0_DP)) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  A(2,2)
+    B(2,1) = -A(2,1)
+    B(1,2) = -A(1,2)
+    B(2,2) =  A(1,1)
+    B(:,:) =  B(:,:)/det
+  end function invMatCmplxDP2
+
+  function invMatCmplxDP3(A) result(B)
+    ! Performs a direct calculation of the inverse of a 3×3 matrix.
+    complex(DP), intent(in) :: A(3,3)   ! Matrix
+    complex(DP)             :: B(3,3)   ! Inverse matrix
+    complex(DP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = (A(1,1)*A(2,2)*A(3,3) - A(1,1)*A(2,3)*A(3,2)&
+         - A(1,2)*A(2,1)*A(3,3) + A(1,2)*A(2,3)*A(3,1)&
+         + A(1,3)*A(2,1)*A(3,2) - A(1,3)*A(2,2)*A(3,1))
+
+    if (det.eq.cmplx(0.0_DP,0.0_DP)) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) =  (A(2,2)*A(3,3) - A(2,3)*A(3,2))
+    B(2,1) = -(A(2,1)*A(3,3) - A(2,3)*A(3,1))
+    B(3,1) =  (A(2,1)*A(3,2) - A(2,2)*A(3,1))
+    B(1,2) = -(A(1,2)*A(3,3) - A(1,3)*A(3,2))
+    B(2,2) =  (A(1,1)*A(3,3) - A(1,3)*A(3,1))
+    B(3,2) = -(A(1,1)*A(3,2) - A(1,2)*A(3,1))
+    B(1,3) =  (A(1,2)*A(2,3) - A(1,3)*A(2,2))
+    B(2,3) = -(A(1,1)*A(2,3) - A(1,3)*A(2,1))
+    B(3,3) =  (A(1,1)*A(2,2) - A(1,2)*A(2,1))
+    B(:,:) =  B(:,:)/det
+  end function invMatCmplxDP3
+
+  function invMatCmplxDP4(A) result(B)
+    ! Performs a direct calculation of the inverse of a 4×4 matrix.
+    complex(DP), intent(in) :: A(4,4)   ! Matrix
+    complex(DP)             :: B(4,4)   ! Inverse matrix
+    complex(DP)             :: det
+
+    ! Calculate the inverse determinant of the matrix
+    det = &
+         (A(1,1)*(A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))&
+         - A(1,2)*(A(2,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))&
+         + A(1,3)*(A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))&
+         - A(1,4)*(A(2,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(2,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(2,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1))))
+
+    if (det.eq.cmplx(0.0_DP,0.0_DP)) then
+       write(*,*) 'Matrix is numerically singular!'
+    end if
+
+    ! Calculate the inverse of the matrix
+    B(1,1) = (A(2,2)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(2,3)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(2,4)*(A(3,2)*A(4,3)-A(3,3)*A(4,2)))
+    B(2,1) = (A(2,1)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(2,3)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(2,4)*(A(3,3)*A(4,1)-A(3,1)*A(4,3)))
+    B(3,1) = (A(2,1)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(2,2)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(2,4)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(4,1) = (A(2,1)*(A(3,3)*A(4,2)-A(3,2)*A(4,3))+A(2,2)*(A(3,1)*A(4,3)-A(3,3)*A(4,1))+A(2,3)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(1,2) = (A(1,2)*(A(3,4)*A(4,3)-A(3,3)*A(4,4))+A(1,3)*(A(3,2)*A(4,4)-A(3,4)*A(4,2))+A(1,4)*(A(3,3)*A(4,2)-A(3,2)*A(4,3)))
+    B(2,2) = (A(1,1)*(A(3,3)*A(4,4)-A(3,4)*A(4,3))+A(1,3)*(A(3,4)*A(4,1)-A(3,1)*A(4,4))+A(1,4)*(A(3,1)*A(4,3)-A(3,3)*A(4,1)))
+    B(3,2) = (A(1,1)*(A(3,4)*A(4,2)-A(3,2)*A(4,4))+A(1,2)*(A(3,1)*A(4,4)-A(3,4)*A(4,1))+A(1,4)*(A(3,2)*A(4,1)-A(3,1)*A(4,2)))
+    B(4,2) = (A(1,1)*(A(3,2)*A(4,3)-A(3,3)*A(4,2))+A(1,2)*(A(3,3)*A(4,1)-A(3,1)*A(4,3))+A(1,3)*(A(3,1)*A(4,2)-A(3,2)*A(4,1)))
+    B(1,3) = (A(1,2)*(A(2,3)*A(4,4)-A(2,4)*A(4,3))+A(1,3)*(A(2,4)*A(4,2)-A(2,2)*A(4,4))+A(1,4)*(A(2,2)*A(4,3)-A(2,3)*A(4,2)))
+    B(2,3) = (A(1,1)*(A(2,4)*A(4,3)-A(2,3)*A(4,4))+A(1,3)*(A(2,1)*A(4,4)-A(2,4)*A(4,1))+A(1,4)*(A(2,3)*A(4,1)-A(2,1)*A(4,3)))
+    B(3,3) = (A(1,1)*(A(2,2)*A(4,4)-A(2,4)*A(4,2))+A(1,2)*(A(2,4)*A(4,1)-A(2,1)*A(4,4))+A(1,4)*(A(2,1)*A(4,2)-A(2,2)*A(4,1)))
+    B(4,3) = (A(1,1)*(A(2,3)*A(4,2)-A(2,2)*A(4,3))+A(1,2)*(A(2,1)*A(4,3)-A(2,3)*A(4,1))+A(1,3)*(A(2,2)*A(4,1)-A(2,1)*A(4,2)))
+    B(1,4) = (A(1,2)*(A(2,4)*A(3,3)-A(2,3)*A(3,4))+A(1,3)*(A(2,2)*A(3,4)-A(2,4)*A(3,2))+A(1,4)*(A(2,3)*A(3,2)-A(2,2)*A(3,3)))
+    B(2,4) = (A(1,1)*(A(2,3)*A(3,4)-A(2,4)*A(3,3))+A(1,3)*(A(2,4)*A(3,1)-A(2,1)*A(3,4))+A(1,4)*(A(2,1)*A(3,3)-A(2,3)*A(3,1)))
+    B(3,4) = (A(1,1)*(A(2,4)*A(3,2)-A(2,2)*A(3,4))+A(1,2)*(A(2,1)*A(3,4)-A(2,4)*A(3,1))+A(1,4)*(A(2,2)*A(3,1)-A(2,1)*A(3,2)))
+    B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
+    B(:,:) = B(:,:)/det
+  end function invMatCmplxDP4
+
+  function invMatCmplxDPN(A) result(Ainv)
+    complex(DP), dimension(:,:), intent(in) :: A
+    complex(DP), dimension(size(A,1),size(A,2)) :: Ainv
+
+    complex(DP), dimension(size(A,1)) :: work  ! work array for LAPACK
+    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
+    integer :: n, info
+
+    ! External procedures defined in LAPACK
+    external DGETRF
+    external DGETRI
+
+    ! Store A in Ainv to prevent it from being overwritten by LAPACK
+    Ainv = A
+    n = size(A,1)
+
+    ! DGETRF computes an LU factorization of a general M-by-N matrix A
+    ! using partial pivoting with row interchanges.
+    call zgetrf(n, n, Ainv, n, ipiv, info)
+
+    if (info .ne. 0) then
+       stop 'Matrix is numerically singular!'
+    end if
+
+    ! DGETRI computes the inverse of a matrix using the LU factorization
+    ! computed by DGETRF.
+    call zgetri(n, Ainv, n, ipiv, work, n, info)
+
+    if (info .ne. 0) then
+       stop 'Matrix inversion failed!'
+    end if
+  end function invMatCmplxDPN
+
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                      Useful Mathamatical functions                  !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  function factorial(n)
+    implicit none
+
+    integer,intent(in) :: n
+    integer            :: factorial
+
+    integer            :: i
+
+    factorial = 1
+
+    do i = 1,n
+       factorial = factorial*i
+    end do
+
+  end function factorial
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                               MeshGrid                              !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! creates a unique lattice of points given 2 vectors x,y of length    !
+  ! N and M. Can be used for 3d plots. See Matlab meshgrid              !
+  ! documentation for more details                                      !
+  !---------------------------------------------------------------------!
+
+  subroutine meshgrid(x,y,XX,YY)
+    use kinds
+    implicit none
+
+    real(DP),dimension(:),intent(in)    :: x
+    real(DP),dimension(:),intent(in)    :: y
+    real(DP),dimension(:,:),intent(out) :: XX,YY
+
+    integer :: i,j,rows,cols
+
+    rows = size(x)
+    cols = size(y)
+
+    do j = 1,cols
+       XX(j,1:rows) = x(1:rows)
+    end do
+    do j = 1,rows
+       YY(1:cols,j) = y(1:cols)
+    end do
+
+  end subroutine meshgrid
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                           Cubic Spline Fit                          !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Fits a cubic spline to input data. First version fits and outputs   !
+  ! values at specified interpolated points. Next version returns       !
+  ! the coefficients of the cubic spline fit which can then be passed   !
+  ! to the next function to evaluate the spline at a certain x.         !
+  !                                                                     !
+  ! Uses Lapack for necessary linear algebra                            !
+  !---------------------------------------------------------------------!
+
+  subroutine splinefit(x,y,intpts,intvals)
+    use kinds
+    use LAPACK95
+    implicit none
+
+    real(DP),dimension(:),intent(in)    :: x,y
+    real(DP),dimension(:),intent(in)    :: intpts
+    real(DP),dimension(:),intent(out)   :: intvals
+
+    integer                             :: N
+    real(DP),dimension(:,:),allocatable :: A,B
+    integer ,dimension(:)  ,allocatable :: ipiv
+    integer                             :: i,j
+
+    N = size(x)
+    allocate(A(N,N),B(N,1),ipiv(N))
+
+    B(:,1) = y(:)
+    A(:,1) = 1.0_DP
+    A(:,2) = x(:)
+    do i = 1,N
+       do j = 3,N
+          A(i,j) = abs(x(i)-x(j-1))
+       end do
+    end do
+    call getrf(A,ipiv)
+    call getrs(A,ipiv,B)
+    do i = 1,size(intpts)
+       intvals(i) = B(1,1) + B(2,1)*intpts(i)+&
+            & sum( B(3:N,1)*abs(intpts(i)-x(2:N-1)) )
+    end do
+
+    deallocate(A,B,ipiv)
+
+  end subroutine splinefit
+
+  subroutine splinefitCoeff(x,y,c)
+    use kinds
+    use LAPACK95
+    implicit none
+
+    real(DP),dimension(:),intent(in)    :: x,y
+    real(DP),dimension(:),intent(out)   :: c
+
+    integer                             :: N
+    real(DP),dimension(:,:),allocatable :: A,B
+    integer ,dimension(:)  ,allocatable :: ipiv
+    integer                             :: i,j
+
+    N = size(x)
+    allocate(A(N,N),B(N,1),ipiv(N))
+
+    B(:,1) = y(:)
+    A(:,1) = 1.0_DP
+    A(:,2) = x(:)
+    do i = 1,N
+       do j = 3,N
+          A(i,j) = abs(x(i)-x(j-1))
+       end do
+    end do
+    call getrf(A,ipiv)
+    call getrs(A,ipiv,B)
+    c(:) = B(:,1)
+
+    deallocate(A,B,ipiv)
+
+  end subroutine splinefitCoeff
+
+  function splineVals(c,xj,x)
+    use kinds
+    implicit none
+
+    real(DP),dimension(:),intent(in) :: c,xj
+    real(DP),intent(in) :: x
+    real(DP) :: splinevals
+
+    integer :: N
+
+    N = size(c)
+    splinevals = c(1)+c(2)*x+sum(c(3:N)*abs(x-xj(2:N-1)))
+
+  end function splineVals
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                               PolyFit                               !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! N dimensional polynomial fitting algorithim which outputs the       !
+  ! coefficitents of the fit. Can then be passed into polycal to        !
+  ! evaluate the fit at a certain point.                                !
+  !                                                                     !
+  ! Uses Lapack for necessary linear algebra                            !
+  !---------------------------------------------------------------------!
+
+  function polyCal(N,c,x)
+    implicit none
+
+    integer ,intent(in)                :: N
+    real(DP),dimension(N+1),intent(in) :: c
+    real(DP)               ,intent(in) :: x
+
+    real(DP)                           :: polycal
+    real(DP),dimension(N+1)            :: xx
+    integer ,dimension(N+1)            :: indexx
+    integer                            :: i
+
+    do i = 0,N
+       indexx(i+1) = N-i
+    end do
+    xx = x**indexx
+    polycal = sum(c*xx)
+
+  end function polycal
+
+  subroutine polyfit(x,y,N,c)
+    use kinds
+    use LAPACK95
+    implicit none
+
+    integer ,intent(in)              :: N
+    real(DP),dimension(:),intent(in) :: x,y
+    real(DP),dimension(N+1),intent(out) :: c
+
+    real(DP),dimension(N+1,N+1) :: A
+    real(DP),dimension(N+1,1) :: B
+    integer ,dimension(N+1)   :: ipiv
+
+    integer :: i,j,L
+
+    if ( N > size(x) ) then
+       write(*,'(a)') "Error, order of polynomial must be less then the number of entered points"
+    else
+
+       L = N+1
+       do i = 1,L
+          do j = 1,L
+             A(i,j) = x(i)**(L-j)
+          end do
+          B(i,1) = y(i)
+       end do
+
+       call getrf(A,ipiv)
+       call getrs(A,ipiv,B)
+
+       c(:) = B(:,1)
+
+    end if
+
+  end subroutine polyfit
+
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                            Eulers method                            !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Eulers method for solving 1 or N coupled DE's                       !
+  !---------------------------------------------------------------------!
+
+  function EulerM(f,h,t0,y0)
+    use kinds
+    implicit none
+
+    real(DP),intent(in) :: h,t0,y0
+    interface
+       function f(t,y)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: t,y
+       end function f
+    end interface
+    real(DP) :: EulerM
+
+    EulerM = h*f(t0,y0)+y0
+
+  end function EulerM
+
+  function eulerMND(f,h,t0,y0)
+    use kinds
+    implicit none
+
+    real(DP),intent(in)              :: t0,h
+    real(DP),dimension(:),intent(in) :: y0
+    interface
+       function f(t0,y0,nEq)
+         use kinds
+         implicit none
+         integer,intent(in)    :: nEq
+         real(DP),intent(in)   :: t0,y0(nEq)
+         real(DP),dimension(nEq) :: f
+       end function f
+    end interface
+    real(DP),dimension(size(y0)) :: eulerMND
+    integer :: nEq
+
+    nEq = size(y0)
+    eulerMND = h*f(t0,y0,nEq)+y0
+
+  end function eulerMND
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                       Runge Kutta 4th Order                         !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Runge Kutta calculation for input function(s). For a single step    !
+  ! or a range of specified values. Algorithims for a single DE or      !
+  ! N coupled DE's.                                                     !
+  !---------------------------------------------------------------------!
+
+  function rk4(f,h,t0,y0)
+    use kinds
+    implicit none
+
+    real(DP),intent(in) :: h,t0,y0
+    interface
+       function f(t,y)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: t,y
+       end function f
+    end interface
+    real(DP) :: rk4
+
+    real(DP) :: k1,k2,k3,k4
+
+    k1 = f(t0,y0)
+    k2 = f(t0+0.5_dp*h,y0+0.5_dp*h*k1)
+    k3 = f(t0+0.5_dp*h,y0+0.5_dp*h*k2)
+    k4 = f(t0+h,y0+k3*h)
+    rk4 = y0 + (1/6.0_dp)*(k1+2*k2+2*k3+k4)*h
+
+  end function rk4
+
+  function rk4N(f,h,t0,y0)
+    use kinds
+    implicit none
+
+    real(DP),intent(in)              :: t0,h
+    real(DP),dimension(:),intent(in) :: y0
+    interface
+       function f(t0,y0,nEq)
+         use kinds
+         implicit none
+         integer,intent(in)    :: nEq
+         real(DP),intent(in)   :: t0,y0(nEq)
+         real(DP),dimension(nEq) :: f
+       end function f
+    end interface
+    real(DP),dimension(size(y0)) :: rk4N
+
+    real(DP),dimension(size(y0)) :: k1,k2,k3,k4
+    integer :: nEq
+
+    nEq = size(y0)
+    k1 = f(t0,y0,nEq)
+    k2 = f(t0 + 0.5_DP*h,y0 + 0.5_DP*h*k1,nEq)
+    k3 = f(t0 + 0.5_DP*h,y0 + 0.5_DP*h*k2,nEq)
+    k4 = f(t0 + h,y0 + h*k3,nEq)
+
+    rk4N = y0 + (1/6.0_DP)*(k1 + 2*k2 + 2*k3 + k4)*h
+
+  end function rk4N
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                               Guess Zero                            !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Returns the points where a function changes sign. Can be an input   !
+  ! function of an input set of values.                                 !
+  !---------------------------------------------------------------------!
+
+  function guessZero(fvals)
+    use Kinds
+    implicit none
+    real(DP),dimension(:),intent(in) :: fvals
+    integer                          :: GuessZero
+
+    integer                          :: jj
+
+    do jj=3,size(fvals)
+       if ( sign( fvals(jj-1)/abs(fvals(jj-1)) , fvals(jj)/abs(fvals(jj)) ) .ne. &
+            sign( fvals(jj-2)/abs(fvals(jj-2)) , fvals(jj-1)/abs(fvals(jj-1)) ) ) exit
+    end do
+
+    GuessZero = jj
+
+  end function GuessZero
+
+  function guessZeroNew(f,a,b)
+    use kinds
+    implicit none
+
+    real(DP),intent(in) :: a,b
+    real(DP)            :: GuessZeroNew
+    interface
+       function f(x)
+         use kinds
+         implicit none
+         real(DP),intent(in) :: x
+         real(DP)            :: f
+       end function f
+    end interface
+
+    real(DP) :: h,fval
+    integer :: i,sign,newsign,N
+
+    h = a*1e-4
+    N = int((b-a)/h)
+    fval = f(a)
+    sign = int(fval/abs(fval))
+
+    do i = 1,N
+       fval = f(a+i*h)
+       newsign = int(fval/abs(fval))
+       if ( newsign .ne. sign ) exit
+    end do
+    if ( i .eq. N ) then
+       write(*,*) "Error Max itterations reached"
+    else
+       GuessZeroNew = a+i*h
+    end if
+
+  end function GuessZeroNew
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                         Newtons Method                              !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Newtons method for an input function of 1 variable                  !
+  !                                                                     !
+  !                 CODE WRITTEN BY CURTIS ABELL                        !
+  !---------------------------------------------------------------------!
+
+  function newton1D(fn,guess)
+    use Kinds
+    implicit none
+    real(DP) :: newton1D
+    interface
+       function fn(x)
+         use kinds
+         implicit none
+         real(DP)             :: fn
+         real(DP), intent(in) :: x
+       end function fn
+    end interface
+    real(DP) :: guess
+    ! Local Variables
+    real(DP) :: newt_tol = 1e-6
+    real(DP) :: h ! = 1e-6_DP
+    real(DP) :: fx, fxfh,fxbh, dfdx
+    integer :: attempt
+    integer :: attempt_limit = 20
+    logical :: verbose = .false.
+
+    if (verbose) write(*,*) 'Newton-Raphson Method'
+    h = guess * 1.0e-6_DP
+    newton1D = guess
+    attempt = 1
+
+    do
+       fx = fn(newton1D)
+       if (abs(fx) <= newt_tol) then
+          if (verbose) then
+             write(*,'(a,i3,a)') 'Success after', attempt, ' attempts.'
+             write(*,*) 'Zero  = ', newton1D
+          end if
+          exit
+       else if (attempt >= attempt_limit) then
+          write(*,*) 'Failed, change initial guess or increase attempt limit.'
+          exit
+       end if
+
+       fxfh = fn(newton1D + h/2)
+       fxbh = fn(newton1D - h/2)
+       dfdx = (fxfh-fxbh) / h
+       newton1D = newton1D - fx / dfdx
+
+       attempt = attempt + 1
+    end do
+  end function newton1D
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                               Linspace                              !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Creates a linear space of points. See matlab documentation for      !
+  ! further details.                                                    !
+  !---------------------------------------------------------------------!
+
+  function linspace(start,finish,N)
+    integer                :: N
+    real(DP), intent(in)   :: start, finish
+    real(DP), dimension(N) :: linspace
+
+    real(DP)               :: int
+    integer                :: i
+
+    linspace(1) = start
+    linspace(N) = finish
+    int  = (real(finish)-start)/(N-1)
+
+    do i=2,N-1
+       linspace(i)=linspace(i-1)+int
+    end do
+
+  end function linspace
+
+  function linspaceReal(start,finish,N)
+    integer                :: N
+    real, intent(in)       :: start, finish
+    real, dimension(N)     :: linspaceReal
+
+    real(DP)               :: int
+    integer                :: i
+
+    linspaceReal(1) = start
+    linspaceReal(N) = finish
+    int  = (real(finish)-start)/(N-1)
+
+    do i=2,N-1
+       linspaceReal(i)=linspaceReal(i-1)+int
+    end do
+
+  end function linspaceReal
+
+  function linspaceInt(start,finish,N)
+    integer                :: N
+    integer, intent(in)       :: start, finish
+    integer, dimension(N)     :: linspaceInt
+
+    real(DP)               :: int
+    integer                :: i
+
+    linspaceInt(1) = start
+    linspaceInt(N) = finish
+    int  = (real(finish)-start)/(N-1)
+
+    do i=2,N-1
+       linspaceInt(i)=linspaceInt(i-1)+int
+    end do
+
+  end function linspaceInt
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                          Finite difference                          !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Numerically calculates the derivative with finite difference        !
+  !---------------------------------------------------------------------!
+
+  function deriv(f,x0)
+    use Kinds
+    implicit none
+    real(DP)                 :: deriv
+    interface
+       function f(x)
+         use kinds
+         implicit none
+         real(DP)            :: f
+         real(DP),intent(in) :: x
+       end function f
+    end interface
+    real(DP),intent(in)      :: x0
+    real(DP)                 :: h,fxfh,fxbh
+
+    h     = x0*1e-6_DP
+    fxfh  = f(x0+h/2)
+    fxbh  = f(x0-h/2)
+    deriv = (fxfh-fxbh)/h
+
+  end function deriv
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                      QuadPack Integral wrapper                      !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Wrappers for the Quadpack integral routine shown above.             !
+  !---------------------------------------------------------------------!
+
+
+  function integral(f, a, b, absErr, relErr)
+    implicit none
+    real(DP)                  :: integral
+    interface                                   ! Interfaces: Sections 5.11, 5.18
+       function f(x)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: x
+       end function f
+    end interface
+    real(DP), intent(in)      :: a, b, absErr, relErr
+
+    !  Local variables
+    !
+    real(DP)                  :: integResult, bound=0.0_DP
+    integer                   :: inf
+
+    !  Determine if the limits include infinity and call qagi if nessary
+    !
+    if (a == -Infty) then
+       if (b == Infty) then
+          inf=2
+          call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
+          if ( ifail /= 0 ) then
+             write(*,*) 'Warning from qagi: the error code is ', ifail
+          end if
+       else
+          inf = -1
+          bound = b
+          call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
+          if ( ifail /= 0 ) then
+             write(*,*) 'Warning from qagi: the error code is ', ifail
+          end if
+       end if
+    else
+       if (b == Infty) then
+          inf = 1
+          bound = a
+          call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
+          if ( ifail /= 0 ) then
+             write(*,*) 'Warning from qagi: the error code is ', ifail
+          end if
+       else
+          call qags(f, a, b, absErr, relErr, integResult, errEstimate, neval, ifail)
+          if ( ifail /= 0 ) then
+             write(*,*) 'Warning from qags: the error code is ', ifail
+          end if
+       end if
+    end if
+    integral = integResult
+
+  end function integral
+
+
+  function integralToInfty(f, bound, absErr, relErr)
+    implicit none
+    real(DP)                  :: integralToInfty
+    interface
+       function f(x)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: x
+       end function f
+    end interface
+    real(DP), intent(in)      :: bound, absErr, relErr
+
+    !  Local variables
+    !
+    real(DP)                  :: integResult
+    integer, parameter        :: inf=1
+
+    call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
+    if ( ifail /= 0 ) then
+       write(*,*) 'Warning from qagi: the error code is ', ifail
+    end if
+    integralToInfty = integResult
+
+  end function integralToInfty
+
+
+  function integralOf(f, absErr, relErr)
+    implicit none
+    real(DP)                  :: integralOf
+    interface
+       function f(x)
+         implicit none
+         integer,  parameter  :: DP = kind(1.0d0)
+         real(DP)             :: f
+         real(DP), intent(in) :: x
+       end function f
+    end interface
+    real(DP), intent(in)      :: absErr, relErr
+
+    !  Local variables
+    !
+    real(DP)                  :: integResult, bound=0.0d0
+    integer, parameter        :: inf=2
+
+    call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
+    if ( ifail /= 0 ) then
+       write(*,*) 'Warning from qagi: the error code is ', ifail
+    end if
+    integralOf = integResult
+
+  end function integralOf
+
+
+  function integralBreakPts(f, a, b, absErr, relErr, nBreakPts, BreakPts)
+    implicit none
+    real(DP)                  :: integralBreakPts
+    interface
+       function f(x)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: x
+       end function f
+    end interface
+    real(DP), intent(in)      :: a, b, absErr, relErr
+    integer,  intent(in)      :: nBreakPts
+    real(DP), intent(in), dimension(nBreakPts) :: BreakPts
+
+    !  Local variables
+    !
+    real(DP)                         :: integResult
+    real(DP), dimension(nBreakPts+2) :: BreakPtsP2        ! Automatic array.  Similar to allocatable arrays.
+
+    BreakPtsP2(1:nBreakPts) = BreakPts(1:nBreakPts)       ! Array section limits are required here.
+
+    call qagp(f, a, b, nBreakPts+2, BreakPtsP2, absErr, relErr, integResult, errEstimate, neval, ifail)
+    if ( ifail /= 0 ) then
+       write(*,*) 'Warning from qagp: the error code is ', ifail
+    end if
+    integralBreakPts = integResult
+
+  end function integralBreakPts
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                      Principle Value Integrator                     !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+  ! Evaluates the Cauchy-Principle value integral for f(x)/(x-c)        !
+  !---------------------------------------------------------------------!
+
+  function integralPV(f, c, a, b, absErr, relErr)
+    use kinds
+    implicit none
+    real(DP)                  :: integralPV
+    interface
+       function f(x)
+         use kinds
+         implicit none
+         real(DP)             :: f
+         real(DP), intent(in) :: x
+       end function f
+    end interface
+    real(DP), intent(in)      :: c, a, b, absErr, relErr
+
+    ! ---------------------------Local Variables--------------------------
+    real(DP)                  :: res, errRequest
+    integer                   :: inf ! -1 for -infty, +1 for infty
+    ! Used to split the integral if a or b are at plus/minux infty
+    !    into semi-infinite integrals and a PV integral. This is done
+    !    by moving the upper and/or lower bounds of the integral
+    !    away from the pole and splitting the integral into 2 (3).
+    real(DP)                  :: intBoundaryHigh, intBoundaryLow
+
+    integralPV = 0.0_DP
+    intBoundaryLow = a
+    intBoundaryHigh = b
+
+    ! Integral from -Infty to lower bound
+    if (a.eq.-Infty) then
+       inf = -1
+       if (abs(c).lt.2.0_DP) then
+          intBoundaryLow = -4.0_DP
+       else
+          intBoundaryLow = c / 2.0_DP
+       end if
+       call qagi(f, intBoundaryLow, inf, absErr, relErr, res &
+            & , errEstimate, neval, ifail)
+       integralPV = integralPV + res
+       if ( ifail.ne.0 ) then
+          write(*,*) ' Warning from qagi from -Infty: the error code is ', ifail
+       end if
+    end if
+
+    ! Integral from upper bound to Infty
+    if (b.eq.Infty) then
+       inf = 1
+       if (abs(c).lt.2.0_DP) then
+          intBoundaryHigh = 4.0_DP
+       else
+          intBoundaryHigh = c * 2.0_DP
+       end if
+       call qagi(fNonSingular, intBoundaryHigh, inf, absErr  &
+            & , relErr, res, errEstimate, neval, ifail)
+       integralPV = integralPV + res
+       if ( ifail.ne.0 ) then
+          write(*,*) ' Warning from qagi to Infty: the error code is ', ifail
+       end if
+    end if
+
+    ! Principle-value integral
+    call qawc(f, intBoundaryLow, intBoundaryHigh, c, absErr, relErr &
+         & , res, errEstimate, neval, ifail)
+    if ( ifail.ne.0 ) then
+       write(*,*) ' Warning from qawc: the error code is ', ifail
+    end if
+    integralPV = integralPV + res
+
+  contains
+    ! Function to pass to the semi-infinite integrals
+    !    - now includes the (x-c) on the denominator
+    function fNonSingular(x)
+      use kinds
+      implicit none
+      real(DP) :: fNonSingular
+      real(DP), intent(in) :: x
+      fNonSingular = f(x)/(x - c)
+    end function fNonSingular
+
+  end function integralPV
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                       Multi-Dimensional Pyplots                     !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  subroutine pyplotN(x,title,xaxis,yaxis,legend)
+    use Kinds
+    implicit none
+    character(len=*),intent(in),optional              :: xaxis,yaxis,title
+    character(len=*),dimension(:),intent(in),optional :: legend
+    real(DP),dimension(:,:),intent(in)                :: x
+
+    character(len=10),dimension(size(x(1,:))/2)       :: ld
+    character(len=14)                                 :: fmt,xlabel,ylabel,name
+    integer                                           :: ii,j,N,L
+
+    N = size(x,dim=2)
+    L = size(ld)
+
+    open(100,file="titles.dat",action="write", &
+         & status="replace",form="formatted")
+    open(101,file="output.dat",action="write", &
+         & status="replace",form="formatted")
+
+    name   = ""
+    xlabel = ""
+    ylabel = ""
+    ld     = ""
+
+    if(present(title)) name   = title
+    if(present(xaxis)) xlabel = xaxis
+    if(present(yaxis)) ylabel = yaxis
+    if(present(legend))ld(1:L)= legend(1:L)
+
+    write(100,'(a20)') name
+    write(100,'(a15)') xlabel
+    write(100,'(a15)') ylabel
+    write(fmt,'(a1,i1,a7)') '(', N, 'es20.9)'
+
+    do ii=1,L
+       write(100,'(a12)') ld(ii)
+    end do
+
+    do ii=1,size(x,dim=1)
+       write(101,fmt) x(ii,:)
+    end do
+
+    close(100)
+    close(101)
+
+  end subroutine pyplotN
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                          Standard Pyplots                           !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  subroutine pyplotXY(x,y,title,xaxis,yaxis)
+    use Kinds
+    implicit none
+    character(len=*),intent(in),optional :: xaxis,yaxis,title
+    real(DP),dimension(:),intent(in)     :: x,y
+
+    character(len=14)                    :: xlabel,ylabel,name,ld
+    integer                              :: ii
+
+    open(100,file="titles.dat",action="write", &
+         & status="replace",form="formatted")
+    open(101,file="output.dat",action="write", &
+         & status="replace",form="formatted")
+
+    name   = ""
+    xlabel = ""
+    ylabel = ""
+    ld     = "empty"
+
+    if(present(title)) name   = title
+    if(present(xaxis)) xlabel = xaxis
+    if(present(yaxis)) ylabel = yaxis
+
+    write(100,'(a20)') name
+    write(100,'(a15)') xlabel
+    write(100,'(a15)') ylabel
+    write(100,'(a7)') ld
+
+    do ii=1,size(x)
+       write(101,'(2es20.9)') x(ii), y(ii)
+    end do
+
+    close(100)
+    close(101)
+
+  end subroutine pyplotXY
+
+  subroutine pyplotXYZW(x,y,z,w,title,xaxis,yaxis)
+    use Kinds
+    implicit none
+    character(len=*),intent(in),optional :: xaxis,yaxis,title
+    real(DP),dimension(:),intent(in)     :: x,y,z,w
+
+    character(len=14)                    :: xlabel,ylabel,name,ld
+    integer                              :: ii
+
+    open(100,file="titles.dat",action="write", &
+         & status="replace",form="formatted")
+    open(101,file="output.dat",action="write", &
+         & status="replace",form="formatted")
+
+    name   = ""
+    xlabel = ""
+    ylabel = ""
+    ld     = "empty"
+
+    if(present(title)) name   = title
+    if(present(xaxis)) xlabel = xaxis
+    if(present(yaxis)) ylabel = yaxis
+
+    write(100,'(a20)') name
+    write(100,'(a15)') xlabel
+    write(100,'(a15)') ylabel
+    write(100,'(a7)') ld
+    write(100,'(a7)') ld    
+
+    do ii=1,size(x)
+       write(101,'(4es20.9)') x(ii), y(ii), z(ii), w(ii)
+    end do
+
+    close(100)
+    close(101)
+
+  end subroutine pyplotXYZW
+
+end module numFort
+
+
+
+
+!==============================================================================
+!##############################################################################
+!==============================================================================

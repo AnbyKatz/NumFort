@@ -141,68 +141,8 @@ This will create a symbolic link for python3.7. Add the following to your .bashr
 #+END_SRC
 Now simply edit the BashFortran.sh file as specified and type ./BashFortran.sh to run the commands listed in the file (You may need to type /chmod +x bashFortran.sh/ to turn it into an executable. For a basic plotting routine when in the same directory as your FORTRAN file.
 ** NumFort
-- Download and move numFort repository files to specified location eg. /path/to/numFort/
-- Your final makefile should look something like this
-#+BEGIN_SRC shell
-# Directory to numFort
-# DO NOT USE ~ FOR THE HOME DIRECTORY IN THIS PATH, add those slashes
-DIR = /path/to/numFort/
-
-F90C = ifort
-F90FLAGS = -O2
-CFLAGS = -O2 -mkl
-
-LIBS = -lmkl_lapack95_lp64
-MYLIBS = -I$(DIR)
-
-# Comment out PLPLOT if it wasn't installed and all of its appearance's
-PLPLOT = -lplplotfortran -lplplot $$(pkg-config --cflags --libs plplot-fortran)
-
-%.o: %.f90
-	$(F90C) $(CFLAGS) -c $<
-
-# Library object files
-LIBOBJS = $(DIR)kinds.o\
-	$(DIR)lapack.o\
-	$(DIR)numFort.o\
-	$(DIR)PLplots.o # Comment out this line and remove a \ above if no PLPLOT
-
-# Own personal object files
-OBJS = 
-
-all: filename
-
-filename: filename.f90 $(OBJS)
-	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBOBJS) $(LIBS) $(MYLIBS) $(PLPLOT)
-
-# Dependencies
-
-clean:
-	rm *.o *.mod
-#+END_SRC
-- for the PLPLOT variable, plplot-fortran is the name of the pkg-config FORTRAN file located in installDir/lib/pkgconfig. It may have a different name for you (In this case for us it is called plplot-fortran.pc)
-
-- DIR is the directory where you have put all the numFort source code
-
-- The bash file /recompileEX.sh/ is an example of how to compile these libraries. Make a file called /recompile.sh/ and paste in the below template or the template in recompile or rename the /recompileEX.sh/ file. Edit as specified below and then type /bash recompile.sh/ in the terminal to compile the libraries. You may have to type it twice for unknown reasons.
-
-#+BEGIN_SRC shell
-#!/bin/bash
-
-# Example recompile file
-# type chmod +x recompileEx.sh and then ./recompileEX.sh to compile
-
-ifort -O2 -c kinds.f90
-ifort -O2 -mkl -c lapack.f90
-
-# Comment out this line if you wish to not use PLplot/haven't installed it
-# Edit the paths if you wish to use
-ifort -O2 -c PLplots.f90 -I/path/to/PLplotInstall/include/plplot -I/path/to/PLplotInstall/lib/fortran/modules/plplot -L/path/to/PLplotInstall/lib -lplplotfortran -lplplot
-
-ifort -O2 -mkl -c numFort.f90 -lmkl_lapack95_lp64 
-#+END_SRC
-
-- Include your own module files under the variable *OBJS*. Bonza, you should be ready to go
+- Simply run the install file with ./install.sh or bash install.sh (same for the uninstall file. Follow the prompts and you're good. When using you may use any of the modules listed in the documentation. Copy the makefile template found after installation into your directory with you .f90 file.
+- Comment or uncomment the variable for PLPLOT if you wish to use it
 
 * Documentation
 The four modules you may include are /kinds/, /lapack95/, /numFort/ and /PLplots/. Simply include in any .f90 file via a simple use statement as per usual.
