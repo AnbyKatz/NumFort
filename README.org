@@ -142,7 +142,7 @@ This will create a symbolic link for python3.7. Add the following to your .bashr
 Now simply edit the BashFortran.sh file as specified and type ./BashFortran.sh to run the commands listed in the file (You may need to type /chmod +x bashFortran.sh/ to turn it into an executable. For a basic plotting routine when in the same directory as your FORTRAN file.
 ** NumFort
 - Simply run the install file with ./install.sh or bash install.sh (same for the uninstall file. Follow the prompts and you're good. When using you may use any of the modules listed in the documentation. Copy the makefile template found after installation into your directory with you .f90 file.
-- Comment or uncomment the variable for PLPLOT if you wish to use it
+- The install will create a directory with a template bash and makefile for you to use for you .f90 files
 
 * Documentation
 The four modules you may include are /kinds/, /lapack95/, /numFort/ and /PLplots/. Simply include in any .f90 file via a simple use statement as per usual.
@@ -455,7 +455,7 @@ Numerically calculates a Cauchy-Principle value integral using Gaussian quadratu
   value = integralPV(f,c,a,b,absErr,relErr)
 #+END_SRC
 ** pythonPlot
-python plotting wrappers, simply copy /pyplots.py/ (or customPlot.py if you're ready for danger) into the necessary directory and use the following command (For custom plots you will have to manually run the python file or better yet, see the Pyplots folder for the BashFortran file and simply run that instead).
+python plotting wrappers, simply copy the /makefile/ and /bashFortran.sh/ files from the InsertCode directory into the necessary directory and then on execution of /make all/, the necessary plotting files will be created. Use the following commands inside your fortran files (see the bashFortran file to decide whether you wish to use custom plotting or automatic plotting)
 
 |----------+-------------------------|
 | Variable | Description             |
