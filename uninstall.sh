@@ -1,12 +1,10 @@
 #!/bin/bash
 
-echo "Removing installed files"
-
+echo "Removing installed files (if they exist)"
 rm recompile.sh
 rm makefile
-rm pyplots.py
-rm customPlot.py
 rm bashFortran.sh
-rm -r Pyplots
+rm -r InsertCode
+rm *.py
 rm *.o
 rm *.mod

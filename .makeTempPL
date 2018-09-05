@@ -28,5 +28,23 @@ filename: filename.f90 $(OBJS)
 
 # Dependencies
 
+# Creates plotting files
+customPlot: 
+	if [ ! -f customPlot.py ] ; \
+	then \
+		touch customPlot.py; \
+		cat $(DIR)/customPlot.py >> customPlot.py; \
+		chmod +x customPlot.py; \
+	fi;
+
+pyplot:
+	if [ ! -f pyplots.py ] ; \
+	then \
+		touch pyplots.py; \
+		cat $(DIR)/pyplots.py >> pyplots.py; \
+		chmod +x pyplots.py; \
+	fi; 
+
 clean:
-	rm *.o *.mod
+	rm *.o *.mod\
+        rm customPlot.py pyplots.py
