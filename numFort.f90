@@ -7872,6 +7872,48 @@ contains
 
   !---------------------------------------------------------------------!
   !                                                                     !
+  !                            FFT Algorithim                           !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  ! In place Cooley-Tukey FFT
+  recursive subroutine fft(x)
+    complex(DP), dimension(:), intent(inout)  :: x
+    complex(DP)                               :: t
+
+    complex(DP), dimension(:), allocatable    :: even, odd
+    integer :: N
+    integer :: i
+ 
+    N=size(x)
+ 
+    if(N .le. 1) return
+ 
+    allocate(odd((N+1)/2))
+    allocate(even(N/2))
+ 
+    ! divide
+    odd  = x(1:N:2)
+    even = x(2:N:2)
+ 
+    ! conquer
+    call fft(odd)
+    call fft(even)
+ 
+    ! combine
+    do i=1,N/2
+       t=exp(cmplx(0.0_DP,-2.0_DP*pi*real(i-1,DP)/real(N,DP),DP))*even(i)
+       x(i)     = odd(i) + t
+       x(i+N/2) = odd(i) - t
+    end do
+ 
+    deallocate(odd)
+    deallocate(even)
+ 
+  end subroutine fft
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
   !                         Write data to a file                        !
   !                                                                     !
   !---------------------------------------------------------------------!
@@ -9165,8 +9207,8 @@ contains
 
   function linspaceInt(start,finish,N)
     integer                :: N
-    integer, intent(in)       :: start, finish
-    integer, dimension(N)     :: linspaceInt
+    integer, intent(in)    :: start, finish
+    integer, dimension(N)  :: linspaceInt
 
     real(DP)               :: int
     integer                :: i

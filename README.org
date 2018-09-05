@@ -127,7 +127,7 @@ This will create a symbolic link for python3.7. Add the following to your .bashr
 Now simply edit the BashFortran.sh file as specified and type ./BashFortran.sh to run the commands listed in the file (You may need to type /chmod +x bashFortran.sh/ to turn it into an executable. For a basic plotting routine when in the same directory as your FORTRAN file.
 ** NumFort
 - Simply run the install file with ./install.sh or bash install.sh (same for the uninstall file). Follow the prompts and you're good. When using you may use any of the modules listed in the documentation. Copy the makefile template found after installation into your directory with you .f90 file.
-- The install will create an example makefile, the commands /make all/, /make run1/ and /make run2/ are the important ones. Simply copy this makefile to your .f90 file and run said commands depending on your plotting needs
+- The install will create an example makefile, the commands /make all/, /make plot/ and /make plot2/ are the important ones. Simply copy this makefile to your .f90 file and run said commands depending on your plotting needs
 
 * Documentation
 The four modules you may include are /kinds/, /lapack95/, /numFort/ and /PLplots/. Simply include in any .f90 file via a simple use statement as per usual.

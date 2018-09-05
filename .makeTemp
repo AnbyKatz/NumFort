@@ -1,14 +1,10 @@
 
-# simply change filename to your filename where ever it appears
-# Commands list
-# make all  - your standard make all targets
-# make run1 - will run make all, run you executable and then the customPlot code
-# make run2 - will run make all, run you executable and then the pyplots code
-
+# Compiler Flags
 F90C = ifort
 F90FLAGS = -O2
 CFLAGS = -O2 -mkl
 
+# Lapack Libs
 LIBS = -lmkl_lapack95_lp64
 MYLIBS = -I$(DIR)
 
@@ -17,26 +13,31 @@ LIBOBJS = $(DIR)kinds.o\
 	$(DIR)lapack.o\
 	$(DIR)numFort.o
 
+# Own personal object files
+OBJS = 
+
+# Pattern Matching
 %.o: %.f90
 	$(F90C) $(CFLAGS) -c $<
 
 #--------------------------Editable MakeFile-------------------------
 
 
-# Own personal object files
-OBJS = 
-
 all: filename
-run1: all execute customPlot
-run2: all execute pyplots
 
 filename: filename.f90 $(OBJS)
 	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBOBJS) $(LIBS) $(MYLIBS)
-execute: 
-	./qmc1996CodeFit
 
+plot: filename.f90 $(OBJS)
+	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBOBJS) $(LIBS) $(MYLIBS)
+	./plot
+	make customPlot
+plot2: filename.f90 $(OBJS)
+	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBOBJS) $(LIBS) $(MYLIBS)
+	./plot2
+	make pyplots
 
-#-----------------------Creates Plotting files-----------------------
+# Custom Plot
 customPlot: 
 	if [ ! -f customPlot.py ] ; \
 	then \
@@ -44,8 +45,8 @@ customPlot:
 		cat $(DIR)/customPlot.py >> customPlot.py; \
 		chmod +x customPlot.py; \
 	fi; \
-        ./customPlot.py
-
+        ./customPlot.py 
+# Pyplots Plot
 pyplots:
 	if [ ! -f pyplots.py ] ; \
 	then \
