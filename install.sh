@@ -16,7 +16,6 @@ rm recompile.sh
 rm makefile
 rm pyplots.py
 rm customPlot.py
-rm -r InsertCode
 
 ####################################################################################
 
@@ -85,7 +84,6 @@ read pyVersion
 
 touch pyplots.py
 touch customPlot.py
-touch bashFortran.sh
 
 cat .pyplotTemp >> pyplots.py
 pypath=$(which python$pyVersion)
@@ -94,20 +92,8 @@ echo "#!$pypath" | cat - pyplots.py > temp && mv temp pyplots.py
 cat .customTemp >> customPlot.py
 echo "#!$pypath" | cat - customPlot.py > temp && mv temp customPlot.py
 
-echo "#!/bin/bash" >> bashFortran.sh
-echo "make all" >> bashFortran.sh
-echo "./filename" >> bashFortran.sh
-echo "# Uncomment whichever plotting form you would like" >> bashFortran.sh
-echo "# python$pyVersion pyplots.py" >> bashFortran.sh
-echo "# python$pyVersion customPlot.py" >> bashFortran.sh
-
 chmod +x pyplots.py
 chmod +x customPlot.py
-chmod +x bashFortran.sh
-
-mkdir InsertCode
-cp makefile InsertCode/makefile
-cp bashFortran.sh InsertCode/bashFortran.sh
 
 echo ""
 echo "Plotting code may be found in Pyplots directory"

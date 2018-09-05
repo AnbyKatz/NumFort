@@ -114,22 +114,7 @@ import matplotlib.pyplot as pypl
 import numpy as np
 import math as m
 #+END_SRC
-as long as no errors pop up you should be fine. when using Pyplots, Copy and paste the code inside the Pyplots directory to your *.f90 file you wish to run and simply type bash bashFortran.sh or ./bashFortran to run. You may need to edit the file a little however, here is the basic template
-#+BEGIN_SRC shell
-  #!/bin/bash
-
-  make all
-
-  # Put the *.f90 file name here
-  ./filename
-
-  # Comment out the one you aren't using
-  # Change to the python version you are using
-
-  python3.7 pyplots.py
-  # python3.7 customPlot.py
-#+END_SRC
-Write the following lines in the terminal
+as long as no errors pop up you should be fine. Write the following lines in the terminal
 #+BEGIN_SRC shell
   cd
   mkdir bin
@@ -141,8 +126,8 @@ This will create a symbolic link for python3.7. Add the following to your .bashr
 #+END_SRC
 Now simply edit the BashFortran.sh file as specified and type ./BashFortran.sh to run the commands listed in the file (You may need to type /chmod +x bashFortran.sh/ to turn it into an executable. For a basic plotting routine when in the same directory as your FORTRAN file.
 ** NumFort
-- Simply run the install file with ./install.sh or bash install.sh (same for the uninstall file. Follow the prompts and you're good. When using you may use any of the modules listed in the documentation. Copy the makefile template found after installation into your directory with you .f90 file.
-- The install will create a directory with a template bash and makefile for you to use for you .f90 files
+- Simply run the install file with ./install.sh or bash install.sh (same for the uninstall file). Follow the prompts and you're good. When using you may use any of the modules listed in the documentation. Copy the makefile template found after installation into your directory with you .f90 file.
+- The install will create an example makefile, the commands /make all/, /make run1/ and /make run2/ are the important ones. Simply copy this makefile to your .f90 file and run said commands depending on your plotting needs
 
 * Documentation
 The four modules you may include are /kinds/, /lapack95/, /numFort/ and /PLplots/. Simply include in any .f90 file via a simple use statement as per usual.

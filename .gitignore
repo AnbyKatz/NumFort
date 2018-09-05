@@ -1,7 +1,5 @@
 recompile.sh
 makefile
-InsertCode/
-bashFortran.sh
 *.mod
 *.o
 *.py
