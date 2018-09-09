@@ -30,10 +30,6 @@ plot: filename.f90 $(OBJS)
 	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBS) 
 	./plot
 	make customPlot
-plot2: filename.f90 $(OBJS)
-	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBS) 
-	./plot2
-	make pyplots
 
 # Custom Plot
 customPlot: 
@@ -53,4 +49,4 @@ pyplots:
         ./pyplots.py
 
 clean:
-	rm *.o *.mod pyplots.py
+	rm *.o *.mod
