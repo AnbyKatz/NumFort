@@ -67,7 +67,7 @@ echo ""
 echo "#!/bin/bash" >> recompile.sh
 echo "ifort -O2 -c kinds.f90" >> recompile.sh
 echo "ifort -O2 -mkl -c lapack.f90" >> recompile.sh
-
+echo "ifort -O2 -c minf.f90" >> recompile.sh
 if [ "$stringIn" == "y" ]
 then    
 echo "ifort -O2 -c PLplots.f90 -I$PLplotPath/include/plplot -I$PLplotPath/lib/fortran/modules/plplot -L$PLplotPath/lib -lplplotfortran -lplplot" >> recompile.sh

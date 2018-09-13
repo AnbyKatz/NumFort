@@ -12,6 +12,7 @@
 ! Below contains a list of the function names inside numFort for easier       !
 ! navigation purposes. Jump to the bottom for numFort.                        !
 !                                                                             !
+! - FFT                                                                       !
 ! - writeData                                                                 !
 ! - bessel                                                                    !
 ! - Trace                                                                     !
@@ -20,12 +21,16 @@
 ! - meshgrid                                                                  !
 ! - splinefit                                                                 !
 ! - polyfit                                                                   !
+! - polycal                                                                   !
+! - polyInt                                                                   !
 ! - Euler                                                                     !
 ! - rk4                                                                       !
 ! - guessZero                                                                 !
 ! - Newton1D                                                                  !
 ! - linspace                                                                  !
 ! - deriv                                                                     !
+! - trapZ                                                                     !
+! - minimize                                                                  !
 ! - integral                                                                  !
 ! - integralPV                                                                !
 ! - pyplot                                                                    !
@@ -7845,11 +7850,8 @@ module numFort
   interface rk4
      module procedure rk4,rk4N
   end interface rk4
-  interface splinefit
-     module procedure splinefit,splinefitCoeff
-  end interface splinefit
   interface GuessZero
-     module procedure GuessZero,GuessZeroNew
+     module procedure GuessZero,GuessZeroF
   end interface GuessZero
   interface Trace
      module procedure TraceDP,TraceSP,TraceComplexDP,TraceComplexSP
@@ -7884,32 +7886,32 @@ contains
     complex(DP), dimension(:), allocatable    :: even, odd
     integer :: N
     integer :: i
- 
+
     N=size(x)
- 
+
     if(N .le. 1) return
- 
+
     allocate(odd((N+1)/2))
     allocate(even(N/2))
- 
+
     ! divide
     odd  = x(1:N:2)
     even = x(2:N:2)
- 
+
     ! conquer
     call fft(odd)
     call fft(even)
- 
+
     ! combine
     do i=1,N/2
        t=exp(cmplx(0.0_DP,-2.0_DP*pi*real(i-1,DP)/real(N,DP),DP))*even(i)
        x(i)     = odd(i) + t
        x(i+N/2) = odd(i) - t
     end do
- 
+
     deallocate(odd)
     deallocate(even)
- 
+
   end subroutine fft
 
   !---------------------------------------------------------------------!
@@ -7924,7 +7926,7 @@ contains
     real(DP),dimension(:),intent(in)     :: x,y
     character(len=*),intent(in),optional :: title
     integer :: ii,N
-    
+
     N = size(x)
     if (present(title)) then
        open(101,file=title,action="write", &
@@ -7936,7 +7938,7 @@ contains
     do ii = 1,N
        write(101,'(2e20.10)') x(ii), y(ii)
     end do
-    
+
     close(101)
 
   end subroutine writeDataXY
@@ -7947,7 +7949,7 @@ contains
     real(DP),dimension(:),intent(in)     :: x,y,z,w
     character(len=*),intent(in),optional :: title
     integer :: ii,N
-    
+
     N = size(x)
     if (present(title)) then
        open(101,file=title,action="write", &
@@ -7959,7 +7961,7 @@ contains
     do ii = 1,N
        write(101,'(4e20.10)') x(ii), y(ii), z(ii), w(ii)
     end do
-    
+
     close(101)
 
   end subroutine writeDataXYZW
@@ -7971,7 +7973,7 @@ contains
     character(len=*),intent(in),optional   :: title
     character(len=14)                      :: fmt
     integer :: ii,N
-    
+
     N = size(x,dim=2)
     write(fmt,'(a1,i1,a7)') '(', N, 'es20.9)'
 
@@ -7985,11 +7987,10 @@ contains
     do ii = 1,size(x,dim=1)
        write(101,fmt) x(ii,:)
     end do
-    
+
     close(101)
 
   end subroutine writeDataN
-
 
   !---------------------------------------------------------------------!
   !                                                                     !
@@ -8006,7 +8007,7 @@ contains
     real(DP)            :: val
 
     if( n > 5 .or. n < 0 ) then
-       write(*,'(a)') "Error: n must be an integer between 0 and 3"
+       write(*,'(a)') "Error: n must be an integer between 0 and 5"
     else
 
        select case(n)
@@ -8773,49 +8774,13 @@ contains
   ! Uses Lapack for necessary linear algebra                            !
   !---------------------------------------------------------------------!
 
-  subroutine splinefit(x,y,intpts,intvals)
+  function splinefit(x,y) result(c)
     use kinds
     use LAPACK95
     implicit none
 
     real(DP),dimension(:),intent(in)    :: x,y
-    real(DP),dimension(:),intent(in)    :: intpts
-    real(DP),dimension(:),intent(out)   :: intvals
-
-    integer                             :: N
-    real(DP),dimension(:,:),allocatable :: A,B
-    integer ,dimension(:)  ,allocatable :: ipiv
-    integer                             :: i,j
-
-    N = size(x)
-    allocate(A(N,N),B(N,1),ipiv(N))
-
-    B(:,1) = y(:)
-    A(:,1) = 1.0_DP
-    A(:,2) = x(:)
-    do i = 1,N
-       do j = 3,N
-          A(i,j) = abs(x(i)-x(j-1))
-       end do
-    end do
-    call getrf(A,ipiv)
-    call getrs(A,ipiv,B)
-    do i = 1,size(intpts)
-       intvals(i) = B(1,1) + B(2,1)*intpts(i)+&
-            & sum( B(3:N,1)*abs(intpts(i)-x(2:N-1)) )
-    end do
-
-    deallocate(A,B,ipiv)
-
-  end subroutine splinefit
-
-  subroutine splinefitCoeff(x,y,c)
-    use kinds
-    use LAPACK95
-    implicit none
-
-    real(DP),dimension(:),intent(in)    :: x,y
-    real(DP),dimension(:),intent(out)   :: c
+    real(DP),dimension(size(x))         :: c
 
     integer                             :: N
     real(DP),dimension(:,:),allocatable :: A,B
@@ -8839,22 +8804,19 @@ contains
 
     deallocate(A,B,ipiv)
 
-  end subroutine splinefitCoeff
+  end function splinefit
 
-  function splineVals(c,xj,x)
+  function splineVal(c,xj,x)
     use kinds
     implicit none
 
     real(DP),dimension(:),intent(in) :: c,xj
-    real(DP),intent(in) :: x
-    real(DP) :: splinevals
+    real(DP),intent(in)              :: x
+    real(DP)                         :: splineval
 
-    integer :: N
+    splineval = c(1)+c(2)*x+sum(c(3:size(c))*abs(x-xj(2:size(c)-1)))
 
-    N = size(c)
-    splinevals = c(1)+c(2)*x+sum(c(3:N)*abs(x-xj(2:N-1)))
-
-  end function splineVals
+  end function splineVal
 
   !---------------------------------------------------------------------!
   !                                                                     !
@@ -8868,62 +8830,112 @@ contains
   ! Uses Lapack for necessary linear algebra                            !
   !---------------------------------------------------------------------!
 
-  function polyCal(N,c,x)
+  function polyVal(c,x) result(val)
+    use kinds
     implicit none
 
-    integer ,intent(in)                :: N
-    real(DP),dimension(N+1),intent(in) :: c
-    real(DP)               ,intent(in) :: x
+    real(DP),dimension(:),intent(in) :: c
+    real(DP)             ,intent(in) :: x
 
-    real(DP)                           :: polycal
-    real(DP),dimension(N+1)            :: xx
-    integer ,dimension(N+1)            :: indexx
-    integer                            :: i
+    real(DP)                           :: val
+    integer                            :: i,powers(size(c))
 
-    do i = 0,N
-       indexx(i+1) = N-i
-    end do
-    xx = x**indexx
-    polycal = sum(c*xx)
+    powers = linspace(0,size(c)-1,size(c))
+    val = sum(c*x**powers)
 
-  end function polycal
+  end function polyVal
 
-  subroutine polyfit(x,y,N,c)
+  function polyFit(vx, vy, d)
     use kinds
     use LAPACK95
     implicit none
 
-    integer ,intent(in)              :: N
-    real(DP),dimension(:),intent(in) :: x,y
-    real(DP),dimension(N+1),intent(out) :: c
+    integer, intent(in)                   :: d
+    real(DP), dimension(d+1)              :: polyfit
+    real(DP), dimension(:), intent(in)    :: vx, vy
 
-    real(DP),dimension(N+1,N+1) :: A
-    real(DP),dimension(N+1,1) :: B
-    integer ,dimension(N+1)   :: ipiv
+    real(DP), dimension(:,:), allocatable :: X
+    real(DP), dimension(:,:), allocatable :: XT
+    real(DP), dimension(:,:), allocatable :: XTX
 
-    integer :: i,j,L
+    integer :: i, j
 
-    if ( N > size(x) ) then
-       write(*,'(a)') "Error, order of polynomial must be less then the number of entered points"
-    else
+    integer     :: n, lda, lwork
+    integer :: info
+    integer, dimension(:), allocatable :: ipiv
+    real(DP), dimension(:), allocatable :: work
 
-       L = N+1
-       do i = 1,L
-          do j = 1,L
-             A(i,j) = x(i)**(L-j)
-          end do
-          B(i,1) = y(i)
+    n = d+1
+    lda = n
+    lwork = n
+
+    allocate(ipiv(n))
+    allocate(work(lwork))
+    allocate(XT(n, size(vx)))
+    allocate(X(size(vx), n))
+    allocate(XTX(n, n))
+
+    ! prepare the matrix
+    do i = 0, d
+       do j = 1, size(vx)
+          X(j, i+1) = vx(j)**i
        end do
+    end do
 
-       call getrf(A,ipiv)
-       call getrs(A,ipiv,B)
+    XT  = transpose(X)
+    XTX = matmul(XT, X)
 
-       c(:) = B(:,1)
-
+    ! calls to LAPACK subs DGETRF and DGETRI
+    call DGETRF(n, n, XTX, lda, ipiv, info)
+    if ( info /= 0 ) then
+       print *, "problem"
+       return
+    end if
+    call DGETRI(n, XTX, lda, ipiv, work, lwork, info)
+    if ( info /= 0 ) then
+       print *, "problem"
+       return
     end if
 
-  end subroutine polyfit
+    ! outputs lower order coefficients first
+    polyfit = matmul( matmul(XTX, XT), vy)
 
+    deallocate(ipiv)
+    deallocate(work)
+    deallocate(X)
+    deallocate(XT)
+    deallocate(XTX)
+
+  end function polyfit
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                         Polynomial Integral                         !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  function polyInt(c,a,b) result(val)
+    use kinds
+    implicit none
+
+    real(DP), dimension(:),intent(in) :: c
+    real(DP)              ,intent(in) :: a,b
+    real(DP)                          :: val
+
+    real(DP) :: aval,bval
+    integer  :: ii
+
+    bval = 0
+    aval = 0
+
+    do ii = 1,size(c)
+       bval = bval+c(ii)*(b**ii)/ii
+       aval = aval+c(ii)*(a**ii)/ii
+    end do
+
+    val = bval - aval
+
+  end function polyInt
 
   !---------------------------------------------------------------------!
   !                                                                     !
@@ -9052,26 +9064,27 @@ contains
   function guessZero(fvals)
     use Kinds
     implicit none
+
     real(DP),dimension(:),intent(in) :: fvals
     integer                          :: GuessZero
 
-    integer                          :: jj
+    integer  :: j,sign,newsign
 
-    do jj=3,size(fvals)
-       if ( sign( fvals(jj-1)/abs(fvals(jj-1)) , fvals(jj)/abs(fvals(jj)) ) .ne. &
-            sign( fvals(jj-2)/abs(fvals(jj-2)) , fvals(jj-1)/abs(fvals(jj-1)) ) ) exit
+    sign = int(fvals(1)/abs(fvals(1)))
+    do j = 2,size(fvals)
+       newsign = int(fvals(j)/abs(fvals(j)))
+       if ( newsign .ne. sign) exit
     end do
-
-    GuessZero = jj
+    GuessZero = j
 
   end function GuessZero
 
-  function guessZeroNew(f,a,b)
+  function guessZeroF(f,a,b)
     use kinds
     implicit none
 
     real(DP),intent(in) :: a,b
-    real(DP)            :: GuessZeroNew
+    real(DP)            :: GuessZeroF
     interface
        function f(x)
          use kinds
@@ -9084,7 +9097,7 @@ contains
     real(DP) :: h,fval
     integer :: i,sign,newsign,N
 
-    h = a*1e-4
+    h = a*1e-1
     N = int((b-a)/h)
     fval = f(a)
     sign = int(fval/abs(fval))
@@ -9097,10 +9110,10 @@ contains
     if ( i .eq. N ) then
        write(*,*) "Error Max itterations reached"
     else
-       GuessZeroNew = a+i*h
+       GuessZeroF = a+i*h
     end if
 
-  end function GuessZeroNew
+  end function GuessZeroF
 
   !---------------------------------------------------------------------!
   !                                                                     !
@@ -9158,6 +9171,7 @@ contains
 
        attempt = attempt + 1
     end do
+    
   end function newton1D
 
   !---------------------------------------------------------------------!
@@ -9170,6 +9184,9 @@ contains
   !---------------------------------------------------------------------!
 
   function linspace(start,finish,N)
+    use kinds
+    implicit none
+    
     integer                :: N
     real(DP), intent(in)   :: start, finish
     real(DP), dimension(N) :: linspace
@@ -9188,6 +9205,9 @@ contains
   end function linspace
 
   function linspaceReal(start,finish,N)
+    use kinds
+    implicit none
+    
     integer                :: N
     real, intent(in)       :: start, finish
     real, dimension(N)     :: linspaceReal
@@ -9206,6 +9226,9 @@ contains
   end function linspaceReal
 
   function linspaceInt(start,finish,N)
+    use kinds
+    implicit none 
+
     integer                :: N
     integer, intent(in)    :: start, finish
     integer, dimension(N)  :: linspaceInt
@@ -9253,6 +9276,88 @@ contains
 
   end function deriv
 
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                       Trapezodial Integration                       !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  function trapZ(f,a,b,relErr) result(val)
+    use kinds
+    implicit none
+
+    real(DP), intent(in) :: a,b,relErr
+    interface
+       function f(x)
+         use kinds
+         implicit none
+         real(DP),intent(in) :: x
+         real(DP)            :: f
+       end function f
+    end interface
+    real(DP) :: val
+
+    real(DP) :: width,f1,f2
+    integer  :: N,i
+
+    val = 0
+    width = relErr
+    N = int((b-a)/width)
+
+    do i = 2,N+1
+       f1 = f(a+width*(i-1))
+       f2 = f(a+width*(i-2))
+       val = val+(f1+f2)*width/2
+    end do
+
+  end function trapZ
+
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                     General Minimization Wrapper                    !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  subroutine Minimize(TestFun, n, x, e, maxStepErrorScaleFactor, minimum)
+    use kinds
+    use MinFun
+    implicit none
+    interface
+       subroutine TestFun(n, x, f)
+         USE kinds
+         implicit none
+         integer               , intent(in)  :: n
+         real(DP), dimension(n), intent(in)  :: x
+         real(DP)              , intent(out) :: f
+       end subroutine TestFun
+    end interface
+    integer,                intent(in)    :: n
+    real(DP), dimension(n), intent(inout) :: x, e
+    real(DP),               intent(in)    :: maxStepErrorScaleFactor
+    real(DP),               intent(out)   :: minimum
+
+    ! Local variables to interface with minf
+    ! Written by Derek Leinweber
+    !
+    ! These variables control how minf works
+    !
+    ! icon=2 helps to avoid local minima.  Highly recommended.
+    ! See minf for details on the other parameters
+    !
+    integer, parameter           :: icon=2
+    integer                      :: iprint=2, maxit=100000, iterCount
+    integer                      :: nwork
+    real(DP), dimension(n*(n+3)) :: w
+
+    nwork = n*(n+3)
+
+    call minf( TestFun, x, e, n, minimum, maxStepErrorScaleFactor, &
+         &     iprint, icon, maxit, iterCount, w, nwork )
+
+  end Subroutine Minimize
+
   !---------------------------------------------------------------------!
   !                                                                     !
   !                      QuadPack Integral wrapper                      !
@@ -9260,7 +9365,6 @@ contains
   !---------------------------------------------------------------------!
   ! Wrappers for the Quadpack integral routine shown above.             !
   !---------------------------------------------------------------------!
-
 
   function integral(f, a, b, absErr, relErr)
     implicit none
@@ -9624,9 +9728,6 @@ contains
   end subroutine pyplotXYZW
 
 end module numFort
-
-
-
 
 !==============================================================================
 !##############################################################################
