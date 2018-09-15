@@ -4,7 +4,7 @@ module PLplots
   implicit none
 
   interface plot
-     module procedure plot,plotmany
+     module procedure plot,plotmany,plot2
   end interface plot
 
 contains
@@ -52,6 +52,47 @@ contains
     call plend
 
   end subroutine plot
+
+  subroutine plot2(x,y,z,w,xlabel,ylabel,title)
+    use kinds
+    use plplot
+    implicit none
+
+    real(DP),dimension(:),intent(in) :: x,y,z,w
+    character(len=*),optional,intent(in) :: xlabel,ylabel,title
+
+    real(DP) :: ymin,ymax,xmin,xmax,wmin,wmax
+    character(len=23) :: xaxis,yaxis,name
+
+    xaxis = ""
+    yaxis = ""
+    name  = ""
+
+    if(present(xlabel)) xaxis = xlabel
+    if(present(ylabel)) yaxis = ylabel
+    if(present(title)) name = title
+
+    ymin = minval(y)
+    wmin = minval(w)
+    if( ymin .ge. wmin ) ymin = wmin
+    ymin = ymin-0.2_DP*abs(ymin)
+    ymax = maxval(y)
+    wmax = maxval(w)
+    if( ymax .le. wmax ) ymax = wmax
+    ymax = ymax+0.2_DP*abs(ymax)
+    xmin = minval(x)
+    xmax = maxval(x)
+
+    call plsdev("xwin")
+    call plinit
+    call plenv(xmin,xmax,ymin,ymax,0,0)
+    call pllab(xaxis,yaxis,name)
+    call plcol0(3)
+    call plline(x,y)
+    call plline(z,w)
+    call plend
+
+  end subroutine plot2
 
   !---------------------------------------------------------------------!
   !                                                                     !

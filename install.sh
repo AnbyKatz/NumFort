@@ -99,13 +99,13 @@ echo "#!$pypath" | cat - customPlot.py > temp && mv temp customPlot.py
 chmod +x pyplots.py
 chmod +x customPlot.py
 
-if grep -Fxq "alias cpmake=\"cp $cwd/makefile makefile\"" ~/".bashrc"
+if grep -Fxq "alias cpmake=\"cp $cwd/\{makefile,pyplots.py,customPlot.py\} .\"" ~/".bashrc"
 then
     echo ""
 else
     echo "" >> ~/.bashrc
     echo "# create the numFort example makefile" >> ~/.bashrc
-    echo alias cpmake=\"cp $cwd/makefile makefile\" >> ~/.bashrc
+    echo alias cpmake=\"cp $cwd/\{makefile,pyplots.py,customPlot.py\} .\" >> ~/.bashrc
     source ~/.bashrc
 fi
 

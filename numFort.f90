@@ -7836,10 +7836,8 @@ module numFort
   use kinds
   use quadpack
   use LAPACK95
+  use minFun
   implicit none
-
-  integer  :: neval, ifail
-  real(DP) :: errEstimate
 
   interface linspace
      module procedure linspace,linspaceReal,linspaceInt
@@ -7862,9 +7860,9 @@ module numFort
   interface pyplot
      module procedure pyplotN,pyplotXY,pyplotXYZW
   end interface pyplot
-  interface EulerM
-     module procedure eulerm,eulermnd
-  end interface EulerM
+  interface Euler
+     module procedure euler,eulerND
+  end interface Euler
   interface writeData
      module procedure writeDataXY,writeDataXYZW,writeDataN
   end interface writeData
@@ -8945,7 +8943,7 @@ contains
   ! Eulers method for solving 1 or N coupled DE's                       !
   !---------------------------------------------------------------------!
 
-  function EulerM(f,h,t0,y0)
+  function Euler(f,h,t0,y0)
     use kinds
     implicit none
 
@@ -8958,13 +8956,13 @@ contains
          real(DP), intent(in) :: t,y
        end function f
     end interface
-    real(DP) :: EulerM
+    real(DP) :: Euler
 
-    EulerM = h*f(t0,y0)+y0
+    Euler = h*f(t0,y0)+y0
 
-  end function EulerM
+  end function Euler
 
-  function eulerMND(f,h,t0,y0)
+  function eulerND(f,h,t0,y0)
     use kinds
     implicit none
 
@@ -8979,13 +8977,13 @@ contains
          real(DP),dimension(nEq) :: f
        end function f
     end interface
-    real(DP),dimension(size(y0)) :: eulerMND
+    real(DP),dimension(size(y0)) :: eulerND
     integer :: nEq
 
     nEq = size(y0)
-    eulerMND = h*f(t0,y0,nEq)+y0
+    eulerND = h*f(t0,y0,nEq)+y0
 
-  end function eulerMND
+  end function eulerND
 
   !---------------------------------------------------------------------!
   !                                                                     !
@@ -9075,7 +9073,12 @@ contains
        newsign = int(fvals(j)/abs(fvals(j)))
        if ( newsign .ne. sign) exit
     end do
-    GuessZero = j
+    if ( j .eq. size(fvals) ) then
+       write(*,'(a)') "ERROR did not see any sign change/ zero"
+       write(*,'(a)') "maybe try again with more points"
+    else
+       GuessZero = j
+    end if
 
   end function GuessZero
 
@@ -9322,11 +9325,10 @@ contains
 
   subroutine Minimize(TestFun, n, x, e, maxStepErrorScaleFactor, minimum)
     use kinds
-    use MinFun
     implicit none
     interface
        subroutine TestFun(n, x, f)
-         USE kinds
+         USE kinds 
          implicit none
          integer               , intent(in)  :: n
          real(DP), dimension(n), intent(in)  :: x
@@ -9383,6 +9385,8 @@ contains
     !
     real(DP)                  :: integResult, bound=0.0_DP
     integer                   :: inf
+    integer  :: neval, ifail
+    real(DP) :: errEstimate
 
     !  Determine if the limits include infinity and call qagi if nessary
     !
@@ -9438,6 +9442,8 @@ contains
     !
     real(DP)                  :: integResult
     integer, parameter        :: inf=1
+    integer  :: neval, ifail
+    real(DP) :: errEstimate
 
     call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
     if ( ifail /= 0 ) then
@@ -9465,6 +9471,8 @@ contains
     !
     real(DP)                  :: integResult, bound=0.0d0
     integer, parameter        :: inf=2
+    integer  :: neval, ifail
+    real(DP) :: errEstimate
 
     call qagi(f, bound, inf, absErr, relErr, integResult, errEstimate, neval, ifail)
     if ( ifail /= 0 ) then
@@ -9494,6 +9502,8 @@ contains
     !
     real(DP)                         :: integResult
     real(DP), dimension(nBreakPts+2) :: BreakPtsP2        ! Automatic array.  Similar to allocatable arrays.
+    integer  :: neval, ifail
+    real(DP) :: errEstimate
 
     BreakPtsP2(1:nBreakPts) = BreakPts(1:nBreakPts)       ! Array section limits are required here.
 
@@ -9535,6 +9545,9 @@ contains
     !    by moving the upper and/or lower bounds of the integral
     !    away from the pole and splitting the integral into 2 (3).
     real(DP)                  :: intBoundaryHigh, intBoundaryLow
+    integer  :: neval, ifail
+    real(DP) :: errEstimate
+
 
     integralPV = 0.0_DP
     intBoundaryLow = a

@@ -6,7 +6,7 @@ CFLAGS = -O2 -mkl
 
 # Lapack and numFort libs
 LALIBS = -lmkl_lapack95_lp64
-NUMLIBS = -I$(DIR) $(DIR)kinds.o $(DIR)lapack.o $(DIR)numFort.o
+NUMLIBS = -I$(DIR) $(DIR)kinds.o $(DIR)lapack.o $(DIR)numFort.o $(DIR)minf.o
 
 LIBS = $(NUMLIBS) $(LALIBS)
 
@@ -18,34 +18,19 @@ OBJS =
 	$(F90C) $(CFLAGS) -c $< $(LIBS)
 
 #--------------------------Editable MakeFile-------------------------
-
+# Type cpmake in the terminal to copy this makefile and the plot code
+# into your current directory
 
 all: filename
 
 filename: filename.f90 $(OBJS)
 	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBS) 
 
-plot: filename.f90 $(OBJS)
-	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBS) 
-	./plot
-	make customPlot
-
-# Custom Plot
-customPlot: 
-	if [ ! -f customPlot.py ] ; \
-	then \
-		cp $(DIR)/customPlot.py customPlot.py; \
-		chmod +x customPlot.py; \
-	fi; \
-        ./customPlot.py 
-# Pyplots Plot
-pyplots:
-	if [ ! -f pyplots.py ] ; \
-	then \
-		cp $(DIR)/pyplots.py pyplots.py; \
-		chmod +x pyplots.py; \
-	fi; \
-        ./pyplots.py
+# Comment and tab in the plotting you wish
+plot:
+#./filename
+#./customPlot.py
+#./pyplots.py
 
 clean:
 	rm *.o *.mod
