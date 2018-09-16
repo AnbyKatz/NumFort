@@ -153,23 +153,19 @@ Precision parameter file. Main uses are for constants like pi and making variabl
 ** lapack95
 see online lapack documentation for an extensive list on possible linear algebra computations [[https://software.intel.com/en-us/mkl-linux-developer-guide-fortran-95-interfaces-to-lapack-and-blas][online documentation]].
 ** NumFort
-*** writeData
-Writes variables to a data file which can then be used with customPlot.py to use python to plot (requires numpy and matplotlib)
+*** Factorial
+Calculates the factorial of n
 
-|----------+--------------------------|
-| Variable | Description              |
-|----------+--------------------------|
-| x        | real double precision    |
-| y        | real double precision    |
-| z        | real double precision    |
-| w        | real double precision    |
-| title    | name of the file to load |
-|----------+--------------------------|
+|-----------+---------------------|
+| Variable  | Description         |
+|-----------+---------------------|
+| n         | integer             |
+|-----------+---------------------|
+| factorial | outputted factorial |
+|-----------+---------------------|
 
 #+BEGIN_SRC fortran
-  ! title variable is optional
-  call writeData(x,y,title)
-  call writeData(x,y,z,w,title)
+  m = factorial(n)
 #+END_SRC
 *** bessel
 Calculate the value of the 0<n<5 order bessel fucntion at x
@@ -186,6 +182,23 @@ Calculate the value of the 0<n<5 order bessel fucntion at x
 #+BEGIN_SRC fortran
   value = bessel(x,n)
 #+END_SRC
+
+*** Deriv
+Numerically calculates the derivative via a centred finite difference method.
+
+|----------+-------------------------------|
+| Variable | Description                   |
+|----------+-------------------------------|
+| f        | Input function                |
+| x0       | value to calculate            |
+|----------+-------------------------------|
+| deriv    | value of numerical derivative |
+|----------+-------------------------------|
+
+#+BEGIN_SRC fortran
+  function f(x)
+  value = deriv(f,x0)
+#+END_SRC
 *** Trace
 Calculate the trace of a matrix
 
@@ -200,20 +213,18 @@ Calculate the trace of a matrix
 #+BEGIN_SRC fortran
   value = trace(M)
 #+END_SRC
-
-*** Factorial
-Calculates the factorial of n
-
-|-----------+---------------------|
-| Variable  | Description         |
-|-----------+---------------------|
-| n         | integer             |
-|-----------+---------------------|
-| factorial | outputted factorial |
-|-----------+---------------------|
+*** Inv
+Calculates the inverse of a matrix
+|----------+-----------------------------------------------|
+| Variable | Description                                   |
+|----------+-----------------------------------------------|
+| M(N,N)   | Matrix, SP or DP for real or complex matrices |
+|----------+-----------------------------------------------|
+| Minv     | Inverse of M                                  |
+|----------+-----------------------------------------------|
 
 #+BEGIN_SRC fortran
-  m = factorial(n)
+  Minv = inv(M)
 #+END_SRC
 
 *** Meshgrid
@@ -233,6 +244,18 @@ Creates a unique lattice of points for two given vectors x and y. Usually used f
   call meshgrid(x,y,XX,YY)
 #+END_SRC
 
+*** FFT
+Calculates the fast Fourier transform
+
+|----------+-------------------------|
+| Variable | Description             |
+|----------+-------------------------|
+| x(N)     | double precision vector |
+|----------+-------------------------|
+
+#+BEGIN_SRC fortran
+  call FFT(x)
+#+END_SRC
 
 *** Splinefit
 Fits a cubic spline to inputted data. This function can return the coefficients or just a list of desired points to be interpolated at.
@@ -243,19 +266,16 @@ Fits a cubic spline to inputted data. This function can return the coefficients 
 | x(N)       | double precision vector                  |
 | y(N)       | double precision vector                  |
 | xj(N)      | this is the vector x for calculation use |
-| intpts(N)  | points to interpolate at (vector)        |
-| intvals(N) | outputted interpolant values             |
 | c(N)       | coefficients for spline fit              |
 | x          | point to evaluate fit at                 |
 |------------+------------------------------------------|
-| splinevals | output values for fit                    |
+| splineval  | output values for fit                    |
 |------------+------------------------------------------|
 
 #+BEGIN_SRC fortran
-  call splinefit(x,y,intpts,intvals)
-  call splinefit(x,y,c)
+  c = splinefit(x,y,c)
   ! should be called after splinefit
-  value = splinevals(c,xj,x)
+  value = splineval(c,xj,x)
 #+END_SRC
 
 *** PolyFit
@@ -269,13 +289,67 @@ Exactly the same as SplineFit but for a Nth order polynomial.
 | y(N)     | double precision vector          |
 |----------+----------------------------------|
 | c(N+1)   | coefficient of fit               |
-| x        | value to calculate polynomial at |
 |----------+----------------------------------|
 
 #+BEGIN_SRC fortran
-  call polyfit(x,y,N,c)
+  c = polyfit(x,y,N)
   ! Should be called after polyfit
-  value = polyCal(N,c,x)
+  value = polyCal(c,x)
+#+END_SRC
+
+*** GuessZero
+Given a set of values or a function with boundaries, returns the approximate value of where the function changes sign. An index is returned for inputted values method and the x value exactly is returned for the function method.
+
+|-----------+---------------------------------|
+| Variable  | Description                     |
+|-----------+---------------------------------|
+| f         | input function                  |
+| fvals     | list of y values for a function |
+| a,b       | range for zero guess            |
+|-----------+---------------------------------|
+| GuessZero | integer index of zero location  |
+|-----------+---------------------------------|
+
+#+BEGIN_SRC fortran
+  value = guesszero(fvals)
+
+  function f(x)
+  value = guesszero(f,a,b)
+#+END_SRC
+*** writeData
+Writes variables to a data file which can then be used with customPlot.py to use python to plot (requires numpy and matplotlib)
+
+|----------+--------------------------|
+| Variable | Description              |
+|----------+--------------------------|
+| x        | real double precision    |
+| y        | real double precision    |
+| z        | real double precision    |
+| w        | real double precision    |
+| title    | name of the file to load |
+|----------+--------------------------|
+
+#+BEGIN_SRC fortran
+  ! title variable is optional
+  call writeData(x,y,title)
+  call writeData(x,y,z,w,title)
+#+END_SRC
+
+*** Newton1D
+Performs a 1 dimensional newtons method to find the zero of a function.
+
+|----------+---------------------------------------|
+| Variable | Description                           |
+|----------+---------------------------------------|
+| fn       | Input function                        |
+| guess    | initial guess of zero of the function |
+|----------+---------------------------------------|
+| newton1D | zero of function guess location       |
+|----------+---------------------------------------|
+
+#+BEGIN_SRC fortran
+  function fn(x)
+  value = newton1D(fn,x)
 #+END_SRC
 
 *** EulerM
@@ -328,77 +402,6 @@ Performs a 4th order Runge Kutta solving algorithm for a given DE. Algorithms gi
   values = rk4(f,h,t0,y0)
 #+END_SRC
 
-*** GuessZero
-Given a set of values or a function with boundaries, returns the approximate value of where the function changes sign. An index is returned for inputted values method and the x value exactly is returned for the function method.
-
-|-----------+---------------------------------|
-| Variable  | Description                     |
-|-----------+---------------------------------|
-| f         | input function                  |
-| fvals     | list of y values for a function |
-| a,b       | range for zero guess            |
-|-----------+---------------------------------|
-| GuessZero | integer index of zero location  |
-|-----------+---------------------------------|
-
-#+BEGIN_SRC fortran
-  value = guesszero(fvals)
-
-  function f(x)
-  value = guesszero(f,a,b)
-#+END_SRC
-
-*** Newton1D
-Performs a 1 dimensional newtons method to find the zero of a function.
-
-|----------+---------------------------------------|
-| Variable | Description                           |
-|----------+---------------------------------------|
-| fn       | Input function                        |
-| guess    | initial guess of zero of the function |
-|----------+---------------------------------------|
-| newton1D | zero of function guess location       |
-|----------+---------------------------------------|
-
-#+BEGIN_SRC fortran
-  function fn(x)
-  value = newton1D(fn,x)
-#+END_SRC
-
-*** Linspace
-Creates a linear space of points between a and b with N points.
-
-|----------+----------------------------------|
-| Variable | Description                      |
-|----------+----------------------------------|
-| start    | left bound                       |
-| finish   | right bound                      |
-| N        | number of points, integer        |
-|----------+----------------------------------|
-| linspace | vector of points between a and b |
-|----------+----------------------------------|
-
-#+BEGIN_SRC fortran
-  vector = linspace(a,b,N)
-#+END_SRC
-
-*** Deriv
-Numerically calculates the derivative via a centred finite difference method.
-
-|----------+-------------------------------|
-| Variable | Description                   |
-|----------+-------------------------------|
-| f        | Input function                |
-| x0       | value to calculate            |
-|----------+-------------------------------|
-| deriv    | value of numerical derivative |
-|----------+-------------------------------|
-
-#+BEGIN_SRC fortran
-  function f(x)
-  value = deriv(f,x0)
-#+END_SRC
-
 *** integral
 Numerically calculates an integral given a function and bounds. Using Gaussian quadrature.
 
@@ -438,6 +441,23 @@ Numerically calculates a Cauchy-Principle value integral using Gaussian quadratu
 #+BEGIN_SRC fortran
   function f(x)
   value = integralPV(f,c,a,b,absErr,relErr)
+#+END_SRC
+
+*** Linspace
+Creates a linear space of points between a and b with N points.
+
+|----------+----------------------------------|
+| Variable | Description                      |
+|----------+----------------------------------|
+| start    | left bound                       |
+| finish   | right bound                      |
+| N        | number of points, integer        |
+|----------+----------------------------------|
+| linspace | vector of points between a and b |
+|----------+----------------------------------|
+
+#+BEGIN_SRC fortran
+  vector = linspace(a,b,N)
 #+END_SRC
 ** pythonPlot
 python plotting wrappers, simply copy the /makefile/ and /bashFortran.sh/ files from the InsertCode directory into the necessary directory and then on execution of /make all/, the necessary plotting files will be created. Use the following commands inside your fortran files (see the bashFortran file to decide whether you wish to use custom plotting or automatic plotting)

@@ -12,27 +12,28 @@
 ! Below contains a list of the function names inside numFort for easier       !
 ! navigation purposes. Jump to the bottom for numFort.                        !
 !                                                                             !
-! - FFT                                                                       !
-! - writeData                                                                 !
+! - factorial                                                                 !
 ! - bessel                                                                    !
+! - deriv                                                                     !
 ! - Trace                                                                     !
 ! - inv                                                                       !
-! - factorial                                                                 !
 ! - meshgrid                                                                  !
+! - FFT                                                                       !
 ! - splinefit                                                                 !
+! - splineval                                                                 !
 ! - polyfit                                                                   !
-! - polycal                                                                   !
+! - polyval                                                                   !
 ! - polyInt                                                                   !
-! - Euler                                                                     !
-! - rk4                                                                       !
+! - minimize                                                                  !
 ! - guessZero                                                                 !
 ! - Newton1D                                                                  !
-! - linspace                                                                  !
-! - deriv                                                                     !
+! - Euler                                                                     !
+! - rk4                                                                       !
 ! - trapZ                                                                     !
-! - minimize                                                                  !
 ! - integral                                                                  !
 ! - integralPV                                                                !
+! - writeData                                                                 !
+! - linspace                                                                  !
 ! - pyplot                                                                    !
 !                                                                             !
 !*****************************************************************************!
@@ -7869,7 +7870,6 @@ module numFort
 
 contains
 
-
   !---------------------------------------------------------------------!
   !                                                                     !
   !                            FFT Algorithim                           !
@@ -8843,69 +8843,44 @@ contains
 
   end function polyVal
 
-  function polyFit(vx, vy, d)
+
+  function polyfit(x,y,N) result(c)
     use kinds
-    use LAPACK95
+    use Lapack95
     implicit none
 
-    integer, intent(in)                   :: d
-    real(DP), dimension(d+1)              :: polyfit
-    real(DP), dimension(:), intent(in)    :: vx, vy
+    real(DP), dimension(:), intent(in) :: x,y
+    integer               , intent(in) :: N
+    real(DP), dimension(N+1)           :: c
 
-    real(DP), dimension(:,:), allocatable :: X
-    real(DP), dimension(:,:), allocatable :: XT
-    real(DP), dimension(:,:), allocatable :: XTX
+    real(DP),dimension(:,:),allocatable :: A,B
+    integer ,dimension(:)  ,allocatable :: ipiv
+    integer                             :: i
 
-    integer :: i, j
+    if ( size(x) < N+1 ) then
+       write(*,'(a)') "Error, need more points"
+    else
 
-    integer     :: n, lda, lwork
-    integer :: info
-    integer, dimension(:), allocatable :: ipiv
-    real(DP), dimension(:), allocatable :: work
+       allocate(A(N+1,N+1),B(N+1,1),ipiv(N+1))
 
-    n = d+1
-    lda = n
-    lwork = n
+       B(:,1) = y(:)
+       A(:,1) = 1.0_DP
 
-    allocate(ipiv(n))
-    allocate(work(lwork))
-    allocate(XT(n, size(vx)))
-    allocate(X(size(vx), n))
-    allocate(XTX(n, n))
-
-    ! prepare the matrix
-    do i = 0, d
-       do j = 1, size(vx)
-          X(j, i+1) = vx(j)**i
+       do i = 1,N
+          A(1:N+1,i+1) = x(1:N+1)**i
        end do
-    end do
 
-    XT  = transpose(X)
-    XTX = matmul(XT, X)
+       call getrf(A,ipiv)
+       call getrs(A,ipiv,B)
 
-    ! calls to LAPACK subs DGETRF and DGETRI
-    call DGETRF(n, n, XTX, lda, ipiv, info)
-    if ( info /= 0 ) then
-       print *, "problem"
-       return
+       c(:) = B(:,1)
+
+       deallocate(A,B,ipiv)
+       
     end if
-    call DGETRI(n, XTX, lda, ipiv, work, lwork, info)
-    if ( info /= 0 ) then
-       print *, "problem"
-       return
-    end if
-
-    ! outputs lower order coefficients first
-    polyfit = matmul( matmul(XTX, XT), vy)
-
-    deallocate(ipiv)
-    deallocate(work)
-    deallocate(X)
-    deallocate(XT)
-    deallocate(XTX)
 
   end function polyfit
-
+  
   !---------------------------------------------------------------------!
   !                                                                     !
   !                         Polynomial Integral                         !

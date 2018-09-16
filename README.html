@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2018-09-05 Wed 18:39 -->
+<!-- 2018-09-16 Sun 23:57 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>numFort</title>
@@ -240,55 +240,57 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org3308b72">1. Description</a></li>
-<li><a href="#orge6a4719">2. Installation - Linux/Unix</a>
+<li><a href="#org5d5827a">1. Description</a></li>
+<li><a href="#orge58f865">2. Installation - Linux/Unix</a>
 <ul>
-<li><a href="#org2aba91b">2.1. ifort</a></li>
-<li><a href="#org5aacd97">2.2. PLplot (Not Recommended)</a>
+<li><a href="#org17d8ac8">2.1. ifort</a></li>
+<li><a href="#org8e6325e">2.2. PLplot (Not Recommended)</a>
 <ul>
-<li><a href="#org7ce6bb7">2.2.1. Cmake</a></li>
-<li><a href="#orga34038d">2.2.2. PLplot</a></li>
+<li><a href="#org8bfd306">2.2.1. Cmake</a></li>
+<li><a href="#orgadc5128">2.2.2. PLplot</a></li>
 </ul>
 </li>
-<li><a href="#org7891fc7">2.3. Pyplots (Recommended)</a>
+<li><a href="#org1eca2b7">2.3. Pyplots (Recommended)</a>
 <ul>
-<li><a href="#org42e9025">2.3.1. Conda</a></li>
-<li><a href="#org6863c66">2.3.2. Matplotlib &amp; Numpy</a></li>
+<li><a href="#org55151b6">2.3.1. Conda</a></li>
+<li><a href="#orgc45f869">2.3.2. Matplotlib &amp; Numpy</a></li>
 </ul>
 </li>
-<li><a href="#orgbd8c90e">2.4. NumFort</a></li>
+<li><a href="#orgded8a0e">2.4. NumFort</a></li>
 </ul>
 </li>
-<li><a href="#orgb7a9624">3. Documentation</a>
+<li><a href="#orgc931f2c">3. Documentation</a>
 <ul>
-<li><a href="#org74d2a26">3.1. Kinds</a></li>
-<li><a href="#org7a1fa75">3.2. lapack95</a></li>
-<li><a href="#orgd9a6235">3.3. NumFort</a>
+<li><a href="#org5dfad83">3.1. Kinds</a></li>
+<li><a href="#org0deab81">3.2. lapack95</a></li>
+<li><a href="#org1be7b35">3.3. NumFort</a>
 <ul>
-<li><a href="#orgd15639d">3.3.1. writeData</a></li>
-<li><a href="#orgff65902">3.3.2. bessel</a></li>
-<li><a href="#org0d7d3d0">3.3.3. Trace</a></li>
-<li><a href="#org5acf6c5">3.3.4. Factorial</a></li>
-<li><a href="#org2c8e726">3.3.5. Meshgrid</a></li>
-<li><a href="#orgd26bbbb">3.3.6. Splinefit</a></li>
-<li><a href="#orgc036f83">3.3.7. PolyFit</a></li>
-<li><a href="#org14d1941">3.3.8. EulerM</a></li>
-<li><a href="#orgcd173d7">3.3.9. rk4</a></li>
-<li><a href="#orgec60959">3.3.10. GuessZero</a></li>
-<li><a href="#org837b3b3">3.3.11. Newton1D</a></li>
-<li><a href="#org0defb54">3.3.12. Linspace</a></li>
-<li><a href="#org7c55861">3.3.13. Deriv</a></li>
-<li><a href="#orgfd33a32">3.3.14. integral</a></li>
-<li><a href="#org8543f8b">3.3.15. integralPV</a></li>
+<li><a href="#org0d503e2">3.3.1. Factorial</a></li>
+<li><a href="#orga2344bb">3.3.2. bessel</a></li>
+<li><a href="#org6926fc5">3.3.3. Deriv</a></li>
+<li><a href="#org89f592a">3.3.4. Trace</a></li>
+<li><a href="#org1b8a86a">3.3.5. Inv</a></li>
+<li><a href="#orgf4b2e34">3.3.6. Meshgrid</a></li>
+<li><a href="#orgb0b40d6">3.3.7. FFT</a></li>
+<li><a href="#org0cbd3fe">3.3.8. Splinefit</a></li>
+<li><a href="#orgf7d77e4">3.3.9. PolyFit</a></li>
+<li><a href="#org8f62d2f">3.3.10. GuessZero</a></li>
+<li><a href="#orgdc47ff8">3.3.11. writeData</a></li>
+<li><a href="#org0eefbeb">3.3.12. Newton1D</a></li>
+<li><a href="#org39ec884">3.3.13. EulerM</a></li>
+<li><a href="#orga2f3739">3.3.14. rk4</a></li>
+<li><a href="#org051c186">3.3.15. integral</a></li>
+<li><a href="#orgacd7927">3.3.16. integralPV</a></li>
+<li><a href="#org39510c7">3.3.17. Linspace</a></li>
 </ul>
 </li>
-<li><a href="#orgaa510a2">3.4. pythonPlot</a></li>
-<li><a href="#org1443d9a">3.5. PLplots</a>
+<li><a href="#orge9c4023">3.4. pythonPlot</a></li>
+<li><a href="#orgd858f7f">3.5. PLplots</a>
 <ul>
-<li><a href="#org6de408d">3.5.1. plot</a></li>
-<li><a href="#org37792cc">3.5.2. scatterplot</a></li>
-<li><a href="#orgbb15a7e">3.5.3. surf</a></li>
-<li><a href="#org91007ea">3.5.4. scatter3D</a></li>
+<li><a href="#org8a43880">3.5.1. plot</a></li>
+<li><a href="#org1f8ec81">3.5.2. scatterplot</a></li>
+<li><a href="#org328a5fe">3.5.3. surf</a></li>
+<li><a href="#orgcee5510">3.5.4. scatter3D</a></li>
 </ul>
 </li>
 </ul>
@@ -297,23 +299,23 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org3308b72" class="outline-2">
-<h2 id="org3308b72"><span class="section-number-2">1</span> Description</h2>
+<div id="outline-container-org5d5827a" class="outline-2">
+<h2 id="org5d5827a"><span class="section-number-2">1</span> Description</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 numFort is a numerical library for FORTRAN that includes quadpack, lapack, PLplot and Matplotlib source code. It enables the use of handy mathematical macros such as linspace. I have wasted so much of my life on this nonsense.
 </p>
 </div>
 </div>
-<div id="outline-container-orge6a4719" class="outline-2">
-<h2 id="orge6a4719"><span class="section-number-2">2</span> Installation - Linux/Unix</h2>
+<div id="outline-container-orge58f865" class="outline-2">
+<h2 id="orge58f865"><span class="section-number-2">2</span> Installation - Linux/Unix</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 You will have to at least install PLplot or Pyplots in order to use one or the other for plotting algorithms or both. You may then comment out the other where specified below at run time.
 </p>
 </div>
-<div id="outline-container-org2aba91b" class="outline-3">
-<h3 id="org2aba91b"><span class="section-number-3">2.1</span> ifort</h3>
+<div id="outline-container-org17d8ac8" class="outline-3">
+<h3 id="org17d8ac8"><span class="section-number-3">2.1</span> ifort</h3>
 <div class="outline-text-3" id="text-2-1">
 <ul class="org-ul">
 <li>Before using numFort, make sure to download the ifort compiler and the necessary math kernel libraries for the use of LAPACK. These may be downloaded from the following link (free for students) <a href="https://software.intel.com/en-us/qualify-for-free-software/student">Parallel studio XE</a>, click the C++ link unless on mac</li>
@@ -348,12 +350,12 @@ sudo ./install.sh
 </ul>
 </div>
 </div>
-<div id="outline-container-org5aacd97" class="outline-3">
-<h3 id="org5aacd97"><span class="section-number-3">2.2</span> PLplot (Not Recommended)</h3>
+<div id="outline-container-org8e6325e" class="outline-3">
+<h3 id="org8e6325e"><span class="section-number-3">2.2</span> PLplot (Not Recommended)</h3>
 <div class="outline-text-3" id="text-2-2">
 </div>
-<div id="outline-container-org7ce6bb7" class="outline-4">
-<h4 id="org7ce6bb7"><span class="section-number-4">2.2.1</span> Cmake</h4>
+<div id="outline-container-org8bfd306" class="outline-4">
+<h4 id="org8bfd306"><span class="section-number-4">2.2.1</span> Cmake</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <ul class="org-ul">
 <li>Only needed if you wish to use PLplot</li>
@@ -379,8 +381,8 @@ make install
 </ul>
 </div>
 </div>
-<div id="outline-container-orga34038d" class="outline-4">
-<h4 id="orga34038d"><span class="section-number-4">2.2.2</span> PLplot</h4>
+<div id="outline-container-orgadc5128" class="outline-4">
+<h4 id="orgadc5128"><span class="section-number-4">2.2.2</span> PLplot</h4>
 <div class="outline-text-4" id="text-2-2-2">
 <ul class="org-ul">
 <li>Open up a terminal in your home directory. For this example we will install in a folder called ~/bin (/home/user/bin). The following commands downloads the necessary code</li>
@@ -441,12 +443,12 @@ make install
 </div>
 </div>
 </div>
-<div id="outline-container-org7891fc7" class="outline-3">
-<h3 id="org7891fc7"><span class="section-number-3">2.3</span> Pyplots (Recommended)</h3>
+<div id="outline-container-org1eca2b7" class="outline-3">
+<h3 id="org1eca2b7"><span class="section-number-3">2.3</span> Pyplots (Recommended)</h3>
 <div class="outline-text-3" id="text-2-3">
 </div>
-<div id="outline-container-org42e9025" class="outline-4">
-<h4 id="org42e9025"><span class="section-number-4">2.3.1</span> Conda</h4>
+<div id="outline-container-org55151b6" class="outline-4">
+<h4 id="org55151b6"><span class="section-number-4">2.3.1</span> Conda</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <p>
 Download anaconda from here <a href="https://www.anaconda.com/download/#linux">download link</a>. navigate in the terminal to where the final was downloaded and type the following. For us the title of the file was &ldquo;Anaconda-latest-Linux-x86<sub>64.sh</sub>&rdquo;
@@ -478,8 +480,8 @@ If nothing pops up type
 </div>
 </div>
 </div>
-<div id="outline-container-org6863c66" class="outline-4">
-<h4 id="org6863c66"><span class="section-number-4">2.3.2</span> Matplotlib &amp; Numpy</h4>
+<div id="outline-container-orgc45f869" class="outline-4">
+<h4 id="orgc45f869"><span class="section-number-4">2.3.2</span> Matplotlib &amp; Numpy</h4>
 <div class="outline-text-4" id="text-2-3-2">
 <p>
 This should come with matplotlib, numpy and math. To test this open a python shell with python3.7 and type the following
@@ -512,8 +514,8 @@ Now simply edit the BashFortran.sh file as specified and type ./BashFortran.sh t
 </div>
 </div>
 </div>
-<div id="outline-container-orgbd8c90e" class="outline-3">
-<h3 id="orgbd8c90e"><span class="section-number-3">2.4</span> NumFort</h3>
+<div id="outline-container-orgded8a0e" class="outline-3">
+<h3 id="orgded8a0e"><span class="section-number-3">2.4</span> NumFort</h3>
 <div class="outline-text-3" id="text-2-4">
 <ul class="org-ul">
 <li>Simply run the install file with ./install.sh or bash install.sh (same for the uninstall file). Follow the prompts and you&rsquo;re good. When using you may use any of the modules listed in the documentation. Copy the makefile template found after installation into your directory with you .f90 file.</li>
@@ -523,8 +525,8 @@ Now simply edit the BashFortran.sh file as specified and type ./BashFortran.sh t
 </div>
 </div>
 
-<div id="outline-container-orgb7a9624" class="outline-2">
-<h2 id="orgb7a9624"><span class="section-number-2">3</span> Documentation</h2>
+<div id="outline-container-orgc931f2c" class="outline-2">
+<h2 id="orgc931f2c"><span class="section-number-2">3</span> Documentation</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 The four modules you may include are <i>kinds</i>, <i>lapack95</i>, <i>numFort</i> and <i>PLplots</i>. Simply include in any .f90 file via a simple use statement as per usual.
@@ -551,8 +553,8 @@ Listed variables (some may be optional) and examples of how to call:
 </p>
 </div>
 
-<div id="outline-container-org74d2a26" class="outline-3">
-<h3 id="org74d2a26"><span class="section-number-3">3.1</span> Kinds</h3>
+<div id="outline-container-org5dfad83" class="outline-3">
+<h3 id="org5dfad83"><span class="section-number-3">3.1</span> Kinds</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 Precision parameter file. Main uses are for constants like pi and making variables double precision.
@@ -560,21 +562,498 @@ Precision parameter file. Main uses are for constants like pi and making variabl
 </div>
 </div>
 
-<div id="outline-container-org7a1fa75" class="outline-3">
-<h3 id="org7a1fa75"><span class="section-number-3">3.2</span> lapack95</h3>
+<div id="outline-container-org0deab81" class="outline-3">
+<h3 id="org0deab81"><span class="section-number-3">3.2</span> lapack95</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 see online lapack documentation for an extensive list on possible linear algebra computations <a href="https://software.intel.com/en-us/mkl-linux-developer-guide-fortran-95-interfaces-to-lapack-and-blas">online documentation</a>.
 </p>
 </div>
 </div>
-<div id="outline-container-orgd9a6235" class="outline-3">
-<h3 id="orgd9a6235"><span class="section-number-3">3.3</span> NumFort</h3>
+<div id="outline-container-org1be7b35" class="outline-3">
+<h3 id="org1be7b35"><span class="section-number-3">3.3</span> NumFort</h3>
 <div class="outline-text-3" id="text-3-3">
 </div>
-<div id="outline-container-orgd15639d" class="outline-4">
-<h4 id="orgd15639d"><span class="section-number-4">3.3.1</span> writeData</h4>
+<div id="outline-container-org0d503e2" class="outline-4">
+<h4 id="org0d503e2"><span class="section-number-4">3.3.1</span> Factorial</h4>
 <div class="outline-text-4" id="text-3-3-1">
+<p>
+Calculates the factorial of n
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">n</td>
+<td class="org-left">integer</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">factorial</td>
+<td class="org-left">outputted factorial</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre class="src src-fortran">m = factorial<span style="color: #AE81FF;">(</span>n<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orga2344bb" class="outline-4">
+<h4 id="orga2344bb"><span class="section-number-4">3.3.2</span> bessel</h4>
+<div class="outline-text-4" id="text-3-3-2">
+<p>
+Calculate the value of the 0&lt;n&lt;5 order bessel fucntion at x
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">n</td>
+<td class="org-left">integer, order of bessel</td>
+</tr>
+
+<tr>
+<td class="org-left">x</td>
+<td class="org-left">real double precision</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">bessel</td>
+<td class="org-left">value of the bessel function</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre class="src src-fortran">value = bessel<span style="color: #AE81FF;">(</span>x,n<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6926fc5" class="outline-4">
+<h4 id="org6926fc5"><span class="section-number-4">3.3.3</span> Deriv</h4>
+<div class="outline-text-4" id="text-3-3-3">
+<p>
+Numerically calculates the derivative via a centred finite difference method.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">f</td>
+<td class="org-left">Input function</td>
+</tr>
+
+<tr>
+<td class="org-left">x0</td>
+<td class="org-left">value to calculate</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">deriv</td>
+<td class="org-left">value of numerical derivative</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre class="src src-fortran"><span style="color: #00ffff; font-weight: bold;">function</span> <span style="color: #00ff7f;">f</span><span style="color: #AE81FF;">(</span>x<span style="color: #AE81FF;">)</span>
+value = deriv<span style="color: #AE81FF;">(</span>f,x0<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org89f592a" class="outline-4">
+<h4 id="org89f592a"><span class="section-number-4">3.3.4</span> Trace</h4>
+<div class="outline-text-4" id="text-3-3-4">
+<p>
+Calculate the trace of a matrix
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">M(N,N)</td>
+<td class="org-left">Matrix, SP or DP for real or complex matrices</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">Trace</td>
+<td class="org-left">Same type as input matrix</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre class="src src-fortran">value = trace<span style="color: #AE81FF;">(</span>M<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org1b8a86a" class="outline-4">
+<h4 id="org1b8a86a"><span class="section-number-4">3.3.5</span> Inv</h4>
+<div class="outline-text-4" id="text-3-3-5">
+<p>
+Calculates the inverse of a matrix
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">M(N,N)</td>
+<td class="org-left">Matrix, SP or DP for real or complex matrices</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">Minv</td>
+<td class="org-left">Inverse of M</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre class="src src-fortran">Minv = inv<span style="color: #AE81FF;">(</span>M<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf4b2e34" class="outline-4">
+<h4 id="orgf4b2e34"><span class="section-number-4">3.3.6</span> Meshgrid</h4>
+<div class="outline-text-4" id="text-3-3-6">
+<p>
+Creates a unique lattice of points for two given vectors x and y. Usually used for making a 3D grid for 3 dimensional plots.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">x(N)</td>
+<td class="org-left">double precision vector</td>
+</tr>
+
+<tr>
+<td class="org-left">y(M)</td>
+<td class="org-left">double precision vector</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">XX(M,N)</td>
+<td class="org-left">double precision matrix</td>
+</tr>
+
+<tr>
+<td class="org-left">YY(M,N)</td>
+<td class="org-left">double precision matrix</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre class="src src-fortran"><span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">all meshgrid(x,y,XX,YY)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb0b40d6" class="outline-4">
+<h4 id="orgb0b40d6"><span class="section-number-4">3.3.7</span> FFT</h4>
+<div class="outline-text-4" id="text-3-3-7">
+<p>
+Calculates the fast Fourier transform
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">x(N)</td>
+<td class="org-left">double precision vector</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre class="src src-fortran"><span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">all FFT(x)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0cbd3fe" class="outline-4">
+<h4 id="org0cbd3fe"><span class="section-number-4">3.3.8</span> Splinefit</h4>
+<div class="outline-text-4" id="text-3-3-8">
+<p>
+Fits a cubic spline to inputted data. This function can return the coefficients or just a list of desired points to be interpolated at.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">x(N)</td>
+<td class="org-left">double precision vector</td>
+</tr>
+
+<tr>
+<td class="org-left">y(N)</td>
+<td class="org-left">double precision vector</td>
+</tr>
+
+<tr>
+<td class="org-left">xj(N)</td>
+<td class="org-left">this is the vector x for calculation use</td>
+</tr>
+
+<tr>
+<td class="org-left">c(N)</td>
+<td class="org-left">coefficients for spline fit</td>
+</tr>
+
+<tr>
+<td class="org-left">x</td>
+<td class="org-left">point to evaluate fit at</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">splineval</td>
+<td class="org-left">output values for fit</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre class="src src-fortran"><span style="color: #75715E;">c </span><span style="color: #999999; font-style: italic;">= splinefit(x,y,c)</span>
+<span style="color: #75715E;">! </span><span style="color: #999999; font-style: italic;">should be called after splinefit</span>
+value = splineval<span style="color: #AE81FF;">(</span>c,xj,x<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf7d77e4" class="outline-4">
+<h4 id="orgf7d77e4"><span class="section-number-4">3.3.9</span> PolyFit</h4>
+<div class="outline-text-4" id="text-3-3-9">
+<p>
+Exactly the same as SplineFit but for a Nth order polynomial.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">N</td>
+<td class="org-left">integer, order of polynomial</td>
+</tr>
+
+<tr>
+<td class="org-left">x(N)</td>
+<td class="org-left">double precision vector</td>
+</tr>
+
+<tr>
+<td class="org-left">y(N)</td>
+<td class="org-left">double precision vector</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">c(N+1)</td>
+<td class="org-left">coefficient of fit</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre class="src src-fortran"><span style="color: #75715E;">c </span><span style="color: #999999; font-style: italic;">= polyfit(x,y,N)</span>
+<span style="color: #75715E;">! </span><span style="color: #999999; font-style: italic;">Should be called after polyfit</span>
+value = polyCal<span style="color: #AE81FF;">(</span>c,x<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8f62d2f" class="outline-4">
+<h4 id="org8f62d2f"><span class="section-number-4">3.3.10</span> GuessZero</h4>
+<div class="outline-text-4" id="text-3-3-10">
+<p>
+Given a set of values or a function with boundaries, returns the approximate value of where the function changes sign. An index is returned for inputted values method and the x value exactly is returned for the function method.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">f</td>
+<td class="org-left">input function</td>
+</tr>
+
+<tr>
+<td class="org-left">fvals</td>
+<td class="org-left">list of y values for a function</td>
+</tr>
+
+<tr>
+<td class="org-left">a,b</td>
+<td class="org-left">range for zero guess</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">GuessZero</td>
+<td class="org-left">integer index of zero location</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre class="src src-fortran">value = guesszero<span style="color: #AE81FF;">(</span>fvals<span style="color: #AE81FF;">)</span>
+
+<span style="color: #00ffff; font-weight: bold;">function</span> <span style="color: #00ff7f;">f</span><span style="color: #AE81FF;">(</span>x<span style="color: #AE81FF;">)</span>
+value = guesszero<span style="color: #AE81FF;">(</span>f,a,b<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgdc47ff8" class="outline-4">
+<h4 id="orgdc47ff8"><span class="section-number-4">3.3.11</span> writeData</h4>
+<div class="outline-text-4" id="text-3-3-11">
 <p>
 Writes variables to a data file which can then be used with customPlot.py to use python to plot (requires numpy and matplotlib)
 </p>
@@ -629,11 +1108,12 @@ Writes variables to a data file which can then be used with customPlot.py to use
 </div>
 </div>
 </div>
-<div id="outline-container-orgff65902" class="outline-4">
-<h4 id="orgff65902"><span class="section-number-4">3.3.2</span> bessel</h4>
-<div class="outline-text-4" id="text-3-3-2">
+
+<div id="outline-container-org0eefbeb" class="outline-4">
+<h4 id="org0eefbeb"><span class="section-number-4">3.3.12</span> Newton1D</h4>
+<div class="outline-text-4" id="text-3-3-12">
 <p>
-Calculate the value of the 0&lt;n&lt;5 order bessel fucntion at x
+Performs a 1 dimensional newtons method to find the zero of a function.
 </p>
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -652,303 +1132,34 @@ Calculate the value of the 0&lt;n&lt;5 order bessel fucntion at x
 </thead>
 <tbody>
 <tr>
-<td class="org-left">n</td>
-<td class="org-left">integer, order of bessel</td>
+<td class="org-left">fn</td>
+<td class="org-left">Input function</td>
 </tr>
 
 <tr>
-<td class="org-left">x</td>
-<td class="org-left">real double precision</td>
+<td class="org-left">guess</td>
+<td class="org-left">initial guess of zero of the function</td>
 </tr>
 </tbody>
 <tbody>
 <tr>
-<td class="org-left">bessel</td>
-<td class="org-left">value of the bessel function</td>
+<td class="org-left">newton1D</td>
+<td class="org-left">zero of function guess location</td>
 </tr>
 </tbody>
 </table>
 
 <div class="org-src-container">
-<pre class="src src-fortran">value = bessel<span style="color: #AE81FF;">(</span>x,n<span style="color: #AE81FF;">)</span>
-</pre>
-</div>
-</div>
-</div>
-<div id="outline-container-org0d7d3d0" class="outline-4">
-<h4 id="org0d7d3d0"><span class="section-number-4">3.3.3</span> Trace</h4>
-<div class="outline-text-4" id="text-3-3-3">
-<p>
-Calculate the trace of a matrix
-</p>
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">Variable</th>
-<th scope="col" class="org-left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="org-left">M(N,N)</td>
-<td class="org-left">Matrix, SP or DP for real or complex matrices</td>
-</tr>
-</tbody>
-<tbody>
-<tr>
-<td class="org-left">Trace</td>
-<td class="org-left">Same type as input matrix</td>
-</tr>
-</tbody>
-</table>
-
-<div class="org-src-container">
-<pre class="src src-fortran">value = trace<span style="color: #AE81FF;">(</span>M<span style="color: #AE81FF;">)</span>
+<pre class="src src-fortran"><span style="color: #00ffff; font-weight: bold;">function</span> <span style="color: #00ff7f;">fn</span><span style="color: #AE81FF;">(</span>x<span style="color: #AE81FF;">)</span>
+value = newton1D<span style="color: #AE81FF;">(</span>fn,x<span style="color: #AE81FF;">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org5acf6c5" class="outline-4">
-<h4 id="org5acf6c5"><span class="section-number-4">3.3.4</span> Factorial</h4>
-<div class="outline-text-4" id="text-3-3-4">
-<p>
-Calculates the factorial of n
-</p>
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">Variable</th>
-<th scope="col" class="org-left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="org-left">n</td>
-<td class="org-left">integer</td>
-</tr>
-</tbody>
-<tbody>
-<tr>
-<td class="org-left">factorial</td>
-<td class="org-left">outputted factorial</td>
-</tr>
-</tbody>
-</table>
-
-<div class="org-src-container">
-<pre class="src src-fortran">m = factorial<span style="color: #AE81FF;">(</span>n<span style="color: #AE81FF;">)</span>
-</pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-org2c8e726" class="outline-4">
-<h4 id="org2c8e726"><span class="section-number-4">3.3.5</span> Meshgrid</h4>
-<div class="outline-text-4" id="text-3-3-5">
-<p>
-Creates a unique lattice of points for two given vectors x and y. Usually used for making a 3D grid for 3 dimensional plots.
-</p>
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">Variable</th>
-<th scope="col" class="org-left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="org-left">x(N)</td>
-<td class="org-left">double precision vector</td>
-</tr>
-
-<tr>
-<td class="org-left">y(M)</td>
-<td class="org-left">double precision vector</td>
-</tr>
-</tbody>
-<tbody>
-<tr>
-<td class="org-left">XX(M,N)</td>
-<td class="org-left">double precision matrix</td>
-</tr>
-
-<tr>
-<td class="org-left">YY(M,N)</td>
-<td class="org-left">double precision matrix</td>
-</tr>
-</tbody>
-</table>
-
-<div class="org-src-container">
-<pre class="src src-fortran"><span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">all meshgrid(x,y,XX,YY)</span>
-</pre>
-</div>
-</div>
-</div>
-
-
-<div id="outline-container-orgd26bbbb" class="outline-4">
-<h4 id="orgd26bbbb"><span class="section-number-4">3.3.6</span> Splinefit</h4>
-<div class="outline-text-4" id="text-3-3-6">
-<p>
-Fits a cubic spline to inputted data. This function can return the coefficients or just a list of desired points to be interpolated at.
-</p>
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">Variable</th>
-<th scope="col" class="org-left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="org-left">x(N)</td>
-<td class="org-left">double precision vector</td>
-</tr>
-
-<tr>
-<td class="org-left">y(N)</td>
-<td class="org-left">double precision vector</td>
-</tr>
-
-<tr>
-<td class="org-left">xj(N)</td>
-<td class="org-left">this is the vector x for calculation use</td>
-</tr>
-
-<tr>
-<td class="org-left">intpts(N)</td>
-<td class="org-left">points to interpolate at (vector)</td>
-</tr>
-
-<tr>
-<td class="org-left">intvals(N)</td>
-<td class="org-left">outputted interpolant values</td>
-</tr>
-
-<tr>
-<td class="org-left">c(N)</td>
-<td class="org-left">coefficients for spline fit</td>
-</tr>
-
-<tr>
-<td class="org-left">x</td>
-<td class="org-left">point to evaluate fit at</td>
-</tr>
-</tbody>
-<tbody>
-<tr>
-<td class="org-left">splinevals</td>
-<td class="org-left">output values for fit</td>
-</tr>
-</tbody>
-</table>
-
-<div class="org-src-container">
-<pre class="src src-fortran"><span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">all splinefit(x,y,intpts,intvals)</span>
-<span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">all splinefit(x,y,c)</span>
-<span style="color: #75715E;">! </span><span style="color: #999999; font-style: italic;">should be called after splinefit</span>
-value = splinevals<span style="color: #AE81FF;">(</span>c,xj,x<span style="color: #AE81FF;">)</span>
-</pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-orgc036f83" class="outline-4">
-<h4 id="orgc036f83"><span class="section-number-4">3.3.7</span> PolyFit</h4>
-<div class="outline-text-4" id="text-3-3-7">
-<p>
-Exactly the same as SplineFit but for a Nth order polynomial.
-</p>
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">Variable</th>
-<th scope="col" class="org-left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="org-left">N</td>
-<td class="org-left">integer, order of polynomial</td>
-</tr>
-
-<tr>
-<td class="org-left">x(N)</td>
-<td class="org-left">double precision vector</td>
-</tr>
-
-<tr>
-<td class="org-left">y(N)</td>
-<td class="org-left">double precision vector</td>
-</tr>
-</tbody>
-<tbody>
-<tr>
-<td class="org-left">c(N+1)</td>
-<td class="org-left">coefficient of fit</td>
-</tr>
-
-<tr>
-<td class="org-left">x</td>
-<td class="org-left">value to calculate polynomial at</td>
-</tr>
-</tbody>
-</table>
-
-<div class="org-src-container">
-<pre class="src src-fortran"><span style="color: #75715E;">c</span><span style="color: #999999; font-style: italic;">all polyfit(x,y,N,c)</span>
-<span style="color: #75715E;">! </span><span style="color: #999999; font-style: italic;">Should be called after polyfit</span>
-value = polyCal<span style="color: #AE81FF;">(</span>N,c,x<span style="color: #AE81FF;">)</span>
-</pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-org14d1941" class="outline-4">
-<h4 id="org14d1941"><span class="section-number-4">3.3.8</span> EulerM</h4>
-<div class="outline-text-4" id="text-3-3-8">
+<div id="outline-container-org39ec884" class="outline-4">
+<h4 id="org39ec884"><span class="section-number-4">3.3.13</span> EulerM</h4>
+<div class="outline-text-4" id="text-3-3-13">
 <p>
 Performs Eulers method to solve a single or N coupled DE&rsquo;s, same call notation as rk4
 </p>
@@ -1014,9 +1225,9 @@ values = eulerM<span style="color: #AE81FF;">(</span>f,h,t0,y0<span style="color
 </div>
 </div>
 
-<div id="outline-container-orgcd173d7" class="outline-4">
-<h4 id="orgcd173d7"><span class="section-number-4">3.3.9</span> rk4</h4>
-<div class="outline-text-4" id="text-3-3-9">
+<div id="outline-container-orga2f3739" class="outline-4">
+<h4 id="orga2f3739"><span class="section-number-4">3.3.14</span> rk4</h4>
+<div class="outline-text-4" id="text-3-3-14">
 <p>
 Performs a 4th order Runge Kutta solving algorithm for a given DE. Algorithms giving for a single DE or N coupled DE.
 </p>
@@ -1082,212 +1293,9 @@ values = rk4<span style="color: #AE81FF;">(</span>f,h,t0,y0<span style="color: #
 </div>
 </div>
 
-<div id="outline-container-orgec60959" class="outline-4">
-<h4 id="orgec60959"><span class="section-number-4">3.3.10</span> GuessZero</h4>
-<div class="outline-text-4" id="text-3-3-10">
-<p>
-Given a set of values or a function with boundaries, returns the approximate value of where the function changes sign. An index is returned for inputted values method and the x value exactly is returned for the function method.
-</p>
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">Variable</th>
-<th scope="col" class="org-left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="org-left">f</td>
-<td class="org-left">input function</td>
-</tr>
-
-<tr>
-<td class="org-left">fvals</td>
-<td class="org-left">list of y values for a function</td>
-</tr>
-
-<tr>
-<td class="org-left">a,b</td>
-<td class="org-left">range for zero guess</td>
-</tr>
-</tbody>
-<tbody>
-<tr>
-<td class="org-left">GuessZero</td>
-<td class="org-left">integer index of zero location</td>
-</tr>
-</tbody>
-</table>
-
-<div class="org-src-container">
-<pre class="src src-fortran">value = guesszero<span style="color: #AE81FF;">(</span>fvals<span style="color: #AE81FF;">)</span>
-
-<span style="color: #00ffff; font-weight: bold;">function</span> <span style="color: #00ff7f;">f</span><span style="color: #AE81FF;">(</span>x<span style="color: #AE81FF;">)</span>
-value = guesszero<span style="color: #AE81FF;">(</span>f,a,b<span style="color: #AE81FF;">)</span>
-</pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-org837b3b3" class="outline-4">
-<h4 id="org837b3b3"><span class="section-number-4">3.3.11</span> Newton1D</h4>
-<div class="outline-text-4" id="text-3-3-11">
-<p>
-Performs a 1 dimensional newtons method to find the zero of a function.
-</p>
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">Variable</th>
-<th scope="col" class="org-left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="org-left">fn</td>
-<td class="org-left">Input function</td>
-</tr>
-
-<tr>
-<td class="org-left">guess</td>
-<td class="org-left">initial guess of zero of the function</td>
-</tr>
-</tbody>
-<tbody>
-<tr>
-<td class="org-left">newton1D</td>
-<td class="org-left">zero of function guess location</td>
-</tr>
-</tbody>
-</table>
-
-<div class="org-src-container">
-<pre class="src src-fortran"><span style="color: #00ffff; font-weight: bold;">function</span> <span style="color: #00ff7f;">fn</span><span style="color: #AE81FF;">(</span>x<span style="color: #AE81FF;">)</span>
-value = newton1D<span style="color: #AE81FF;">(</span>fn,x<span style="color: #AE81FF;">)</span>
-</pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-org0defb54" class="outline-4">
-<h4 id="org0defb54"><span class="section-number-4">3.3.12</span> Linspace</h4>
-<div class="outline-text-4" id="text-3-3-12">
-<p>
-Creates a linear space of points between a and b with N points.
-</p>
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">Variable</th>
-<th scope="col" class="org-left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="org-left">start</td>
-<td class="org-left">left bound</td>
-</tr>
-
-<tr>
-<td class="org-left">finish</td>
-<td class="org-left">right bound</td>
-</tr>
-
-<tr>
-<td class="org-left">N</td>
-<td class="org-left">number of points, integer</td>
-</tr>
-</tbody>
-<tbody>
-<tr>
-<td class="org-left">linspace</td>
-<td class="org-left">vector of points between a and b</td>
-</tr>
-</tbody>
-</table>
-
-<div class="org-src-container">
-<pre class="src src-fortran">vector = linspace<span style="color: #AE81FF;">(</span>a,b,N<span style="color: #AE81FF;">)</span>
-</pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-org7c55861" class="outline-4">
-<h4 id="org7c55861"><span class="section-number-4">3.3.13</span> Deriv</h4>
-<div class="outline-text-4" id="text-3-3-13">
-<p>
-Numerically calculates the derivative via a centred finite difference method.
-</p>
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">Variable</th>
-<th scope="col" class="org-left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="org-left">f</td>
-<td class="org-left">Input function</td>
-</tr>
-
-<tr>
-<td class="org-left">x0</td>
-<td class="org-left">value to calculate</td>
-</tr>
-</tbody>
-<tbody>
-<tr>
-<td class="org-left">deriv</td>
-<td class="org-left">value of numerical derivative</td>
-</tr>
-</tbody>
-</table>
-
-<div class="org-src-container">
-<pre class="src src-fortran"><span style="color: #00ffff; font-weight: bold;">function</span> <span style="color: #00ff7f;">f</span><span style="color: #AE81FF;">(</span>x<span style="color: #AE81FF;">)</span>
-value = deriv<span style="color: #AE81FF;">(</span>f,x0<span style="color: #AE81FF;">)</span>
-</pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-orgfd33a32" class="outline-4">
-<h4 id="orgfd33a32"><span class="section-number-4">3.3.14</span> integral</h4>
-<div class="outline-text-4" id="text-3-3-14">
+<div id="outline-container-org051c186" class="outline-4">
+<h4 id="org051c186"><span class="section-number-4">3.3.15</span> integral</h4>
+<div class="outline-text-4" id="text-3-3-15">
 <p>
 Numerically calculates an integral given a function and bounds. Using Gaussian quadrature.
 </p>
@@ -1348,9 +1356,9 @@ value = integral<span style="color: #AE81FF;">(</span>f,a,b,absErr,relErr<span s
 </div>
 </div>
 
-<div id="outline-container-org8543f8b" class="outline-4">
-<h4 id="org8543f8b"><span class="section-number-4">3.3.15</span> integralPV</h4>
-<div class="outline-text-4" id="text-3-3-15">
+<div id="outline-container-orgacd7927" class="outline-4">
+<h4 id="orgacd7927"><span class="section-number-4">3.3.16</span> integralPV</h4>
+<div class="outline-text-4" id="text-3-3-16">
 <p>
 Numerically calculates a Cauchy-Principle value integral using Gaussian quadrature. For a given f(x), evaluates the integral of f(x)/(x-c).
 </p>
@@ -1415,9 +1423,61 @@ value = integralPV<span style="color: #AE81FF;">(</span>f,c,a,b,absErr,relErr<sp
 </div>
 </div>
 </div>
+
+<div id="outline-container-org39510c7" class="outline-4">
+<h4 id="org39510c7"><span class="section-number-4">3.3.17</span> Linspace</h4>
+<div class="outline-text-4" id="text-3-3-17">
+<p>
+Creates a linear space of points between a and b with N points.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Variable</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">start</td>
+<td class="org-left">left bound</td>
+</tr>
+
+<tr>
+<td class="org-left">finish</td>
+<td class="org-left">right bound</td>
+</tr>
+
+<tr>
+<td class="org-left">N</td>
+<td class="org-left">number of points, integer</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">linspace</td>
+<td class="org-left">vector of points between a and b</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre class="src src-fortran">vector = linspace<span style="color: #AE81FF;">(</span>a,b,N<span style="color: #AE81FF;">)</span>
+</pre>
 </div>
-<div id="outline-container-orgaa510a2" class="outline-3">
-<h3 id="orgaa510a2"><span class="section-number-3">3.4</span> pythonPlot</h3>
+</div>
+</div>
+</div>
+<div id="outline-container-orge9c4023" class="outline-3">
+<h3 id="orge9c4023"><span class="section-number-3">3.4</span> pythonPlot</h3>
 <div class="outline-text-3" id="text-3-4">
 <p>
 python plotting wrappers, simply copy the <i>makefile</i> and <i>bashFortran.sh</i> files from the InsertCode directory into the necessary directory and then on execution of <i>make all</i>, the necessary plotting files will be created. Use the following commands inside your fortran files (see the bashFortran file to decide whether you wish to use custom plotting or automatic plotting)
@@ -1483,16 +1543,16 @@ python plotting wrappers, simply copy the <i>makefile</i> and <i>bashFortran.sh<
 </div>
 </div>
 
-<div id="outline-container-org1443d9a" class="outline-3">
-<h3 id="org1443d9a"><span class="section-number-3">3.5</span> PLplots</h3>
+<div id="outline-container-orgd858f7f" class="outline-3">
+<h3 id="orgd858f7f"><span class="section-number-3">3.5</span> PLplots</h3>
 <div class="outline-text-3" id="text-3-5">
 <p>
 Call PLplot by using the subroutine plot() for example, this will call various wrappers to plplot which can be found within numFort. Below is a list of said wrappers and their arguments. Axes labels and title may be omitted in all below routines if one wishes.
 </p>
 </div>
 
-<div id="outline-container-org6de408d" class="outline-4">
-<h4 id="org6de408d"><span class="section-number-4">3.5.1</span> plot</h4>
+<div id="outline-container-org8a43880" class="outline-4">
+<h4 id="org8a43880"><span class="section-number-4">3.5.1</span> plot</h4>
 <div class="outline-text-4" id="text-3-5-1">
 <p>
 standard x vs y plot or even x1,x2,&#x2026; vs y1,y2,&#x2026;
@@ -1553,8 +1613,8 @@ standard x vs y plot or even x1,x2,&#x2026; vs y1,y2,&#x2026;
 </div>
 </div>
 
-<div id="outline-container-org37792cc" class="outline-4">
-<h4 id="org37792cc"><span class="section-number-4">3.5.2</span> scatterplot</h4>
+<div id="outline-container-org1f8ec81" class="outline-4">
+<h4 id="org1f8ec81"><span class="section-number-4">3.5.2</span> scatterplot</h4>
 <div class="outline-text-4" id="text-3-5-2">
 <p>
 standard scatter plot
@@ -1613,8 +1673,8 @@ standard scatter plot
 </div>
 </div>
 
-<div id="outline-container-orgbb15a7e" class="outline-4">
-<h4 id="orgbb15a7e"><span class="section-number-4">3.5.3</span> surf</h4>
+<div id="outline-container-org328a5fe" class="outline-4">
+<h4 id="org328a5fe"><span class="section-number-4">3.5.3</span> surf</h4>
 <div class="outline-text-4" id="text-3-5-3">
 <p>
 3D surface plot (goes well with meshgrid)
@@ -1678,8 +1738,8 @@ standard scatter plot
 </div>
 </div>
 
-<div id="outline-container-org91007ea" class="outline-4">
-<h4 id="org91007ea"><span class="section-number-4">3.5.4</span> scatter3D</h4>
+<div id="outline-container-orgcee5510" class="outline-4">
+<h4 id="orgcee5510"><span class="section-number-4">3.5.4</span> scatter3D</h4>
 <div class="outline-text-4" id="text-3-5-4">
 <p>
 3D scatter plot.
@@ -1748,7 +1808,7 @@ standard scatter plot
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Anthony Kalaitzis &amp; Curtis Abell</p>
-<p class="date">Created: 2018-09-05 Wed 18:39</p>
+<p class="date">Created: 2018-09-16 Sun 23:57</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
