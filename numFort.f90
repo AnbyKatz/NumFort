@@ -8844,43 +8844,67 @@ contains
   end function polyVal
 
 
-  function polyfit(x,y,N) result(c)
+  function polyfit(vx, vy, d)
     use kinds
     use Lapack95
     implicit none
+    integer, intent(in)                   :: d
+    real(dp), dimension(d+1)              :: polyfit
+    real(dp), dimension(:), intent(in)    :: vx, vy
 
-    real(DP), dimension(:), intent(in) :: x,y
-    integer               , intent(in) :: N
-    real(DP), dimension(N+1)           :: c
+    real(dp), dimension(:,:), allocatable :: X
+    real(dp), dimension(:,:), allocatable :: XT
+    real(dp), dimension(:,:), allocatable :: XTX
 
-    real(DP),dimension(:,:),allocatable :: A,B
-    integer ,dimension(:)  ,allocatable :: ipiv
-    integer                             :: i
+    integer :: i, j
 
-    if ( size(x) < N+1 ) then
-       write(*,'(a)') "Error, need more points"
-    else
+    integer     :: n, lda, lwork
+    integer :: info
+    integer, dimension(:), allocatable :: ipiv
+    real(dp), dimension(:), allocatable :: work
 
-       allocate(A(N+1,N+1),B(N+1,1),ipiv(N+1))
+    n = d+1
+    lda = n
+    lwork = n
 
-       B(:,1) = y(:)
-       A(:,1) = 1.0_DP
+    allocate(ipiv(n))
+    allocate(work(lwork))
+    allocate(XT(n, size(vx)))
+    allocate(X(size(vx), n))
+    allocate(XTX(n, n))
 
-       do i = 1,N
-          A(1:N+1,i+1) = x(1:N+1)**i
+    ! prepare the matrix
+    do i = 0, d
+       do j = 1, size(vx)
+          X(j, i+1) = vx(j)**i
        end do
+    end do
 
-       call getrf(A,ipiv)
-       call getrs(A,ipiv,B)
+    XT  = transpose(X)
+    XTX = matmul(XT, X)
 
-       c(:) = B(:,1)
-
-       deallocate(A,B,ipiv)
-       
+    ! calls to LAPACK subs DGETRF and DGETRI
+    call DGETRF(n, n, XTX, lda, ipiv, info)
+    if ( info /= 0 ) then
+       print *, "problem"
+       return
+    end if
+    call DGETRI(n, XTX, lda, ipiv, work, lwork, info)
+    if ( info /= 0 ) then
+       print *, "problem"
+       return
     end if
 
+    polyfit = matmul( matmul(XTX, XT), vy)
+
+    deallocate(ipiv)
+    deallocate(work)
+    deallocate(X)
+    deallocate(XT)
+    deallocate(XTX)
+
   end function polyfit
-  
+
   !---------------------------------------------------------------------!
   !                                                                     !
   !                         Polynomial Integral                         !
@@ -9149,7 +9173,7 @@ contains
 
        attempt = attempt + 1
     end do
-    
+
   end function newton1D
 
   !---------------------------------------------------------------------!
@@ -9164,7 +9188,7 @@ contains
   function linspace(start,finish,N)
     use kinds
     implicit none
-    
+
     integer                :: N
     real(DP), intent(in)   :: start, finish
     real(DP), dimension(N) :: linspace
@@ -9185,7 +9209,7 @@ contains
   function linspaceReal(start,finish,N)
     use kinds
     implicit none
-    
+
     integer                :: N
     real, intent(in)       :: start, finish
     real, dimension(N)     :: linspaceReal
