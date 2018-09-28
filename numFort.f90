@@ -7867,6 +7867,9 @@ module numFort
   interface writeData
      module procedure writeDataXY,writeDataXYZW,writeDataN
   end interface writeData
+  interface trapZ
+     module procedure trapZ,trapZZ
+  end interface trapZ
 
 contains
 
@@ -9315,6 +9318,28 @@ contains
 
   end function trapZ
 
+
+  function trapZZ(x,y) result(val)
+    use kinds
+    implicit none
+
+    real(DP), dimension(:), intent(in) :: x,y
+    real(DP) :: val
+
+    real(DP) :: f1,f2,width
+    integer  :: N,i
+
+    val = 0
+    N = size(x)
+    width = abs(x(1)-x(2))
+
+    do i = 2,N
+       f1 = y(i)
+       f2 = y(i-1)
+       val = val+(f1+f2)*width/2
+    end do
+
+  end function trapZZ
 
   !---------------------------------------------------------------------!
   !                                                                     !
