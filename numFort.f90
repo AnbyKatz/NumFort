@@ -25,6 +25,8 @@
 ! - polyval                                                                   !
 ! - polyInt                                                                   !
 ! - minimize                                                                  !
+! - linspace                                                                  !
+! - PrintTime                                                                 !
 ! - guessZero                                                                 !
 ! - Newton1D                                                                  !
 ! - Euler                                                                     !
@@ -9250,6 +9252,28 @@ contains
     end do
 
   end function linspaceInt
+
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                            Print Cpu Time                           !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  subroutine PrintTime(timeI,timeF)
+    use kinds
+    implicit none
+
+    real(DP), intent(in) :: timeI,timeF
+
+    write(*,'(a17)') "+---------------+"
+    write(*,*)
+    write(*,'(a10,f5.2)') "seconds = ",timeF-timeI
+    write(*,'(a10,f5.2)') "minutes = ",(timeF-timeI)/60
+    write(*,*)
+    write(*,'(a17)') "+---------------+"
+
+  end subroutine PrintTime
 
   !---------------------------------------------------------------------!
   !                                                                     !
