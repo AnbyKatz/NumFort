@@ -14,7 +14,7 @@
 * Description
 numFort is a numerical library for FORTRAN that includes quadpack, lapack, PLplot and Matplotlib source code. It enables the use of handy mathematical macros such as linspace. I have wasted so much of my life on this nonsense.
 * Installation - Linux/Unix
-You will have to at least install PLplot or Pyplots in order to use one or the other for plotting algorithms or both. You may then comment out the other where specified below at run time.
+You will have to at least install PLplot or Pyplot in order to use one or the other for plotting algorithms or both. You may then comment out the other where specified below at run time.
 ** ifort
 - Before using numFort, make sure to download the ifort compiler and the necessary math kernel libraries for the use of LAPACK. These may be downloaded from the following link (free for students) [[https://software.intel.com/en-us/qualify-for-free-software/student][Parallel studio XE]], click the C++ link unless on mac
 - Simply download the custom install, extract to a location and run under sudo privileges like so
@@ -89,7 +89,7 @@ You will have to at least install PLplot or Pyplots in order to use one or the o
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/bin/buildDir/bindings/fortran/
 #+END_SRC
 - Open and close the terminal, that should be everything
-** Pyplots (Recommended)
+** Pyplot (Recommended)
 *** Conda
 Download anaconda from here [[https://www.anaconda.com/download/#linux][download link]]. navigate in the terminal to where the final was downloaded and type the following. For us the title of the file was "Anaconda-latest-Linux-x86_64.sh"
 #+BEGIN_SRC shell
@@ -134,7 +134,7 @@ This will create a symbolic link for python3.7. Add the following to your .bashr
   make all
   ./program
   # Run your perferred plotting
-  pythonVersion pyplots.py
+  pythonVersion pyplot.py
   # or
   pythonVersion customPlot.py
 
