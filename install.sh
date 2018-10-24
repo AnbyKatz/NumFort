@@ -54,7 +54,6 @@ fi
 cwd=$(pwd)
 echo "DIR =" $cwd/ | cat - makefile > temp && mv temp makefile
 echo "# Directory to numFort" | cat - makefile > temp && mv temp makefile
-echo "# make plot  - will run make all, execute and run customPlot" | cat - makefile > temp && mv temp makefile
 echo "# make all  - your standard make all targets" | cat - makefile > temp && mv temp makefile
 echo "# Commands list" | cat - makefile > temp && mv temp makefile
 echo "# simply change filename to your filename where ever it appears" | cat - makefile > temp && mv temp makefile
@@ -98,16 +97,6 @@ echo "#!$pypath" | cat - customPlot.py > temp && mv temp customPlot.py
 
 chmod +x pyplots.py
 chmod +x customPlot.py
-
-if grep -Fxq "alias cpmake=\"cp $cwd/\{makefile,pyplots.py,customPlot.py\} .\"" ~/".bashrc"
-then
-    echo ""
-else
-    echo "" >> ~/.bashrc
-    echo "# create the numFort example makefile" >> ~/.bashrc
-    echo alias cpmake=\"cp $cwd/\{makefile,pyplots.py,customPlot.py\} .\" >> ~/.bashrc
-    source ~/.bashrc
-fi
 
 echo ""
 echo "Plotting code may be found in Pyplots directory"

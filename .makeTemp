@@ -25,12 +25,5 @@ all: filename
 
 filename: filename.f90 $(OBJS)
 	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBS) 
-
-# Comment and tab in the plotting you wish, type "make plot" in cmd to run
-plot:
-#./filename
-#./customPlot.py
-#./pyplots.py
-
 clean:
 	rm *.o *.mod
