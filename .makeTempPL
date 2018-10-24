@@ -19,9 +19,6 @@ OBJS =
 	$(F90C) $(CFLAGS) -c $< $(LIBS)
 
 #--------------------------Editable MakeFile-------------------------
-# Type cpmake in the terminal to copy this makefile and the plot code
-# into your current directory
-
 all: filename
 
 filename: filename.f90 $(OBJS)

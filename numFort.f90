@@ -9750,13 +9750,15 @@ contains
 
   end subroutine pyplotXY
 
-  subroutine pyplotXYZW(x,y,z,w,title,xaxis,yaxis)
+  subroutine pyplotXYZW(x,y,z,w,title,xaxis,yaxis,legend)
     use Kinds
     implicit none
+    character(len=*),dimension(2),intent(in),optional :: legend
     character(len=*),intent(in),optional :: xaxis,yaxis,title
     real(DP),dimension(:),intent(in)     :: x,y,z,w
 
-    character(len=14)                    :: xlabel,ylabel,name,ld
+    character(len=14)                    :: xlabel,ylabel,name
+    character(len=14),dimension(2)       :: ld
     integer                              :: ii
 
     open(100,file="titles.dat",action="write", &
@@ -9772,6 +9774,7 @@ contains
     if(present(title)) name   = title
     if(present(xaxis)) xlabel = xaxis
     if(present(yaxis)) ylabel = yaxis
+    if(present(yaxis)) ld     = legend
 
     write(100,'(a20)') name
     write(100,'(a15)') xlabel

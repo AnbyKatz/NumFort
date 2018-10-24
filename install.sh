@@ -14,7 +14,7 @@ echo ""
 
 rm recompile.sh
 rm makefile
-rm pyplots.py
+rm pyplot.py
 rm customPlot.py
 
 ####################################################################################
@@ -85,21 +85,21 @@ echo "Please enter the version number for Python you have installed"
 echo "Eg 3.5, 3.6, 3.7 are common versions"
 read pyVersion
 
-touch pyplots.py
+touch pyplot.py
 touch customPlot.py
 
-cat .pyplotTemp >> pyplots.py
+cat .pyplotTemp >> pyplot.py
 pypath=$(which python$pyVersion)
-echo "#!$pypath" | cat - pyplots.py > temp && mv temp pyplots.py
+echo "#!$pypath" | cat - pyplot.py > temp && mv temp pyplot.py
 
 cat .customTemp >> customPlot.py
 echo "#!$pypath" | cat - customPlot.py > temp && mv temp customPlot.py
 
-chmod +x pyplots.py
+chmod +x pyplot.py
 chmod +x customPlot.py
 
 echo ""
-echo "Plotting code may be found in Pyplots directory"
+echo "Plotting code may be found in Pyplot directory"
 echo "copy the created makefile template to your .f90 file."
 echo "Type (use kinds and use numFort) in your .f90 file for base use"
 echo "see readme documentation on specifics of available functions"
