@@ -7932,17 +7932,17 @@ contains
 
     N = size(x)
     if (present(title)) then
-       open(101,file=title,action="write", &
+       open(110,file=title,action="write", &
             & status="replace",form="formatted")
     else
-       open(101,file="data.dat",action="write", &
+       open(110,file="data.dat",action="write", &
             & status="replace",form="formatted")
     end if
     do ii = 1,N
-       write(101,'(2e20.10)') x(ii), y(ii)
+       write(110,'(2e20.10)') x(ii), y(ii)
     end do
 
-    close(101)
+    close(110)
 
   end subroutine writeDataXY
 
@@ -7955,17 +7955,17 @@ contains
 
     N = size(x)
     if (present(title)) then
-       open(101,file=title,action="write", &
+       open(110,file=title,action="write", &
             & status="replace",form="formatted")
     else
-       open(101,file="data.dat",action="write", &
+       open(110,file="data.dat",action="write", &
             & status="replace",form="formatted")
     end if
     do ii = 1,N
-       write(101,'(4e20.10)') x(ii), y(ii), z(ii), w(ii)
+       write(110,'(4e20.10)') x(ii), y(ii), z(ii), w(ii)
     end do
 
-    close(101)
+    close(110)
 
   end subroutine writeDataXYZW
 
@@ -7981,17 +7981,17 @@ contains
     write(fmt,'(a1,i1,a7)') '(', N, 'es20.9)'
 
     if (present(title)) then
-       open(101,file=title,action="write", &
+       open(110,file=title,action="write", &
             & status="replace",form="formatted")
     else
-       open(101,file="data.dat",action="write", &
+       open(110,file="data.dat",action="write", &
             & status="replace",form="formatted")
     end if
     do ii = 1,size(x,dim=1)
-       write(101,fmt) x(ii,:)
+       write(110,fmt) x(ii,:)
     end do
 
-    close(101)
+    close(110)
 
   end subroutine writeDataN
 
