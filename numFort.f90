@@ -7978,7 +7978,7 @@ contains
     integer :: ii,N
 
     N = size(x,dim=2)
-    if ( N .le. 10) then
+    if ( N < 10) then
        write(fmt,'(a1,i1,a7)') '(', N, 'es13.4)'
     else
        write(fmt,'(a1,i2,a7)') '(', N, 'es13.4)'
