@@ -13,7 +13,6 @@ echo "Deleting files from previous installs (May not exist)"
 echo ""
 
 rm recompile.sh
-rm makefile
 rm pyplot.py
 rm customPlot.py
 
