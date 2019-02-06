@@ -21,9 +21,6 @@ rm customPlot.py
 touch recompile.sh
 chmod +x recompile.sh
 
-touch makefile
-cat .makeTemp >> makefile
-
 cwd=$(pwd)
 
 echo "#!/bin/bash" >> recompile.sh
@@ -38,16 +35,11 @@ echo ""
 
 ####################################################################################
 
-echo ""
-echo "Please enter the version number for Python you have installed"
-echo "Eg 3.5, 3.6, 3.7 are common versions"
-read pyVersion
-
 touch pyplot.py
 touch customPlot.py
 
 cat .pyplotTemp >> pyplot.py
-pypath=$(which python$pyVersion)
+pypath=$(which python)
 echo "#!$pypath" | cat - pyplot.py > temp && mv temp pyplot.py
 
 cat .customTemp >> customPlot.py
