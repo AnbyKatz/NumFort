@@ -22,22 +22,10 @@ rm customPlot.py
 touch recompile.sh
 chmod +x recompile.sh
 
-echo ""
-
 touch makefile
 cat .makeTemp >> makefile
 
 cwd=$(pwd)
-echo "DIR =" $cwd/ | cat - makefile > temp && mv temp makefile
-echo "# Directory to numFort" | cat - makefile > temp && mv temp makefile
-echo "# make all  - your standard make all targets" | cat - makefile > temp && mv temp makefile
-echo "# Commands list" | cat - makefile > temp && mv temp makefile
-echo "# simply change filename to your filename where ever it appears" | cat - makefile > temp && mv temp makefile
-echo "#--------------------------Makefile Template-------------------------" | cat - makefile > temp && mv temp makefile
-
-echo ""
-
-####################################################################################
 
 echo "#!/bin/bash" >> recompile.sh
 echo "ifort -O2 -c kinds.f90" >> recompile.sh
@@ -68,6 +56,9 @@ echo "#!$pypath" | cat - customPlot.py > temp && mv temp customPlot.py
 
 chmod +x pyplot.py
 chmod +x customPlot.py
+
+echo "# Appended by NumFort, Path to directory" >> ~/.bashrc
+echo "export NumPath="$cwd/ >> ~/.bashrc
 
 echo ""
 echo "Plotting code may be found in Pyplot directory"

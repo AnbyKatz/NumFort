@@ -1,3 +1,5 @@
+#--------------------------Makefile Template-------------------------
+# simply change filename to your filename where ever it appears
 
 # Compiler Flags
 F90C = ifort
@@ -6,7 +8,7 @@ CFLAGS = -O2 -mkl
 
 # Lapack and numFort libs
 LALIBS = -lmkl_lapack95_lp64
-NUMLIBS = -I$(DIR) $(DIR)kinds.o $(DIR)lapack.o $(DIR)numFort.o $(DIR)minf.o
+NUMLIBS = -I$(NumPath) $(NumPath)kinds.o $(NumPath)lapack.o $(NumPath)numFort.o $(NumPath)minf.o
 
 LIBS = $(NUMLIBS) $(LALIBS)
 
