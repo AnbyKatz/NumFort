@@ -7,8 +7,9 @@ CFLAGS = -O2 -mkl
 # Lapack and numFort libs
 LALIBS = -lmkl_lapack95_lp64
 NUMLIBS = -I$(DIR) $(DIR)kinds.o $(DIR)lapack.o $(DIR)numFort.o $(DIR)minf.o
+PLPLOT = $(DIR)PLplots.o -lplplotfortran -lplplot $$(pkg-config --cflags --libs plplot-fortran)
 
-LIBS = $(NUMLIBS) $(LALIBS)
+LIBS = $(NUMLIBS) $(LALIBS) $(PLPLOT)
 
 # Own personal object files
 OBJS = 
@@ -22,5 +23,6 @@ all: filename
 
 filename: filename.f90 $(OBJS)
 	$(F90C) $(CFLAGS) -o $@ $< $(OBJS) $(LIBS) 
+
 clean:
 	rm *.o *.mod
