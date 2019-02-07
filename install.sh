@@ -42,7 +42,7 @@ then
     empty="nothing"
 else
     echo "# Appended by NumFort, Path to directory" >> ~/.bashrc
-    echo "export NumPath="$cwd/ >> ~/.bashrc
+    echo "export NumFortPath="$cwd/src/ >> ~/.bashrc
 fi
     
 echo ""

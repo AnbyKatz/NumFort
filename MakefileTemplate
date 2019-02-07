@@ -8,7 +8,7 @@ CFLAGS = -O2 -mkl
 
 # Lapack and numFort libs
 LALIBS = -lmkl_lapack95_lp64
-NUMLIBS = -I$(NumPath) $(NumPath)kinds.o $(NumPath)lapack.o $(NumPath)numFort.o $(NumPath)minf.o
+NUMLIBS = -I$(NumFortPath) $(NumFortPath)kinds.o $(NumFortPath)lapack.o $(NumFortPath)numFort.o $(NumFortPath)minf.o
 
 LIBS = $(NUMLIBS) $(LALIBS)
 
