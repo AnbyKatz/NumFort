@@ -12,28 +12,17 @@ read empty
 echo "Deleting files from previous installs (May not exist)"
 echo ""
 
-rm recompile.sh
 rm pyplot.py
 rm customPlot.py
 
-####################################################################################
-
-touch recompile.sh
-chmod +x recompile.sh
-
-cwd=$(pwd)
-
-echo "#!/bin/bash" >> recompile.sh
-echo "ifort -O2 -c kinds.f90" >> recompile.sh
-echo "ifort -O2 -mkl -c lapack.f90" >> recompile.sh
-echo "ifort -O2 -c minf.f90" >> recompile.sh
-echo "ifort -O2 -mkl -c numFort.f90 -lmkl_lapack95_lp64" >> recompile.sh
 echo "Compiling numFort library, may take a bit"
 echo ""
 
 ./recompile.sh
 
 ####################################################################################
+
+cwd=$(pwd)
 
 touch pyplot.py
 touch customPlot.py
