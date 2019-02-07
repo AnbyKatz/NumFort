@@ -33,6 +33,10 @@ echo "#!$pypath" | cat - customPlot.py > temp && mv temp customPlot.py
 chmod +x pyplot.py
 chmod +x customPlot.py
 
+echo "NumFort wants to append somthing to your ~/.bashrc, make sure"
+echo "the file exists"
+read empty
+
 if grep -Fxq "# Appended by NumFort, Path to directory" ~/.bashrc
 then
     empty="nothing"
@@ -41,6 +45,8 @@ else
     echo "export NumFortPath="$cwd/build/ >> ~/.bashrc
 fi
     
+source ~/.bashrc
+
 echo ""
 echo "Plotting code may be found in Pyplot directory"
 echo "copy the created makefile template to your .f90 file."
