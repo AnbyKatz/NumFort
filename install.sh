@@ -9,15 +9,11 @@ echo ""
 read empty
 
 # Remove files if they were previously installed
-echo "Deleting files from previous installs (May not exist)"
-echo ""
-
-rm pyplot.py
-rm customPlot.py
-
+echo "Deleting files from previous installs"
+rm -f pyplot.py
+rm -f customPlot.py
 echo "Compiling numFort library, may take a bit"
 echo ""
-
 ./recompile.sh
 
 ####################################################################################
@@ -51,3 +47,4 @@ echo "copy the created makefile template to your .f90 file."
 echo "Type (use kinds and use numFort) in your .f90 file for base use"
 echo "see readme documentation on specifics of available functions"
 echo "Have fun! Let me know if they're any errors"
+echo ""

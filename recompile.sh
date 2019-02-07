@@ -1,5 +1,8 @@
 #!/bin/bash
 
+rm -rf build
+mkdir build
+
 cwd=$(pwd)/src
 cd build
 ifort -O2 -c $cwd/kinds.f90
