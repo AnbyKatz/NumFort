@@ -10,28 +10,27 @@ read empty
 
 # Remove files if they were previously installed
 echo "Deleting files from previous installs"
-rm -f pyplot.py
-rm -f customPlot.py
+./uninstall.sh
 echo "Compiling numFort library, may take a bit"
 echo ""
 ./recompile.sh
 
 ####################################################################################
 
+mkdir PythonPlot
 cwd=$(pwd)
+touch PythonPlot/Pyplot.py
+touch PythonPlot/CustomPlot.py
 
-touch pyplot.py
-touch customPlot.py
-
-cat .pyplotTemp >> pyplot.py
+cat Templates/PyplotTemp.py >> PythonPlot/Pyplot.py
 pypath=$(which python)
-echo "#!$pypath" | cat - pyplot.py > temp && mv temp pyplot.py
+echo "#!$pypath" | cat - PythonPlot/Pyplot.py > temp && mv temp PythonPlot/Pyplot.py
 
-cat .customTemp >> customPlot.py
-echo "#!$pypath" | cat - customPlot.py > temp && mv temp customPlot.py
+cat Templates/CustomTemp.py >> PythonPlot/CustomPlot.py
+echo "#!$pypath" | cat - PythonPlot/CustomPlot.py > temp && mv temp PythonPlot/CustomPlot.py
 
-chmod +x pyplot.py
-chmod +x customPlot.py
+chmod +x PythonPlot/Pyplot.py
+chmod +x PythonPlot/CustomPlot.py
 
 echo "NumFort wants to append somthing to your ~/.bashrc, make sure"
 echo "the file exists"

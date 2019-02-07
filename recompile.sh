@@ -1,10 +1,10 @@
 #!/bin/bash
 
-rm -rf build
-mkdir build
+rm -rf Build
+mkdir Build
 
 cwd=$(pwd)/src
-cd build
+cd Build
 ifort -O2 -c $cwd/kinds.f90
 ifort -O2 -mkl -c $cwd/lapack.f90
 ifort -O2 -c $cwd/minf.f90
