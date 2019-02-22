@@ -32,6 +32,7 @@ echo "#!$pypath" | cat - PythonPlot/CustomPlot.py > temp && mv temp PythonPlot/C
 chmod +x PythonPlot/Pyplot.py
 chmod +x PythonPlot/CustomPlot.py
 
+echo ""
 echo "NumFort wants to append somthing to your ~/.bashrc, make sure"
 echo "the file exists"
 read empty
@@ -41,7 +42,7 @@ then
     empty="nothing"
 else
     echo "# Appended by NumFort, Path to directory" >> ~/.bashrc
-    echo "export NumFortPath="$cwd/build/ >> ~/.bashrc
+    echo "export NumFortPath="$cwd/Build/ >> ~/.bashrc
 fi
     
 source ~/.bashrc

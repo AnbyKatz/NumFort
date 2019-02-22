@@ -9290,14 +9290,14 @@ contains
 
     barNew = trim(barNew)//'>'
 
-    write(*,'(a13,i3,a2,a50,a2,f5.1,a11,f5.1,a3)',advance='no') &
-         & '| Iteration: ',i,' |',barNew,'| ',(real(i)/L)*100,'% | It Len ',delta,&
+    write(*,'(a13,i3,a1,i3,a2,a50,a2,f5.1,a11,f5.1,a3)',advance='no') &
+         & '| Iteration: ',i,'/',L,' |',barNew,'| ',(real(i)/L)*100,'% | It Len ',delta,&
          & 's |'
 
-    if ( timeTotal/60 .le. 9 .and. mod(timeTotal,60) .le. 9)   write(*,'(i2,a2,i1,a2,i1)') (timeTotal/60)/60,':0',(timeTotal/60),':0',mod(timeTotal,60)
-    if ( timeTotal/60 .le. 9 .and. mod(timeTotal,60) .ge. 10)  write(*,'(i2,a2,i1,a1,i2)') (timeTotal/60)/60,':0',(timeTotal/60),':',mod(timeTotal,60)
-    if ( timeTotal/60 .ge. 10 .and. mod(timeTotal,60) .le. 9)  write(*,'(i2,a1,i2,a2,i1)') (timeTotal/60)/60,':',(timeTotal/60),':0',mod(timeTotal,60)
-    if ( timeTotal/60 .ge. 10 .and. mod(timeTotal,60) .ge. 10) write(*,'(i2,a1,i2,a1,i2)') (timeTotal/60)/60,':',(timeTotal/60),':',mod(timeTotal,60)
+    if (timeTotal/60 .le. 9 .and. mod(timeTotal,60) .le. 9)   write(*,'(i2,a2,i1,a2,i1)') (timeTotal/60)/60,':0',(timeTotal/60),':0',mod(timeTotal,60)
+    if (timeTotal/60 .le. 9 .and. mod(timeTotal,60) .ge. 10)  write(*,'(i2,a2,i1,a1,i2)') (timeTotal/60)/60,':0',(timeTotal/60),':', mod(timeTotal,60)
+    if (timeTotal/60 .ge. 10 .and. mod(timeTotal,60) .le. 9)  write(*,'(i2,a1,i2,a2,i1)') (timeTotal/60)/60,':', (timeTotal/60),':0',mod(timeTotal,60)
+    if (timeTotal/60 .ge. 10 .and. mod(timeTotal,60) .ge. 10) write(*,'(i2,a1,i2,a1,i2)') (timeTotal/60)/60,':', (timeTotal/60),':', mod(timeTotal,60)
 
   end subroutine LoopTimer
 
