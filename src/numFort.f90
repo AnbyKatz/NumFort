@@ -35,6 +35,7 @@
 ! - integral                                                                  !
 ! - integralPV                                                                !
 ! - writeData                                                                 !
+! - LoopTimer                                                                 !
 ! - linspace                                                                  !
 ! - pyplot                                                                    !
 !                                                                             !
@@ -9257,27 +9258,48 @@ contains
 
   end function linspaceInt
 
-
   !---------------------------------------------------------------------!
   !                                                                     !
-  !                            Print Cpu Time                           !
+  !                         Iteration loop timer                        !
   !                                                                     !
   !---------------------------------------------------------------------!
 
-  subroutine PrintTime(timeI,timeF)
+  subroutine LoopTimer(i,L,t0,tF)
     use kinds
     implicit none
 
-    real(DP), intent(in) :: timeI,timeF
+    real(DP), intent(in)  :: t0
+    real(DP), intent(out) :: tF
+    integer , intent(in)  :: i,L
 
-    write(*,'(a17)') "+---------------+"
-    write(*,*)
-    write(*,'(a10,f5.2)') "seconds = ",timeF-timeI
-    write(*,'(a10,f5.2)') "minutes = ",(timeF-timeI)/60
-    write(*,*)
-    write(*,'(a17)') "+---------------+"
+    character(len=50)  :: bar,barNew
+    real(DP):: delta
+    integer :: ii,timeTotal
 
-  end subroutine PrintTime
+    call cpu_time(tF)
+
+    bar = '='
+    barNew = bar
+    delta = tF-t0
+
+    timeTotal = int(delta*L-delta*i)
+
+    do ii = 1,((real(i)/L)*100)/2-1
+       barNew = trim(barNew)//trim(bar)
+    end do
+
+    barNew = trim(barNew)//'>'
+
+    write(*,'(a13,i3,a2,a50,a2,f5.1,a11,f5.1,a3)',advance='no') &
+         & '| Iteration: ',i,' |',barNew,'| ',(real(i)/L)*100,'% | It Len ',delta,&
+         & 's |'
+
+    if ( timeTotal/60 .le. 9 .and. mod(timeTotal,60) .le. 9)   write(*,'(i2,a2,i1,a2,i1)') (timeTotal/60)/60,':0',(timeTotal/60),':0',mod(timeTotal,60)
+    if ( timeTotal/60 .le. 9 .and. mod(timeTotal,60) .ge. 10)  write(*,'(i2,a2,i1,a1,i2)') (timeTotal/60)/60,':0',(timeTotal/60),':',mod(timeTotal,60)
+    if ( timeTotal/60 .ge. 10 .and. mod(timeTotal,60) .le. 9)  write(*,'(i2,a1,i2,a2,i1)') (timeTotal/60)/60,':',(timeTotal/60),':0',mod(timeTotal,60)
+    if ( timeTotal/60 .ge. 10 .and. mod(timeTotal,60) .ge. 10) write(*,'(i2,a1,i2,a1,i2)') (timeTotal/60)/60,':',(timeTotal/60),':',mod(timeTotal,60)
+
+  end subroutine LoopTimer
 
   !---------------------------------------------------------------------!
   !                                                                     !
