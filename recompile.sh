@@ -26,7 +26,7 @@ for ((i=1;i<=$barwidth;i++))
 do
     echo -n '='    
 done
-ifort -O2 -mkl -c $cwd/numFort.f90 -lmkl_lapack95_lp64
+ifort -O2 -mkl -c $cwd/NumFort.f90 -lmkl_lapack95_lp64
 for ((i=1;i<=$barwidth;i++))
 do
     echo -n '='    
