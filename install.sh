@@ -2,7 +2,7 @@
 
 # Boot up
 echo "Please make sure you have a working version of Python"
-echo "with matplotlib and numpy plus ifort installed at"
+echo "with matplotlib and numpy plus gfortran installed at"
 echo "the bare minimum. Type C-c to exit, otherwise hit enter"
 echo ""
 
@@ -37,12 +37,14 @@ echo "NumFort wants to append somthing to your ~/.bashrc, make sure"
 echo "the file exists"
 read empty
 
-if grep -Fxq "# Appended by NumFort, Path to directory" ~/.bashrc
+if grep -Fxq "# Appended by NumFortLite, Path to directory" ~/.bashrc
 then
     empty="nothing"
 else
-    echo "# Appended by NumFort, Path to directory" >> ~/.bashrc
-    echo "export NumFortPath="$cwd/Build/ >> ~/.bashrc
+    echo  >> ~/.bashrc
+    echo "# Appended by NumFortLite, Path to directory" >> ~/.bashrc
+    echo "export NumFortLitePath="$cwd/Build/ >> ~/.bashrc
+    echo  >> ~/.bashrc
 fi
     
 source ~/.bashrc

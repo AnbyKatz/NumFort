@@ -7839,7 +7839,6 @@ end module Quadpack
 module numFort
   use kinds
   use quadpack
-  use LAPACK95
   use minFun
   implicit none
 
@@ -8156,7 +8155,7 @@ contains
     case (4)
        B(:,:) = invMatSP4(A)
     case (5:)
-       B(:,:) = invMatSPN(A)
+       write(*,*) 'ERROR! Matrix too large'
     end select
 
   end function invMatSP
@@ -8181,7 +8180,7 @@ contains
     case (4)
        B(:,:) = invMatDP4(A)
     case (5:)
-       B(:,:) = invMatDPN(A)
+       write(*,*) 'ERROR! Matrix too large'
     end select
 
   end function invMatDP
@@ -8206,7 +8205,7 @@ contains
     case (4)
        B(:,:) = invMatCmplxSP4(A)
     case (5:)
-       B(:,:) = invMatCmplxSPN(A)
+       write(*,*) 'ERROR! Matrix too large'
     end select
 
   end function invMatComplexSP
@@ -8231,7 +8230,7 @@ contains
     case (4)
        B(:,:) = invMatCmplxDP4(A)
     case (5:)
-       B(:,:) = invMatCmplxDPN(A)
+       write(*,*) 'ERROR! Matrix too large'
     end select
 
   end function invMatComplexDP
@@ -8322,40 +8321,6 @@ contains
     B(:,:) = B(:,:)*det
   end function invMatDP4
 
-  function invMatDPN(A) result(Ainv)
-
-    real(dp), dimension(:,:), intent(in) :: A
-    real(dp), dimension(size(A,1),size(A,2)) :: Ainv
-
-    real(dp), dimension(size(A,1)) :: work  ! work array for LAPACK
-    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
-    integer :: n, info
-
-    ! External procedures defined in LAPACK
-    external DGETRF
-    external DGETRI
-
-    ! Store A in Ainv to prevent it from being overwritten by LAPACK
-    Ainv = A
-    n = size(A,1)
-
-    ! DGETRF computes an LU factorization of a general M-by-N matrix A
-    ! using partial pivoting with row interchanges.
-    call dgetrf(n, n, Ainv, n, ipiv, info)
-
-    if (info /= 0) then
-       stop 'Matrix is numerically singular!'
-    end if
-
-    ! DGETRI computes the inverse of a matrix using the LU factorization
-    ! computed by DGETRF.
-    call dgetri(n, Ainv, n, ipiv, work, n, info)
-
-    if (info /= 0) then
-       stop 'Matrix inversion failed!'
-    end if
-  end function invMatDPN
-
   function invMatSP2(A) result(B)
     ! Performs a direct calculation of the inverse of a 2×2 matrix.
     real(SP), intent(in) :: A(2,2)   ! Matrix
@@ -8441,41 +8406,7 @@ contains
     B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
     B(:,:) = B(:,:)*det
   end function invMatSP4
-
-  function invMatSPN(A) result(Ainv)
-
-    real(SP), dimension(:,:), intent(in) :: A
-    real(SP), dimension(size(A,1),size(A,2)) :: Ainv
-
-    real(SP), dimension(size(A,1)) :: work  ! work array for LAPACK
-    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
-    integer :: n, info
-
-    ! External procedures defined in LAPACK
-    external DGETRF
-    external DGETRI
-
-    ! Store A in Ainv to prevent it from being overwritten by LAPACK
-    Ainv = A
-    n = size(A,1)
-
-    ! DGETRF computes an LU factorization of a general M-by-N matrix A
-    ! using partial pivoting with row interchanges.
-    call dgetrf(n, n, Ainv, n, ipiv, info)
-
-    if (info /= 0) then
-       stop 'Matrix is numerically singular!'
-    end if
-
-    ! DGETRI computes the inverse of a matrix using the LU factorization
-    ! computed by DGETRF.
-    call dgetri(n, Ainv, n, ipiv, work, n, info)
-
-    if (info /= 0) then
-       stop 'Matrix inversion failed!'
-    end if
-  end function invMatSPN
-
+  
   function invMatCmplxSP2(A) result(B)
     ! Performs a direct calculation of the inverse of a 2×2 matrix.
     complex(SP), intent(in) :: A(2,2)   ! Matrix
@@ -8561,39 +8492,6 @@ contains
     B(4,4) = (A(1,1)*(A(2,2)*A(3,3)-A(2,3)*A(3,2))+A(1,2)*(A(2,3)*A(3,1)-A(2,1)*A(3,3))+A(1,3)*(A(2,1)*A(3,2)-A(2,2)*A(3,1)))
     B(:,:) = B(:,:)/det
   end function invMatCmplxSP4
-
-  function invMatCmplxSPN(A) result(Ainv)
-    complex(SP), dimension(:,:), intent(in) :: A
-    complex(SP), dimension(size(A,1),size(A,2)) :: Ainv
-
-    complex(SP), dimension(size(A,1)) :: work  ! work array for LAPACK
-    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
-    integer :: n, info
-
-    ! External procedures defined in LAPACK
-    external DGETRF
-    external DGETRI
-
-    ! Store A in Ainv to prevent it from being overwritten by LAPACK
-    Ainv = A
-    n = size(A,1)
-
-    ! DGETRF computes an LU factorization of a general M-by-N matrix A
-    ! using partial pivoting with row interchanges.
-    call zgetrf(n, n, Ainv, n, ipiv, info)
-
-    if (info .ne. 0) then
-       stop 'Matrix is numerically singular!'
-    end if
-
-    ! DGETRI computes the inverse of a matrix using the LU factorization
-    ! computed by DGETRF.
-    call zgetri(n, Ainv, n, ipiv, work, n, info)
-
-    if (info .ne. 0) then
-       stop 'Matrix inversion failed!'
-    end if
-  end function invMatCmplxSPN
 
   function invMatCmplxDP2(A) result(B)
     ! Performs a direct calculation of the inverse of a 2×2 matrix.
@@ -8681,40 +8579,6 @@ contains
     B(:,:) = B(:,:)/det
   end function invMatCmplxDP4
 
-  function invMatCmplxDPN(A) result(Ainv)
-    complex(DP), dimension(:,:), intent(in) :: A
-    complex(DP), dimension(size(A,1),size(A,2)) :: Ainv
-
-    complex(DP), dimension(size(A,1)) :: work  ! work array for LAPACK
-    integer, dimension(size(A,1)) :: ipiv   ! pivot indices
-    integer :: n, info
-
-    ! External procedures defined in LAPACK
-    external DGETRF
-    external DGETRI
-
-    ! Store A in Ainv to prevent it from being overwritten by LAPACK
-    Ainv = A
-    n = size(A,1)
-
-    ! DGETRF computes an LU factorization of a general M-by-N matrix A
-    ! using partial pivoting with row interchanges.
-    call zgetrf(n, n, Ainv, n, ipiv, info)
-
-    if (info .ne. 0) then
-       stop 'Matrix is numerically singular!'
-    end if
-
-    ! DGETRI computes the inverse of a matrix using the LU factorization
-    ! computed by DGETRF.
-    call zgetri(n, Ainv, n, ipiv, work, n, info)
-
-    if (info .ne. 0) then
-       stop 'Matrix inversion failed!'
-    end if
-  end function invMatCmplxDPN
-
-
   !---------------------------------------------------------------------!
   !                                                                     !
   !                      Useful Mathamatical functions                  !
@@ -8768,152 +8632,6 @@ contains
     end do
 
   end subroutine meshgrid
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                           Cubic Spline Fit                          !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! Fits a cubic spline to input data. First version fits and outputs   !
-  ! values at specified interpolated points. Next version returns       !
-  ! the coefficients of the cubic spline fit which can then be passed   !
-  ! to the next function to evaluate the spline at a certain x.         !
-  !                                                                     !
-  ! Uses Lapack for necessary linear algebra                            !
-  !---------------------------------------------------------------------!
-
-  function splinefit(x,y) result(c)
-    use kinds
-    use LAPACK95
-    implicit none
-
-    real(DP),dimension(:),intent(in)    :: x,y
-    real(DP),dimension(size(x))         :: c
-
-    integer                             :: N
-    real(DP),dimension(:,:),allocatable :: A,B
-    integer ,dimension(:)  ,allocatable :: ipiv
-    integer                             :: i,j
-
-    N = size(x)
-    allocate(A(N,N),B(N,1),ipiv(N))
-
-    B(:,1) = y(:)
-    A(:,1) = 1.0_DP
-    A(:,2) = x(:)
-    do i = 1,N
-       do j = 3,N
-          A(i,j) = abs(x(i)-x(j-1))
-       end do
-    end do
-    call getrf(A,ipiv)
-    call getrs(A,ipiv,B)
-    c(:) = B(:,1)
-
-    deallocate(A,B,ipiv)
-
-  end function splinefit
-
-  function splineVal(c,xj,x)
-    use kinds
-    implicit none
-
-    real(DP),dimension(:),intent(in) :: c,xj
-    real(DP),intent(in)              :: x
-    real(DP)                         :: splineval
-
-    splineval = c(1)+c(2)*x+sum(c(3:size(c))*abs(x-xj(2:size(c)-1)))
-
-  end function splineVal
-
-  !---------------------------------------------------------------------!
-  !                                                                     !
-  !                               PolyFit                               !
-  !                                                                     !
-  !---------------------------------------------------------------------!
-  ! N dimensional polynomial fitting algorithim which outputs the       !
-  ! coefficitents of the fit. Can then be passed into polycal to        !
-  ! evaluate the fit at a certain point.                                !
-  !                                                                     !
-  ! Uses Lapack for necessary linear algebra                            !
-  !---------------------------------------------------------------------!
-
-  function polyVal(c,x) result(val)
-    use kinds
-    implicit none
-
-    real(DP),dimension(:),intent(in) :: c
-    real(DP)             ,intent(in) :: x
-
-    real(DP)                           :: val
-    integer                            :: i,powers(size(c))
-
-    powers = linspace(0,size(c)-1,size(c))
-    val = sum(c*x**powers)
-
-  end function polyVal
-
-
-  function polyfit(vx, vy, d)
-    use kinds
-    use Lapack95
-    implicit none
-    integer, intent(in)                   :: d
-    real(dp), dimension(d+1)              :: polyfit
-    real(dp), dimension(:), intent(in)    :: vx, vy
-
-    real(dp), dimension(:,:), allocatable :: X
-    real(dp), dimension(:,:), allocatable :: XT
-    real(dp), dimension(:,:), allocatable :: XTX
-
-    integer :: i, j
-
-    integer     :: n, lda, lwork
-    integer :: info
-    integer, dimension(:), allocatable :: ipiv
-    real(dp), dimension(:), allocatable :: work
-
-    n = d+1
-    lda = n
-    lwork = n
-
-    allocate(ipiv(n))
-    allocate(work(lwork))
-    allocate(XT(n, size(vx)))
-    allocate(X(size(vx), n))
-    allocate(XTX(n, n))
-
-    ! prepare the matrix
-    do i = 0, d
-       do j = 1, size(vx)
-          X(j, i+1) = vx(j)**i
-       end do
-    end do
-
-    XT  = transpose(X)
-    XTX = matmul(XT, X)
-
-    ! calls to LAPACK subs DGETRF and DGETRI
-    call DGETRF(n, n, XTX, lda, ipiv, info)
-    if ( info /= 0 ) then
-       print *, "problem"
-       return
-    end if
-    call DGETRI(n, XTX, lda, ipiv, work, lwork, info)
-    if ( info /= 0 ) then
-       print *, "problem"
-       return
-    end if
-
-    polyfit = matmul( matmul(XTX, XT), vy)
-
-    deallocate(ipiv)
-    deallocate(work)
-    deallocate(X)
-    deallocate(XT)
-    deallocate(XTX)
-
-  end function polyfit
 
   !---------------------------------------------------------------------!
   !                                                                     !
@@ -9284,7 +9002,7 @@ contains
 
     timeTotal = int(delta*L-delta*i)
 
-    do ii = 1,((real(i)/L)*100)/2-1
+    do ii = 1,int(((real(i)/L)*100)/2-1)
        barNew = trim(barNew)//trim(bar)
     end do
 
@@ -9294,10 +9012,14 @@ contains
          & '| Iteration: ',i,'/',L,' |',barNew,'| ',(real(i)/L)*100,'% | It Len ',delta,&
          & 's |'
 
-    if (timeTotal/60 .le. 9 .and. mod(timeTotal,60) .le. 9)   write(*,'(i2,a2,i1,a2,i1)') (timeTotal/60)/60,':0',(timeTotal/60),':0',mod(timeTotal,60)
-    if (timeTotal/60 .le. 9 .and. mod(timeTotal,60) .ge. 10)  write(*,'(i2,a2,i1,a1,i2)') (timeTotal/60)/60,':0',(timeTotal/60),':', mod(timeTotal,60)
-    if (timeTotal/60 .ge. 10 .and. mod(timeTotal,60) .le. 9)  write(*,'(i2,a1,i2,a2,i1)') (timeTotal/60)/60,':', (timeTotal/60),':0',mod(timeTotal,60)
-    if (timeTotal/60 .ge. 10 .and. mod(timeTotal,60) .ge. 10) write(*,'(i2,a1,i2,a1,i2)') (timeTotal/60)/60,':', (timeTotal/60),':', mod(timeTotal,60)
+    if (timeTotal/60 .le. 9 .and. mod(timeTotal,60) .le. 9)   &
+         & write(*,'(i2,a2,i1,a2,i1)') (timeTotal/60)/60,':0',(timeTotal/60),':0',mod(timeTotal,60)
+    if (timeTotal/60 .le. 9 .and. mod(timeTotal,60) .ge. 10)  &
+         & write(*,'(i2,a2,i1,a1,i2)') (timeTotal/60)/60,':0',(timeTotal/60),':', mod(timeTotal,60)
+    if (timeTotal/60 .ge. 10 .and. mod(timeTotal,60) .le. 9)  &
+         & write(*,'(i2,a1,i2,a2,i1)') (timeTotal/60)/60,':', (timeTotal/60),':0',mod(timeTotal,60)
+    if (timeTotal/60 .ge. 10 .and. mod(timeTotal,60) .ge. 10) &
+         & write(*,'(i2,a1,i2,a1,i2)') (timeTotal/60)/60,':', (timeTotal/60),':', mod(timeTotal,60)
 
   end subroutine LoopTimer
 
