@@ -41,8 +41,10 @@ if grep -Fxq "# Appended by NumFort, Path to directory" ~/.bashrc
 then
     empty="nothing"
 else
+    echo  >> ~/.bashrc
     echo "# Appended by NumFort, Path to directory" >> ~/.bashrc
     echo "export NumFortPath="$cwd/Build/ >> ~/.bashrc
+        echo  >> ~/.bashrc
 fi
     
 source ~/.bashrc
