@@ -7940,7 +7940,7 @@ contains
             & status="replace",form="formatted")
     end if
     do ii = 1,N
-       write(110,'(2e20.10)') x(ii), y(ii)
+       write(110,'(2e30.15e4)') x(ii), y(ii)
     end do
 
     close(110)
@@ -7963,7 +7963,7 @@ contains
             & status="replace",form="formatted")
     end if
     do ii = 1,N
-       write(110,'(4e20.10)') x(ii), y(ii), z(ii), w(ii)
+       write(110,'(4e30.15e4)') x(ii), y(ii), z(ii), w(ii)
     end do
 
     close(110)
@@ -7980,9 +7980,9 @@ contains
 
     N = size(x,dim=2)
     if ( N < 10) then
-       write(fmt,'(a1,i1,a8)') '(', N, 'es20.10)'
+       write(fmt,'(a1,i1,a9)') '(', N, 'e30.15e4)'
     else
-       write(fmt,'(a1,i2,a8)') '(', N, 'es20.10)'
+       write(fmt,'(a1,i2,a9)') '(', N, 'e30.15e4)'
     end if
 
     if (present(title)) then
