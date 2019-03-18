@@ -17,7 +17,7 @@ OBJS =
 
 # Pattern Matching
 %.o: %.f90
-	$(F90C) $(CFLAGS) -c $< $(LIBS)
+	$(F90C) $(CFLAGS) -c $< -I$(NumFortPath)
 
 #--------------------------Editable MakeFile-------------------------
 all: filename

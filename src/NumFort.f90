@@ -7876,6 +7876,21 @@ module numFort
 
 contains
 
+  function sgnn(x)
+    use kinds
+    implicit none 
+
+    real(DP), intent(in) :: x
+    real(DP)             :: sgnn
+
+    if( x .eq. 0.0_DP ) then
+       sgnn = 1.0_DP
+    else
+       sgnn = abs(x)/x
+    end if
+
+  end function sgnn
+
   !---------------------------------------------------------------------!
   !                                                                     !
   !                            FFT Algorithim                           !
@@ -8803,7 +8818,7 @@ contains
     A(:,2) = x(:)
     do i = 1,N
        do j = 3,N
-          A(i,j) = abs(x(i)-x(j-1))
+          A(i,j) = abs(x(i)-x(j-1))**3
        end do
     end do
     call getrf(A,ipiv)
@@ -8822,9 +8837,24 @@ contains
     real(DP),intent(in)              :: x
     real(DP)                         :: splineval
 
-    splineval = c(1)+c(2)*x+sum(c(3:size(c))*abs(x-xj(2:size(c)-1)))
+    splineval = c(1)+c(2)*x+sum(c(3:size(c))*abs(x-xj(2:size(c)-1))**3)
 
   end function splineVal
+
+  function splineDeriv(c,xj,x) result(val)
+    use kinds
+    implicit none
+
+    real(DP),dimension(:),intent(in) :: c,xj
+    real(DP),intent(in)              :: x
+    real(DP)                         :: val
+
+    real(DP), dimension(size(c)-2)   :: signn
+
+    signn = abs(x-xj(2:size(c)-1))/(x-xj(2:size(c)-1))
+    val = c(2)+3*sum(c(3:size(c))*signn*abs(x-xj(2:size(c)-1))**2)
+    
+  end function splineDeriv
 
   !---------------------------------------------------------------------!
   !                                                                     !
