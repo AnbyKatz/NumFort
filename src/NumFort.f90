@@ -1,7 +1,7 @@
 !*****************************************************************************!
 !                               NUMFORT                                       !
 !              Authors: Anthony Kalaitzis, Curtis Abell,                      !
-!                 Derek Leinweber and John Burkardt                           !             
+!                 Derek Leinweber and John Burkardt                           !
 !                                                                             !
 ! Numerical library for fortran. Use the following module titles              !
 ! to Move Around easily.                                                      !
@@ -7878,7 +7878,7 @@ contains
 
   function sgnn(x)
     use kinds
-    implicit none 
+    implicit none
 
     real(DP), intent(in) :: x
     real(DP)             :: sgnn
@@ -8736,6 +8736,20 @@ contains
   !                                                                     !
   !---------------------------------------------------------------------!
 
+  function identitiyMat(n) result(id)
+    implicit none
+
+    integer, intent(in) :: n
+    integer, dimension(n,n) :: id
+    integer :: i
+
+    id = 0
+    do i = 1,n
+       id(i,i) = 1
+    end do
+
+  end function identitiyMat
+
   function factorial(n)
     implicit none
 
@@ -8853,7 +8867,7 @@ contains
 
     signn = abs(x-xj(2:size(c)-1))/(x-xj(2:size(c)-1))
     val = c(2)+3*sum(c(3:size(c))*signn*abs(x-xj(2:size(c)-1))**2)
-    
+
   end function splineDeriv
 
   !---------------------------------------------------------------------!
@@ -9269,7 +9283,7 @@ contains
 
   function linspaceInt(start,finish,N)
     use kinds
-    implicit none 
+    implicit none
 
     integer                :: N
     integer, intent(in)    :: start, finish
@@ -9432,7 +9446,7 @@ contains
     implicit none
     interface
        subroutine TestFun(n, x, f)
-         USE kinds 
+         USE kinds
          implicit none
          integer               , intent(in)  :: n
          real(DP), dimension(n), intent(in)  :: x
@@ -9836,7 +9850,7 @@ contains
     write(100,'(a15)') xlabel
     write(100,'(a15)') ylabel
     write(100,'(a7)') ld
-    write(100,'(a7)') ld    
+    write(100,'(a7)') ld
 
     do ii=1,size(x)
        write(101,'(4es20.9)') x(ii), y(ii), z(ii), w(ii)
