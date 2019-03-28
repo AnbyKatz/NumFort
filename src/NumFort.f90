@@ -79,7 +79,7 @@ module numFort
      module procedure euler,eulerND
   end interface Euler
   interface writeData
-     module procedure writeDataXY,writeDataXYZW,writeDataN
+     module procedure writeDataXY,writeDataXYZW,writeDataN,writeDataPXY,writeDataPXYZW,writeDataPN
   end interface writeData
   interface trapZ
      module procedure trapZ,trapZZ
@@ -144,7 +144,7 @@ contains
 
     N = size(x)
     if (present(title)) then
-       open(110,file=title,action="write", &
+       open(110,file=trim(title),action="write", &
             & status="replace",form="formatted")
     else
        open(110,file="data.dat",action="write", &
@@ -167,7 +167,7 @@ contains
 
     N = size(x)
     if (present(title)) then
-       open(110,file=title,action="write", &
+       open(110,file=trim(title),action="write", &
             & status="replace",form="formatted")
     else
        open(110,file="data.dat",action="write", &
@@ -197,7 +197,7 @@ contains
     end if
 
     if (present(title)) then
-       open(110,file=title,action="write", &
+       open(110,file=trim(title),action="write", &
             & status="replace",form="formatted")
     else
        open(110,file="data.dat",action="write", &
@@ -210,6 +210,73 @@ contains
     close(110)
 
   end subroutine writeDataN
+
+  !---------------------------------------------------------------------!
+  !                                                                     !
+  !                        Write data with a path                       !
+  !                                                                     !
+  !---------------------------------------------------------------------!
+
+  subroutine writeDataPXY(x,y,pwd,title)
+    use Kinds
+    implicit none
+    real(DP),dimension(:),intent(in)     :: x,y
+    character(len=*),intent(in)          :: title,pwd
+    integer :: ii,N
+
+    N = size(x)
+    open(110,file=trim(pwd)//trim(title),action="write", &
+         & status="replace",form="formatted")
+    do ii = 1,N
+       write(110,'(2e30.15e4)') x(ii), y(ii)
+    end do
+
+    close(110)
+
+  end subroutine writeDataPXY
+
+  subroutine writeDataPXYZW(x,y,z,w,pwd,title)
+    use Kinds
+    implicit none
+    real(DP),dimension(:),intent(in)     :: x,y,z,w
+    character(len=*),intent(in)          :: title,pwd
+    integer :: ii,N
+
+    N = size(x)
+    open(110,file=trim(pwd)//trim(title),action="write", &
+         & status="replace",form="formatted")
+    do ii = 1,N
+       write(110,'(4e30.15e4)') x(ii), y(ii), z(ii), w(ii)
+    end do
+
+    close(110)
+
+  end subroutine writeDataPXYZW
+
+  subroutine writeDataPN(x,pwd,title)
+    use Kinds
+    implicit none
+    real(DP),dimension(:,:),intent(in)     :: x
+    character(len=*),intent(in)            :: title,pwd
+    character(len=14)                      :: fmt
+    integer :: ii,N
+
+    N = size(x,dim=2)
+    if ( N < 10) then
+       write(fmt,'(a1,i1,a9)') '(', N, 'e30.15e4)'
+    else
+       write(fmt,'(a1,i2,a9)') '(', N, 'e30.15e4)'
+    end if
+
+    open(110,file=trim(pwd)//trim(title),action="write", &
+         & status="replace",form="formatted")
+    do ii = 1,size(x,dim=1)
+       write(110,fmt) x(ii,:)
+    end do
+
+    close(110)
+
+  end subroutine writeDataPN
 
   !---------------------------------------------------------------------!
   !                                                                     !
