@@ -36,7 +36,6 @@
 ! - integralPV                                                                !
 ! - writeData                                                                 !
 ! - LoopTimer                                                                 !
-! - linspace                                                                  !
 ! - pyplot                                                                    !
 !                                                                             !
 !*****************************************************************************!
@@ -1580,6 +1579,26 @@ contains
     end do
 
   end function linspaceInt
+
+  function logspace(x0,Lpow,Rpow,npts) result(vec)
+    use kinds
+    use NumFort
+    implicit none
+
+    real(DP), intent(in) :: x0,Lpow,Rpow
+    integer , intent(in) :: npts
+    real(DP) , dimension(npts) :: vec
+
+    real(DP) :: powers(npts)
+    integer  :: ii
+
+    powers = linspace(Lpow,Rpow,npts)
+
+    do ii = 1,npts
+       vec(ii) = x0*10**powers(ii)
+    end do
+
+  end function logspace
 
   !---------------------------------------------------------------------!
   !                                                                     !
