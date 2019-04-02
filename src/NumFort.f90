@@ -1582,7 +1582,6 @@ contains
 
   function logspace(x0,Lpow,Rpow,npts) result(vec)
     use kinds
-    use NumFort
     implicit none
 
     real(DP), intent(in) :: x0,Lpow,Rpow
