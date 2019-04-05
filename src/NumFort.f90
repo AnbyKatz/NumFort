@@ -1089,62 +1089,83 @@ contains
   ! Uses Lapack for necessary linear algebra                            !
   !---------------------------------------------------------------------!
 
-  function splinefit(x,y) result(c)
+  function splinefit(x,y,order) result(c)
     use kinds
     use LAPACK95
     implicit none
 
     real(DP),dimension(:),intent(in)    :: x,y
+    integer              ,intent(in)    :: order
     real(DP),dimension(size(x))         :: c
 
     integer                             :: N
-    real(DP),dimension(:,:),allocatable :: A,B
-    integer ,dimension(:)  ,allocatable :: ipiv
+    real(DP),dimension(:,:),allocatable :: A,Ainv
     integer                             :: i,j
 
     N = size(x)
-    allocate(A(N,N),B(N,1),ipiv(N))
+    allocate(A(N,N),Ainv(N,N))
 
-    B(:,1) = y(:)
     A(:,1) = 1.0_DP
     A(:,2) = x(:)
     do i = 1,N
        do j = 3,N
-          A(i,j) = abs(x(i)-x(j-1))**3
+          A(i,j) = abs(x(i)-x(j-1))**order
        end do
     end do
-    call getrf(A,ipiv)
-    call getrs(A,ipiv,B)
-    c(:) = B(:,1)
 
-    deallocate(A,B,ipiv)
+    Ainv = inv(A)
+    c = matmul(Ainv,y)
+
+    deallocate(A,Ainv)
 
   end function splinefit
 
-  function splineVal(c,xj,x)
+  function splineVal(c,xj,x,order)
     use kinds
     implicit none
 
     real(DP),dimension(:),intent(in) :: c,xj
     real(DP),intent(in)              :: x
+    integer              ,intent(in) :: order
     real(DP)                         :: splineval
 
-    splineval = c(1)+c(2)*x+sum(c(3:size(c))*abs(x-xj(2:size(c)-1))**3)
+    real(DP), dimension(size(c)-2)   :: dist,diff
+    integer                          :: Lc,Lxj
+
+    Lc  = size(c)
+    Lxj = Lc-1
+    diff = (abs( x-xj(2:Lxj) ))**order
+    dist  = c(3:Lc)*diff
+    splineval = c(1)+c(2)*x+sum(dist)
 
   end function splineVal
 
-  function splineDeriv(c,xj,x) result(val)
+  function splineDeriv(c,xj,x,order) result(val)
     use kinds
     implicit none
 
     real(DP),dimension(:),intent(in) :: c,xj
     real(DP),intent(in)              :: x
+    integer              ,intent(in) :: order
     real(DP)                         :: val
 
-    real(DP), dimension(size(c)-2)   :: signn
+    integer, dimension(size(c)-2)    :: signn
+    real(DP), dimension(size(c)-2)   :: vals
+    integer :: ii,Lc,Lxj    
 
-    signn = abs(x-xj(2:size(c)-1))/(x-xj(2:size(c)-1))
-    val = c(2)+3*sum(c(3:size(c))*signn*abs(x-xj(2:size(c)-1))**2)
+    Lc  = size(c)
+    Lxj = Lc-1
+
+    do ii = 1,Lc-2
+       if( x-xj(ii+1) .ge. 0) then
+          signn(ii) = 1
+       else
+          signn(ii) = -1
+       end if
+    end do
+
+    vals = (abs(x-xj(2:Lxj)))**(order-1)
+    val = c(2)+order*sum(c(3:Lc)*signn*vals)
 
   end function splineDeriv
 
