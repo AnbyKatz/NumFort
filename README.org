@@ -20,9 +20,9 @@ You will have to at least install PLplot or Pyplot in order to use one or the ot
 - Simply download the custom install, extract to a location and run under sudo privileges like so
 #+BEGIN_SRC shell
   # If you wish to install it globally use the below sudo prefix (not necessary)
-  sudo ./install.sh
+  sudo ./install_GUI.sh
 #+END_SRC
-- _You may wish to install it locally instead though (hit option 3 i think after typing ./install.sh)_
+- _You may wish to install it locally instead though (hit option 3 i think after typing ./install_GUI.sh)_
 - Make sure to check the math kernel for install
 - After installation you may need to export the path to the *ifort* compiler. Add code similar to below in your ~/.bashrc. Your exact path for the above libraries might be different (probably just different numbers for 2018.3.222)
 #+BEGIN_SRC shell
@@ -36,60 +36,7 @@ You will have to at least install PLplot or Pyplot in order to use one or the ot
   ifort --version
 #+END_SRC
 - Your ifort version should display
-** PLplot (Not Recommended)
-*** Cmake
-- Only needed if you wish to use PLplot
-- Download Cmake source code for linux from the following link [[https://cmake.org/download/][CMAKE]]
-- Extract the Cmake folder and then open a terminal and move inside
-- Type the following commands to install Cmake
-#+BEGIN_SRC shell
-  ./bootstrap
-  make
-  make install
-#+END_SRC
-- Check the installation was successful by opening and closing the terminal, and then typing
-#+BEGIN_SRC shell
-  cmake --version
-#+END_SRC
-+ This should print a value for your working version of CMAKE. You may have to close and open the terminal to refresh
-*** PLplot
-- Open up a terminal in your home directory. For this example we will install in a folder called ~/bin (/home/user/bin). The following commands downloads the necessary code
-#+BEGIN_SRC shell
-  mkdir bin
-  cd bin
-  git clone git://git.code.sf.net/p/plplot/plplot plplot.git
-#+END_SRC
-- This will download the source code and put it into a folder. Ours will be called PLplotSrc, you may rename yours to this if you wish
-- Before continuing we will need to add some path variables in our ~/.bashrc, open ~/.bashrc and write the following. This will tell PLplot to use the ifort compiler (This should be the path to the ifort compiler i.e. where ever you installed it)
-#+BEGIN_SRC shell
-  export FC=/path/to/intel/bin/ifort
-#+END_SRC
-- Back inside our ~/bin folder with our PLplotSrc sub directory, make the following directories
-#+BEGIN_SRC shell
-  mkdir buildDir
-  mkdir installDir
-  cd buildDir
-#+END_SRC
-- Just in case, copy the file CMakeLists.txt into your buildDir directory which should be located in PLplotSrc
-- We are now going to run the CMAKE command which has the following syntax
-- *MAKE SURE* you run this command whilst in the buildDir and *NOT* PLplotSrc or installDir
-#+BEGIN_SRC shell
-  cmake -DCMAKE_INSTALL_PREFIX=/path/to/installDir /path/to/PLplotSrc
-#+END_SRC
-- After the command finishes run the following
-#+BEGIN_SRC shell
-  make
-  make install
-#+END_SRC
-- This should take a bit but whens its done you're almost finished!
-- This should have filled your installDir with lovely source code. Now simply add the following to your ~/.bashrc (Double check the final files names as they may change with versions of PLplot
-#+BEGIN_SRC shell
-  export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:~/bin/installDir/lib/pkgconfig/
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/bin/installDir/lib/
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/bin/buildDir/bindings/fortran/
-#+END_SRC
-- Open and close the terminal, that should be everything
-** Pyplot (Recommended)
+** Python 
 *** Conda
 Download anaconda from here [[https://www.anaconda.com/download/#linux][download link]]. navigate in the terminal to where the final was downloaded and type the following. For us the title of the file was "Anaconda-latest-Linux-x86_64.sh"
 #+BEGIN_SRC shell
@@ -134,22 +81,21 @@ This will create a symbolic link for python3.7. Add the following to your .bashr
   make all
   ./program
   # Run your perferred plotting
-  pythonVersion pyplot.py
+  python pyplot.py
   # or
-  pythonVersion customPlot.py
+  python customPlot.py
 
   # simply run this file by typing "chmod +x bashFile.sh" and then "./bashFile.sh"
 #+END_SRC
 
 * Documentation
-The four modules you may include are /kinds/, /lapack95/, /numFort/ and /PLplots/. Simply include in any .f90 file via a simple use statement as per usual.
+The four modules you may include are /kinds/, /lapack95/ and /numFort/. Simply include in any .f90 file via a simple use statement as per usual.
 #+BEGIN_SRC fortran
   program progName
         use kinds
         use lapack95
         use numFort
 
-        use PLplots ! If you hate yourself
         implicit none
         ...
 
