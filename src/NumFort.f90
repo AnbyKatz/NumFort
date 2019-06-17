@@ -998,7 +998,7 @@ contains
   !                                                                     !
   !---------------------------------------------------------------------!
 
-  function identitiyMat(n) result(id)
+  function identityMat(n) result(id)
     implicit none
 
     integer, intent(in) :: n
@@ -1010,7 +1010,7 @@ contains
        id(i,i) = 1
     end do
 
-  end function identitiyMat
+  end function identityMat
 
   function factorial(n)
     implicit none
@@ -1151,7 +1151,7 @@ contains
 
     integer, dimension(size(c)-2)    :: signn
     real(DP), dimension(size(c)-2)   :: vals
-    integer :: ii,Lc,Lxj    
+    integer :: ii,Lc,Lxj
 
     Lc  = size(c)
     Lxj = Lc-1
