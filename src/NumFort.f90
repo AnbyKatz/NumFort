@@ -1759,7 +1759,8 @@ contains
   !                                                                     !
   !---------------------------------------------------------------------!
 
-  subroutine Minimize(TestFun, n, x, e, maxStepErrorScaleFactor, minimum)
+  subroutine Minimize(TestFun, n, x, e, maxStepErrorScaleFactor &
+       &, minimum, doPrinting)
     use kinds
     implicit none
     interface
@@ -1775,6 +1776,7 @@ contains
     real(DP), dimension(n), intent(inout) :: x, e
     real(DP),               intent(in)    :: maxStepErrorScaleFactor
     real(DP),               intent(out)   :: minimum
+    logical, optional                     :: doPrinting
 
     ! Local variables to interface with minf
     ! Written by Derek Leinweber
@@ -1785,9 +1787,21 @@ contains
     ! See minf for details on the other parameters
     !
     integer, parameter           :: icon=2
-    integer                      :: iprint=2, maxit=100000, iterCount
+    integer                      :: iprint, maxit=100000, iterCount
     integer                      :: nwork
     real(DP), dimension(n*(n+3)) :: w
+
+    ! If the optional doPrinting arguement is present and false, minf
+    !    will not print any output
+    if (present(doPrinting)) then
+       if (doPrinting) then
+          iprint = 2
+       else
+          iprint = 0
+       end if
+    else
+       iprint = 2
+    end if
 
     nwork = n*(n+3)
 
