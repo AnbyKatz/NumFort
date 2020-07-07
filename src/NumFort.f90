@@ -1760,7 +1760,7 @@ contains
   !---------------------------------------------------------------------!
 
   subroutine Minimize(TestFun, n, x, e, maxStepErrorScaleFactor &
-       &, minimum, doPrinting)
+       &, minimum, doPrinting, maxIters)
     use kinds
     implicit none
     interface
@@ -1777,9 +1777,10 @@ contains
     real(DP),               intent(in)    :: maxStepErrorScaleFactor
     real(DP),               intent(out)   :: minimum
     logical, optional                     :: doPrinting
+    integer, optional                     :: maxIters
 
     ! Local variables to interface with minf
-    ! Written by Derek Leinweber
+    ! Written by Derek Leinweber, optional arguements added by Curtis Abell
     !
     ! These variables control how minf works
     !
@@ -1787,7 +1788,7 @@ contains
     ! See minf for details on the other parameters
     !
     integer, parameter           :: icon=2
-    integer                      :: iprint, maxit=100000, iterCount
+    integer                      :: iprint, maxit, iterCount
     integer                      :: nwork
     real(DP), dimension(n*(n+3)) :: w
 
@@ -1802,6 +1803,14 @@ contains
     else
        iprint = 2
     end if
+
+    ! Set the max iterations to 100,000 if they are not specified
+    if (present(maxIters)) then
+       maxit = maxIters
+    else
+       maxit = 100000
+    end if
+
 
     nwork = n*(n+3)
 
